@@ -1,0 +1,453 @@
+main       DEBUG Reading command line options first.
+options    DEBUG Running an action 'load_config' for option '--cfg', value 'generate.conf'.
+options    DEBUG We'll read in the project's config file 'generate.conf'.
+options    DEBUG Trying to read the config file 'generate.conf'
+options    DEBUG Succesfully read the configuration file.
+options    DEBUG Now trying to deal with the options that have been read.
+options    DEBUG Sections present in the config file: ['I18N', 'DOCUMENTATION', 'STORAGE', 'CLASSES', 'GENERAL'].
+options    DEBUG Found config item 'message-catalog' in config file with value 'no'.
+options    DEBUG Checking validity of option 'message-catalog' in config file.
+options    DEBUG Found it, setting message-catalog = no.
+options    DEBUG Running an action 'store' for option 'message-catalog', value 'None'.
+options    DEBUG Found config item 'author' in config file with value 'Stephan GEULETTE'.
+options    DEBUG Checking validity of option 'author' in config file.
+options    DEBUG Found it, setting author = Stephan GEULETTE.
+options    DEBUG Checking commalist value 'Stephan GEULETTE' for option 'author'.
+options    DEBUG We've split the value, it is now '['Stephan GEULETTE']'.
+options    DEBUG Running an action 'append' for option 'author', value '['Stephan GEULETTE']'.
+options    DEBUG We're a commalist and we have to append value '['Stephan GEULETTE']'.
+options    DEBUG Ensuring that option 'author' exists.
+options    DEBUG Before adding, the option's value was '[]'.
+options    DEBUG After adding, the option's value is '['Stephan GEULETTE']'.
+options    DEBUG Found config item 'strip-html' in config file with value 'yes'.
+options    DEBUG Checking validity of option 'strip-html' in config file.
+options    DEBUG Found it, setting strip-html = yes.
+options    DEBUG Running an action 'store' for option 'strip-html', value '1'.
+options    DEBUG Found config item 'copyright' in config file with value 'CommunesPlone'.
+options    DEBUG Checking validity of option 'copyright' in config file.
+options    DEBUG Found it, setting copyright = CommunesPlone.
+options    DEBUG Running an action 'store' for option 'copyright', value 'CommunesPlone'.
+options    DEBUG Found config item 'e-mail' in config file with value 'stephan.geulette@uvcw.be'.
+options    DEBUG Checking validity of option 'e-mail' in config file.
+options    DEBUG Found it, setting e-mail = stephan.geulette@uvcw.be.
+options    DEBUG Checking commalist value 'stephan.geulette@uvcw.be' for option 'e-mail'.
+options    DEBUG We've split the value, it is now '['stephan.geulette@uvcw.be']'.
+options    DEBUG Running an action 'append' for option 'e-mail', value '['stephan.geulette@uvcw.be']'.
+options    DEBUG We're a commalist and we have to append value '['stephan.geulette@uvcw.be']'.
+options    DEBUG Ensuring that option 'email' exists.
+options    DEBUG Before adding, the option's value was '[]'.
+options    DEBUG After adding, the option's value is '['stephan.geulette@uvcw.be']'.
+options    DEBUG Found config item 'default-creation-permission' in config file with value 'Add portal content'.
+options    DEBUG Checking validity of option 'default-creation-permission' in config file.
+options    DEBUG Found it, setting default-creation-permission = Add portal content.
+options    DEBUG Running an action 'store' for option 'default-creation-permission', value 'Add portal content'.
+options    DEBUG Found config item 'customization-policy' in config file with value 'no'.
+options    DEBUG Checking validity of option 'customization-policy' in config file.
+options    DEBUG Found it, setting customization-policy = no.
+options    DEBUG Running an action 'store' for option 'customization-policy', value 'None'.
+options    DEBUG Found config item 'outfile' in config file with value '../'.
+options    DEBUG Checking validity of option 'outfile' in config file.
+options    DEBUG Found it, setting outfile = ../.
+options    DEBUG Running an action 'store' for option 'outfile', value '../'.
+options    DEBUG Running an action 'store' for option '-o', value '..'.
+main       DEBUG Model file is 'CPUtils.zargo'.
+main       DEBUG Figuring out the settings we're passing to the main program...
+main       DEBUG Keys available through the option parser: ['ape_support', 'author', 'backreferences_support', 'build_msgcatalog', 'config_file', 'copyright', 'creation_roles', 'customization_policy', 'default_class_type', 'default_creation_permission', 'default_description_generation', 'default_field_generation', 'detailed_created_permissions', 'detailed_creation_permissions', 'email', 'force', 'generateActions', 'generateDefaultActions', 'generate_packages', 'generated_date', 'i18n_content_support', 'license', 'manual_code_sections', 'method_preservation', 'module_info_header', 'noclass', 'outfilename', 'parse_packages', 'pdb_on_exception', 'prefix', 'rcs_id', 'relation_implementation', 'sql_storage_support', 'strip_html', 'unknownTypesAsString', 'version_info', 'widget_enhancement'].
+main       DEBUG Option 'ape_support' has value '0'.
+main       DEBUG Option 'author' has value '['Stephan GEULETTE']'.
+main       DEBUG Option 'backreferences_support' has value 'None'.
+main       DEBUG Option 'build_msgcatalog' has value 'None'.
+main       DEBUG Option 'config_file' has value 'None'.
+main       DEBUG Option 'copyright' has value 'CommunesPlone'.
+main       DEBUG Option 'creation_roles' has value 'python:('Manager','Owner')'.
+main       DEBUG Option 'customization_policy' has value 'None'.
+main       DEBUG Option 'default_class_type' has value 'content_class'.
+main       DEBUG Option 'default_creation_permission' has value 'Add portal content'.
+main       DEBUG Option 'default_description_generation' has value '0'.
+main       DEBUG Option 'default_field_generation' has value '0'.
+main       DEBUG Option 'detailed_created_permissions' has value '0'.
+main       DEBUG Option 'detailed_creation_permissions' has value '0'.
+main       DEBUG Option 'email' has value '['stephan.geulette@uvcw.be']'.
+main       DEBUG Option 'force' has value '1'.
+main       DEBUG Option 'generateActions' has value '1'.
+main       DEBUG Option 'generateDefaultActions' has value '0'.
+main       DEBUG Option 'generate_packages' has value 'None'.
+main       DEBUG Option 'generated_date' has value '0'.
+main       DEBUG Option 'i18n_content_support' has value ''.
+main       DEBUG Option 'license' has value 'GPL'.
+main       DEBUG Option 'manual_code_sections' has value '1'.
+main       DEBUG Option 'method_preservation' has value '1'.
+main       DEBUG Option 'module_info_header' has value '1'.
+main       DEBUG Option 'noclass' has value '0'.
+main       DEBUG Option 'outfilename' has value '..'.
+main       DEBUG Option 'parse_packages' has value 'None'.
+main       DEBUG Option 'pdb_on_exception' has value '0'.
+main       DEBUG Option 'prefix' has value ''.
+main       DEBUG Option 'rcs_id' has value '0'.
+main       DEBUG Option 'relation_implementation' has value 'basic'.
+main       DEBUG Option 'sql_storage_support' has value '0'.
+main       DEBUG Option 'strip_html' has value '1'.
+main       DEBUG Option 'unknownTypesAsString' has value '0'.
+main       DEBUG Option 'version_info' has value '1'.
+main       DEBUG Option 'widget_enhancement' has value '1'.
+generator  DEBUG Initializing ArchetypesGenerator. We're being passed a file 'CPUtils.zargo' and keyword arguments {'detailed_creation_permissions': 0, 'default_description_generation': 0, 'force': 1, 'backreferences_support': None, 'prefix': '', 'default_class_type': 'content_class', 'generated_date': 0, 'relation_implementation': 'basic', 'detailed_created_permissions': 0, 'customization_policy': None, 'generate_packages': None, 'sql_storage_support': 0, 'copyright': 'CommunesPlone', 'author': ['Stephan GEULETTE'], 'outfilename': '..', 'manual_code_sections': 1, 'generateDefaultActions': 0, 'email': ['stephan.geulette@uvcw.be'], 'config_file': None, 'version_info': 1, 'pdb_on_exception': 0, 'generateActions': 1, 'rcs_id': 0, 'module_info_header': 1, 'default_creation_permission': 'Add portal content', 'build_msgcatalog': None, 'i18n_content_support': '', 'license': 'GPL', 'default_field_generation': 0, 'unknownTypesAsString': 0, 'method_preservation': 1, 'widget_enhancement': 1, 'strip_html': 1, 'ape_support': 0, 'noclass': 0, 'parse_packages': None, 'creation_roles': "python:('Manager','Owner')"}.
+generator  DEBUG After copying over the keyword arguments (read: OptionParser's options), outfilename is '..'.
+generator  DEBUG Stripped off the eventual trailing slashes: '..'.
+generator  DEBUG Targetroot is set to everything except the last directory in the outfilename: .
+generator  DEBUG Initialization finished.
+generator  INFO  Parsing...
+generator  DEBUG Opening .zargo ...
+XMIparser  DEBUG XMI version: 1.2
+XMIparser  DEBUG Using xmi 1.2+ parser.
+XMIparser  DEBUG Initializing from DOM: name='CPUtils', id='-6x--88-11--16-e9dbfe:e2d71a1c1e:-7fff'.
+XMIparser  DEBUG Gathering the taggedvalues for element CPUtils.
+XMIparser  DEBUG Found nothing.
+XMIparser  DEBUG Found the following state machines: [].
+generator  DEBUG We've got an self.outfilename: ...
+generator  DEBUG We've split off the last directory name: ...
+generator  WARNING Not setting the product's name to '..', this was the old behaviour. Just name your class diagram according to your product name. 
+generator  INFO  Directory in which we're generating the files: '..'.
+generator  INFO  Generating...
+generator  DEBUG Method bodies will be preserved
+generator  WARNING Can't strip html from doc-strings. Module 'stripogram' not found.
+XMIparser  DEBUG Looking if element has stereotype ['odStub', 'stub']
+umlprofile DEBUG Finding stereotypes for entities ['XMIParser.XMIModel'].
+umlprofile DEBUG Stripped off 'XMIParser.': ['XMIModel'].
+XMIparser  DEBUG Stereotype '%s' is registered.
+umlprofile DEBUG Finding stereotypes for entities ['XMIParser.XMIModel'].
+umlprofile DEBUG Stripped off 'XMIParser.': ['XMIModel'].
+XMIparser  DEBUG Stereotype '%s' is registered.
+generator  INFO  Starting new Product: 'CPUtils'.
+generator  DEBUG Calling makeDir to create '..'.
+generator  DEBUG Together with the targetroot that means '..'.
+utils      DEBUG Trying to make directory '..' (force=1).
+utils      DEBUG Directory already exists. Fine.
+generator  DEBUG Calling makeDir to create '../skins'.
+generator  DEBUG Together with the targetroot that means '../skins'.
+utils      DEBUG Trying to make directory '../skins' (force=1).
+utils      DEBUG Directory already exists. Fine.
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+generator  DEBUG Calling makeDir to create '../skins/CPUtils'.
+generator  DEBUG Together with the targetroot that means '../skins/CPUtils'.
+utils      DEBUG Trying to make directory '../skins/CPUtils' (force=1).
+utils      DEBUG Made the directory.
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+generator  DEBUG Calling makeFile to create '../skins/CPUtils/readme.txt'.
+generator  DEBUG Together with the targetroot that means '../skins/CPUtils/readme.txt'.
+utils      DEBUG Making file '../skins/CPUtils/readme.txt' (force=1).
+utils      DEBUG Opening the file for writing and returning it.
+generator  DEBUG Generating package <XMIParser.XMIModel instance at 0xb76a308c>.
+XMIparser  DEBUG Looking if element has stereotype ['odStub', 'stub']
+umlprofile DEBUG Finding stereotypes for entities ['XMIParser.XMIModel'].
+umlprofile DEBUG Stripped off 'XMIParser.': ['XMIModel'].
+XMIparser  DEBUG Stereotype '%s' is registered.
+umlprofile DEBUG Finding stereotypes for entities ['XMIParser.XMIModel'].
+umlprofile DEBUG Stripped off 'XMIParser.': ['XMIModel'].
+XMIparser  DEBUG Stereotype '%s' is registered.
+generator  DEBUG Calling makeDir to create '..'.
+generator  DEBUG Together with the targetroot that means '..'.
+utils      DEBUG Trying to make directory '..' (force=1).
+utils      DEBUG Directory already exists. Fine.
+generator  DEBUG Calling makeFile to create '../refresh.txt'.
+generator  DEBUG Together with the targetroot that means '../refresh.txt'.
+utils      DEBUG Making file '../refresh.txt' (force=1).
+utils      DEBUG Opening the file for writing and returning it.
+utils      DEBUG Trying to open '../version.txt' for reading.
+utils      DEBUG Couldn't open the file, returning nothing.
+generator  DEBUG Calling makeFile to create '../version.txt'.
+generator  DEBUG Together with the targetroot that means '../version.txt'.
+utils      DEBUG Making file '../version.txt' (force=1).
+utils      DEBUG Opening the file for writing and returning it.
+basegenerator DEBUG Trying to get value of option 'additional_permission' for element 'CPUtils' (default value is '[]', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Returning default value '[]'.
+pyparser   DEBUG Initialising module parser for file '../__init__.py'.
+utils      DEBUG Trying to read template '__init__.py'.
+utils      DEBUG Trying to find it in template directory '/srv/ArchGenXML152/templates'.
+utils      DEBUG Succesfully opened the template, returning it.
+basegenerator DEBUG Getting info for the header...
+basegenerator DEBUG Trying to get value of option 'copyright' for element 'CPUtils' (default value is 'CommunesPlone', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is 'CommunesPlone'.
+basegenerator DEBUG Copyright = u'Copyright (c) 2008 by CommunesPlone'.
+basegenerator DEBUG Trying to get value of option 'license' for element 'CPUtils' (default value is 'GPL', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is 'GPL'.
+basegenerator DEBUG License: u'GNU General Public License (GPL)\n#\n# This program is free software; you can redistribute it and/or\n# modify it under the terms of the GNU General Public License\n# as published by the Free Software Foundation; either version 2\n# of the License, or (at your option) any later version.\n#\n# This program is distributed in the hope that it will be useful,\n# but WITHOUT ANY WARRANTY; without even the implied warranty of\n# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n# GNU General Public License for more details.\n#\n# You should have received a copy of the GNU General Public License\n# along with this program; if not, write to the Free Software\n# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA\n# 02110-1301, USA.'.
+basegenerator DEBUG Getting the authors...
+basegenerator DEBUG Trying to get value of option 'author' for element 'CPUtils' (default value is '['Stephan GEULETTE']', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '['Stephan GEULETTE']'.
+basegenerator DEBUG self.author is already a list, no need to split it.
+basegenerator DEBUG Found the following authors: ['Stephan GEULETTE'].
+basegenerator DEBUG Getting the email addresses.
+basegenerator DEBUG Trying to get value of option 'email' for element 'CPUtils' (default value is '['stephan.geulette@uvcw.be']', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '['stephan.geulette@uvcw.be']'.
+basegenerator DEBUG Found the following email addresses: ['<stephan.geulette@uvcw.be>'].
+basegenerator DEBUG Trying to get value of option 'rcs_id' for element 'CPUtils' (default value is 'False', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '0'.
+basegenerator DEBUG Using filename.
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+basegenerator DEBUG Trying to get value of option 'generated_date' for element 'CPUtils' (default value is 'False', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '0'.
+basegenerator DEBUG Trying to get value of option 'version_info' for element 'CPUtils' (default value is 'True', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '1'.
+basegenerator DEBUG We want version info in every file.
+basegenerator DEBUG Trying to get value of option 'encoding' for element 'CPUtils' (default value is 'utf-8', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Returning default value 'utf-8'.
+basegenerator DEBUG Encoding for python files is set to utf-8
+generator  DEBUG Calling makeFile to create '../__init__.py'.
+generator  DEBUG Together with the targetroot that means '../__init__.py'.
+utils      DEBUG Making file '../__init__.py' (force=1).
+utils      DEBUG Opening the file for writing and returning it.
+pyparser   DEBUG Initialising module parser for file '../config.py'.
+basegenerator DEBUG Trying to get value of option 'creation_permission' for element 'CPUtils' (default value is 'None', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Returning default value 'None'.
+utils      DEBUG Trying to read template 'config.py'.
+utils      DEBUG Trying to find it in template directory '/srv/ArchGenXML152/templates'.
+utils      DEBUG Succesfully opened the template, returning it.
+basegenerator DEBUG Getting info for the header...
+basegenerator DEBUG Trying to get value of option 'copyright' for element 'CPUtils' (default value is 'CommunesPlone', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is 'CommunesPlone'.
+basegenerator DEBUG Copyright = u'Copyright (c) 2008 by CommunesPlone'.
+basegenerator DEBUG Trying to get value of option 'license' for element 'CPUtils' (default value is 'GPL', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is 'GPL'.
+basegenerator DEBUG License: u'GNU General Public License (GPL)\n#\n# This program is free software; you can redistribute it and/or\n# modify it under the terms of the GNU General Public License\n# as published by the Free Software Foundation; either version 2\n# of the License, or (at your option) any later version.\n#\n# This program is distributed in the hope that it will be useful,\n# but WITHOUT ANY WARRANTY; without even the implied warranty of\n# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n# GNU General Public License for more details.\n#\n# You should have received a copy of the GNU General Public License\n# along with this program; if not, write to the Free Software\n# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA\n# 02110-1301, USA.'.
+basegenerator DEBUG Getting the authors...
+basegenerator DEBUG Trying to get value of option 'author' for element 'CPUtils' (default value is '['Stephan GEULETTE']', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '['Stephan GEULETTE']'.
+basegenerator DEBUG self.author is already a list, no need to split it.
+basegenerator DEBUG Found the following authors: ['Stephan GEULETTE'].
+basegenerator DEBUG Getting the email addresses.
+basegenerator DEBUG Trying to get value of option 'email' for element 'CPUtils' (default value is '['stephan.geulette@uvcw.be']', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '['stephan.geulette@uvcw.be']'.
+basegenerator DEBUG Found the following email addresses: ['<stephan.geulette@uvcw.be>'].
+basegenerator DEBUG Trying to get value of option 'rcs_id' for element 'CPUtils' (default value is 'False', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '0'.
+basegenerator DEBUG Using filename.
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+basegenerator DEBUG Trying to get value of option 'generated_date' for element 'CPUtils' (default value is 'False', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '0'.
+basegenerator DEBUG Trying to get value of option 'version_info' for element 'CPUtils' (default value is 'True', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '1'.
+basegenerator DEBUG We want version info in every file.
+basegenerator DEBUG Trying to get value of option 'encoding' for element 'CPUtils' (default value is 'utf-8', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Returning default value 'utf-8'.
+basegenerator DEBUG Encoding for python files is set to utf-8
+generator  DEBUG Calling makeFile to create '../config.py'.
+generator  DEBUG Together with the targetroot that means '../config.py'.
+utils      DEBUG Making file '../config.py' (force=1).
+utils      DEBUG Opening the file for writing and returning it.
+generator  DEBUG Calling makeDir to create '../Extensions'.
+generator  DEBUG Together with the targetroot that means '../Extensions'.
+utils      DEBUG Trying to make directory '../Extensions' (force=1).
+utils      DEBUG Directory already exists. Fine.
+generator  DEBUG Calling makeFile to create '../Extensions/__init__.py'.
+generator  DEBUG Together with the targetroot that means '../Extensions/__init__.py'.
+utils      DEBUG Making file '../Extensions/__init__.py' (force=1).
+utils      DEBUG Opening the file for writing and returning it.
+utils      DEBUG Trying to read template 'Install.py'.
+utils      DEBUG Trying to find it in template directory '/srv/ArchGenXML152/templates'.
+utils      DEBUG Succesfully opened the template, returning it.
+basegenerator DEBUG Getting info for the header...
+basegenerator DEBUG Trying to get value of option 'copyright' for element 'CPUtils' (default value is 'CommunesPlone', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is 'CommunesPlone'.
+basegenerator DEBUG Copyright = u'Copyright (c) 2008 by CommunesPlone'.
+basegenerator DEBUG Trying to get value of option 'license' for element 'CPUtils' (default value is 'GPL', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is 'GPL'.
+basegenerator DEBUG License: u'GNU General Public License (GPL)\n#\n# This program is free software; you can redistribute it and/or\n# modify it under the terms of the GNU General Public License\n# as published by the Free Software Foundation; either version 2\n# of the License, or (at your option) any later version.\n#\n# This program is distributed in the hope that it will be useful,\n# but WITHOUT ANY WARRANTY; without even the implied warranty of\n# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n# GNU General Public License for more details.\n#\n# You should have received a copy of the GNU General Public License\n# along with this program; if not, write to the Free Software\n# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA\n# 02110-1301, USA.'.
+basegenerator DEBUG Getting the authors...
+basegenerator DEBUG Trying to get value of option 'author' for element 'CPUtils' (default value is '['Stephan GEULETTE']', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '['Stephan GEULETTE']'.
+basegenerator DEBUG self.author is already a list, no need to split it.
+basegenerator DEBUG Found the following authors: ['Stephan GEULETTE'].
+basegenerator DEBUG Getting the email addresses.
+basegenerator DEBUG Trying to get value of option 'email' for element 'CPUtils' (default value is '['stephan.geulette@uvcw.be']', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '['stephan.geulette@uvcw.be']'.
+basegenerator DEBUG Found the following email addresses: ['<stephan.geulette@uvcw.be>'].
+basegenerator DEBUG Trying to get value of option 'rcs_id' for element 'CPUtils' (default value is 'False', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '0'.
+basegenerator DEBUG Using filename.
+basegenerator DEBUG Trying to get value of option 'generated_date' for element 'CPUtils' (default value is 'False', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '0'.
+basegenerator DEBUG Trying to get value of option 'version_info' for element 'CPUtils' (default value is 'True', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Found a matching option (passed on the commandline or in the configfile).
+basegenerator DEBUG The value is '1'.
+basegenerator DEBUG We want version info in every file.
+basegenerator DEBUG Trying to get value of option 'encoding' for element 'CPUtils' (default value is 'utf-8', aggregate is 'False').
+basegenerator DEBUG Found the element.
+basegenerator DEBUG Found nothing in the assorted taggedvalues.
+basegenerator DEBUG Now looking in the options.
+basegenerator DEBUG Returning default value 'utf-8'.
+basegenerator DEBUG Encoding for python files is set to utf-8
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+XMIparser  DEBUG Getting value for tag 'module_name' (default=). Note: we're not doing this recursively.
+TGVregistry DEBUG Checking tag 'module_name' (category 'XMIParser.XMIModel') in the registry...
+TGVregistry DEBUG Tag 'module_name' (category 'model') exists in the registry.
+XMIparser  DEBUG Returning value '',
+generator  DEBUG Calling makeFile to create '../Extensions/Install.py'.
+generator  DEBUG Together with the targetroot that means '../Extensions/Install.py'.
+utils      DEBUG Making file '../Extensions/Install.py' (force=1).
+utils      DEBUG Opening the file for writing and returning it.

@@ -1,0 +1,25 @@
+We will test the functionalities of CPUtils in a browser.
+
+    >>> from Products.CPUtils.config import *
+
+First, we create a browser element
+    >>> from Products.Five.testbrowser import Browser
+    >>> browser = Browser()
+
+The following is useful when writing and debugging testbrowser tests. It lets
+us see all error messages in the error_log.
+    >>> self.portal.error_log._ignored_exceptions = ()
+
+We open the test url and verify it is well given
+    >>> browser.open('http://nohost/plone')
+    >>> browser.url
+    'http://nohost/plone'
+
+We run the configuration method defined in test_functional
+    >>> from Products.CPUtils.tests.test_functional import setUp
+    >>> setUp(self)
+
+We test if the product CPUtils is well installed
+    >>> self.portal.portal_quickinstaller.isProductInstalled(PROJECTNAME)
+    True
+
