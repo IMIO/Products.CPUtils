@@ -1,0 +1,6 @@
+#!/bin/bash
+#rm pack.log
+for i in `cat INSTANCES.txt`
+do /srv/python244/bin/python pack_db.py $i
+done
+#cat pack.log
