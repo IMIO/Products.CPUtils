@@ -1,0 +1,2 @@
+/srv/inst/i1;0;admin;admin
+/srv/buildout/dev1;0;admin;admin
