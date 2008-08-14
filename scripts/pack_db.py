@@ -134,7 +134,7 @@ def main():
 
     for file in shutil.os.listdir(dir_path):
         if file.endswith('.fs.old'):
-            #we do no more delete fs.old to safely copy this file as zodb file
+            #we do no more delete fs.old to safely backup this file as zodb file
             #shutil.os.unlink(dir_path + file)
             #verbose("\t%s deleted" % (dir_path + file))
             pass
@@ -149,6 +149,7 @@ try:
     arg = sys.argv[1]
     if arg.startswith('#'):
         sys.exit(0)
+    verbose(
     instdir, days, user, pwd = arg.split(';')
 #    print instdir, days, user, pwd
 except IndexError:
