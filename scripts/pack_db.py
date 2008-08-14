@@ -149,9 +149,8 @@ try:
     arg = sys.argv[1]
     if arg.startswith('#'):
         sys.exit(0)
-    verbose(
     instdir, days, user, pwd = arg.split(';')
-#    print instdir, days, user, pwd
+    verbose("Start of packing %s, days=%s"%(instdir, days))
 except IndexError:
     error("No parameter found")
     sys.exit(1)
@@ -161,3 +160,4 @@ except ValueError:
 
 if __name__ == '__main__':
     main()
+    verbose("End of packing %s"%(instdir))
