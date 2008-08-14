@@ -134,8 +134,10 @@ def main():
 
     for file in shutil.os.listdir(dir_path):
         if file.endswith('.fs.old'):
-            shutil.os.unlink(dir_path + file)
-            verbose("\t%s deleted" % (dir_path + file))
+            #we do no more delete fs.old to safely copy this file as zodb file
+            #shutil.os.unlink(dir_path + file)
+            #verbose("\t%s deleted" % (dir_path + file))
+            pass
         elif file.endswith('.fs.pack'):
             shutil.os.unlink(dir_path + file)
             error("! .pack file found : pack not correctly ended")
