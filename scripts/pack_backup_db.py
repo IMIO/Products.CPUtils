@@ -149,7 +149,7 @@ def backupdb(fss, repozopath, fspath):
         (cmd_out, cmd_err) = runCommand(cmd)
 
         if cmd_err:
-            verbose("\t\tError when backuping : '%s'" % "".join(cmd_err))
+            verbose("\t\tOutput/Error when backuping : '%s'" % "".join(cmd_err))
         elif cmd_out:
             verbose("\t\tOutput when backuping : '%s'" % "".join(cmd_out))
         else:
