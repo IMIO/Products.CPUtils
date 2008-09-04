@@ -14,6 +14,8 @@ from datetime import datetime
 buildout_inst_type = None #True for buildout, False for manual instance
 BACKUP_DIR = '/srv/backups/zope'
 RSYNCDIR = '' # prefix dir containing the copy of the rsync command
+FSTEST = True
+FSREFS = False
 
 def verbose(*messages):
     print '>>', ' '.join(messages)
@@ -149,18 +151,52 @@ def restoredb(fs, repozopath, fspath):
         error("\tfs file '%s' already exists ! Restoring in backup dir '%s' ..."%(fsfilename, backupdir))
         fsfilename = os.path.join(backupdir, fs)
         #return
-    verbose("\tRestore of '%s' with script '%s'" % (fsfilename, repozofilename))    
+    verbose("\tRestore of '%s'" % (fsfilename))    
     cmd = restorecmd + '-r %s -o %s' % (backupdir, fsfilename)
     verbose("\tRunning command '%s'" % cmd)
     (cmd_out, cmd_err) = runCommand(cmd)
 
     if cmd_err:
-        verbose("\t\tOutput/Error when backuping : '%s'" % "".join(cmd_err))
+        verbose("\t\tOutput/Error when restoring : '%s'" % "".join(cmd_err))
     elif cmd_out:
-        verbose("\t\tOutput when backuping : '%s'" % "".join(cmd_out))
+        verbose("\t\tOutput when restoring : '%s'" % "".join(cmd_out))
     else:
         error("\t\tNo output for command : '%s'" % cmd)
     verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
+
+    if FSTEST:
+        fstestfilename = os.path.join(repozopath, 'bin', 'fstest.py')
+        fstestcmd = "env PYTHONPATH=%s %s "%(pythonpath, fstestfilename)
+        # -v : print a line by transaction
+        # -vv : print a line by object
+        start = datetime.now()
+        verbose("\tTest of '%s'" % (fsfilename))
+        cmd = fstestcmd + '%s' % (fsfilename)
+        verbose("\tRunning command '%s'" % cmd)
+        (cmd_out, cmd_err) = runCommand(cmd)
+
+        if cmd_err:
+            verbose("\t\tError when testing : '%s'" % "".join(cmd_err))
+        elif cmd_out:
+            verbose("\t\tError when testing : '%s'" % "".join(cmd_out))
+        verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
+
+    if FSREFS:
+        fsrefsfilename = os.path.join(repozopath, 'bin', 'fsrefs.py')
+        fsrefscmd = "env PYTHONPATH=%s %s "%(pythonpath, fsrefsfilename)
+        # -v : print a line by transaction
+        # -vv : print a line by object
+        start = datetime.now()
+        verbose("\tTest of '%s'" % (fsfilename))
+        cmd = fsrefscmd + '%s' % (fsfilename)
+        verbose("\tRunning command '%s'" % cmd)
+        (cmd_out, cmd_err) = runCommand(cmd)
+
+        if cmd_err:
+            verbose("\t\tError when testing : '%s'" % "".join(cmd_err))
+        elif cmd_out:
+            verbose("\t\tError when testing : '%s'" % "".join(cmd_out))
+        verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
 
 #------------------------------------------------------------------------------
 
