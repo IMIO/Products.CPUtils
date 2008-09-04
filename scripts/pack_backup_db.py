@@ -1,5 +1,10 @@
 #!/usr/bin/python
 #
+"""
+    This script treats dbs of a zope instance :
+    * packing each db
+    * backuping with repozo each fs file
+"""
 
 import sys, urllib, os
 import datetime
@@ -56,8 +61,8 @@ def runCommand(cmd):
 
 #------------------------------------------------------------------------------
 
-def read_file(zodbfilename, lines):
-    """ read the zope conf filename and include subfile"""
+def read_zopeconffile(zodbfilename, lines):
+    """ read the zope conf filename and include subfile """
     try:
         zfile = open( zodbfilename, 'r')
     except IOError:
@@ -67,9 +72,56 @@ def read_file(zodbfilename, lines):
         line = line.strip('\n\t ')
         if line.startswith('%include'):
             otherfilename = line.split()[1]
-            read_file(otherfilename, lines)
+            read_zopeconffile(otherfilename, lines)
             continue
         lines.append(line)
+
+#------------------------------------------------------------------------------
+
+def treat_zopeconflines(zodbfilename):
+    """
+        read zope configuration lines to get informations
+    """
+    lines = []
+    read_zopeconffile(zodbfilename, lines)
+
+    port = ''
+    httpflag = False
+    fsflag = False
+    dbs = []
+    dbname = ''
+    for line in lines:
+        #verbose("=>'%s'"%line)
+        if line.startswith('<http-server>'):
+            httpflag = True
+            continue
+        if httpflag and line.startswith('address'):
+            port = line.split()[1]
+            httpflag = False
+            continue
+        if line.startswith('<zodb_db'):
+            if dbname:
+                error("\tnext db found while fs not found: previous dbname '%s', current line '%s'"%(dbname, line))
+            dbname = line.split()[1]
+            dbname = dbname.rstrip('>')
+            if dbname == 'temporary':
+                dbname = ''
+        if line.startswith('<filestorage>'):
+            fsflag = True
+            continue
+        if fsflag and line.startswith('path'):
+            fsflag = False
+            fs = line.split()[1]
+            fs = os.path.basename(fs)
+            dbs.append([dbname, fs])
+            dbname = ''
+            continue
+    verbose("\tport='%s', dbs='%s'"%(port, ';'.join([','.join(dbinfo) for dbinfo in dbs])))
+
+    if not port:
+        error("! the port was not found in the config file '%s'"%zodbfilename)
+
+    return(port, dbs)
 
 #------------------------------------------------------------------------------
 
@@ -90,42 +142,41 @@ def read_zopectlfile(zopectlfilename):
 
 #------------------------------------------------------------------------------
 
-def packdb(port, dbs):
+def packdb(port, db):
     host = "http://localhost:%s" % port
     urllib._urlopener = MyUrlOpener()
-    for db in dbs:
-        start = datetime.now()
-        verbose("\tPacking db '%s' for instance %s (%s days)" % (db, host, days))    
-        url_spd = "%s/Control_Panel/Database/%s/%s?days:float=%s" % (host, db, method, days)
-        #verbose("url='%s'"%url_spd)
-        try:
-            ret_html = urllib.urlopen(url_spd).read()
-            if 'the requested resource does not exist' in ret_html or 'error was encountered while publishing this resource' in ret_html:
-                verbose('\texternal method %s not exist : we will create it'%method)
-                url_em = "%s/manage_addProduct/ExternalMethod/manage_addExternalMethod?id=%s&module=%s&function=%s&title="%(host, method, module, function)
-                try:
-                    ret_html = urllib.urlopen(url_em).read()
-                    if 'the requested resource does not exist' in ret_html or 'error was encountered while publishing this resource' in ret_html:
-                        error('! Cannot create external method in zope')
-                    elif 'The specified module,' in ret_html:
-                        error('! The specified module %s is not present in the instance'%module)
-                    else:
-                        try:
-                            ret_html = urllib.urlopen(url_spd).read()
+    start = datetime.now()
+    verbose("\tPacking db '%s' for instance %s (%s days)" % (db, host, days))    
+    url_spd = "%s/Control_Panel/Database/%s/%s?days:float=%s" % (host, db, method, days)
+    #verbose("url='%s'"%url_spd)
+    try:
+        ret_html = urllib.urlopen(url_spd).read()
+        if 'the requested resource does not exist' in ret_html or 'error was encountered while publishing this resource' in ret_html:
+            verbose('\texternal method %s not exist : we will create it'%method)
+            url_em = "%s/manage_addProduct/ExternalMethod/manage_addExternalMethod?id=%s&module=%s&function=%s&title="%(host, method, module, function)
+            try:
+                ret_html = urllib.urlopen(url_em).read()
+                if 'the requested resource does not exist' in ret_html or 'error was encountered while publishing this resource' in ret_html:
+                    error('! Cannot create external method in zope')
+                elif 'The specified module,' in ret_html:
+                    error('! The specified module %s is not present in the instance'%module)
+                else:
+                    try:
+                        ret_html = urllib.urlopen(url_spd).read()
 #                            if "/Control_Panel/Database/%s"%db not in ret_html:
 #                                error("Problem during compression of %s"%db)
 #                                log.debug(ret_html) 
-                        except IOError, msg:
-                            error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
-                except Exception, msg:
-                    error("! Cannot open URL %s, aborting : %s" % (url_em, msg))
-        except IOError, msg:
-            error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
-        verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
+                    except IOError, msg:
+                        error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
+            except Exception, msg:
+                error("! Cannot open URL %s, aborting : %s" % (url_em, msg))
+    except IOError, msg:
+        error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
+    verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
 
 #------------------------------------------------------------------------------
 
-def backupdb(fss, repozopath, fspath):
+def backupdb(fs, repozopath, fspath):
     """ call the repozo script to backup file """
     repozofilename = os.path.join(repozopath, 'bin', 'repozo.py')
     pythonpath = os.path.join(repozopath, 'lib', 'python')
@@ -134,27 +185,26 @@ def backupdb(fss, repozopath, fspath):
     # -r backupdir
     # -F : full backup
     # -f fs file
-    for fs in fss:
-        start = datetime.now()
-        fsfilename = os.path.join(fspath, fs)
+    start = datetime.now()
+    fsfilename = os.path.join(fspath, fs)
 #        backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir))
 #        if not os.path.exists(backupdir):
 #            os.mkdir(backupdir)
-        backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir), os.path.splitext(fs)[0]) 
-        if not os.path.exists(backupdir):
-            os.makedirs(backupdir)
-        verbose("\tBackup of '%s' with script '%s'" % (fsfilename, repozofilename))    
-        cmd = backupcmd + ' -r %s -f %s' % (backupdir, fsfilename)
-        verbose("\tRunning command '%s'" % cmd)
-        (cmd_out, cmd_err) = runCommand(cmd)
+    backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir), os.path.splitext(fs)[0]) 
+    if not os.path.exists(backupdir):
+        os.makedirs(backupdir)
+    verbose("\tBackup of '%s' with script '%s'" % (fsfilename, repozofilename))    
+    cmd = backupcmd + ' -r %s -f %s' % (backupdir, fsfilename)
+    verbose("\tRunning command '%s'" % cmd)
+    (cmd_out, cmd_err) = runCommand(cmd)
 
-        if cmd_err:
-            verbose("\t\tOutput/Error when backuping : '%s'" % "".join(cmd_err))
-        elif cmd_out:
-            verbose("\t\tOutput when backuping : '%s'" % "".join(cmd_out))
-        else:
-            error("\t\tNo output for command : '%s'" % cmd)
-        verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
+    if cmd_err:
+        verbose("\t\tOutput/Error when backuping : '%s'" % "".join(cmd_err))
+    elif cmd_out:
+        verbose("\t\tOutput when backuping : '%s'" % "".join(cmd_out))
+    else:
+        error("\t\tNo output for command : '%s'" % cmd)
+    verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
 
 #------------------------------------------------------------------------------
 
@@ -185,49 +235,15 @@ def main():
         zopectlfilename = instdir + '/bin/zopectl'
         fspath = instdir + '/var/'
 
-    # Packing #
-
-    lines = []
-    read_file(zodbfilename, lines)
-
-    port = ''
-    httpflag = False
-    fsflag = False
-    dbs = []
-    fss = []
-    for line in lines:
-        #verbose("=>'%s'"%line)
-        if line.startswith('<http-server>'):
-            httpflag = True
-            continue
-        if httpflag and line.startswith('address'):
-            port = line.split()[1]
-            httpflag = False
-            continue
-        if line.startswith('<zodb_db'):
-            dbname = line.split()[1]
-            dbname = dbname.rstrip('>')
-            if dbname != 'temporary':
-                dbs.append(dbname)
-        if line.startswith('<filestorage>'):
-            fsflag = True
-            continue
-        if fsflag and line.startswith('path'):
-            fsflag = False
-            fs = line.split()[1]
-            fs = os.path.basename(fs)
-            fss.append(fs)
-            continue
-    verbose("\tport='%s', dbs='%s', fss='%s'"%(port, ';'.join(dbs), ';'.join(fss)))
-
-    if not port:
-        error("! the port was not found in the config file '%s'"%zodbfilename)
-
+    # Getting some informations in config file
+    (port, dbs) = treat_zopeconflines(zodbfilename)
     repozopath = read_zopectlfile(zopectlfilename)
     #verbose("repozo path='%s'"%repozopath)
 
-
-    packdb(port,dbs)
+    # Treating each db
+    for db in dbs:
+        packdb(port,db[0])
+        backupdb(db[1], repozopath, fspath)
 
     #we delete every .old created during packing in the /var directory of the zope instance
     if buildout_inst_type:
@@ -245,11 +261,6 @@ def main():
             error("! .pack file found : pack not correctly ended")
             verbose("\t%s deleted" % (dir_path + file))
 
-    # Backuping #
-
-    backupdb(fss, repozopath, fspath)
-
-
 #------------------------------------------------------------------------------
 
 try:
@@ -257,7 +268,7 @@ try:
     if arg.startswith('#'):
         sys.exit(0)
     instdir, days, user, pwd = arg.split(';')
-    verbose("Start of packing %s, days=%s"%(instdir, days))
+    verbose("Start of packing, backuping %s, days=%s"%(instdir, days))
 except IndexError:
     error("No parameter found")
     sys.exit(1)
@@ -267,4 +278,4 @@ except ValueError:
 
 if __name__ == '__main__':
     main()
-    verbose("End of packing %s"%(instdir))
+    verbose("End of packing, backuping %s"%(instdir))
