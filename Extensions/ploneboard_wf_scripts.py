@@ -1,0 +1,91 @@
+from Products.CMFCore.utils import getToolByName
+from Products.CMFCore.permissions import ModifyPortalContent
+
+#def notifyManagerByMail(self, state_change, **kw):
+    #""" WF script used for ploneboard_conversation_workflow """
+    #object = state_change['object']
+
+    #send_from_address_param = "support@communesplone.be"
+    #send_to_address_param = "support@communesplone.be"
+    #subject_param = "Nouvelle conversation '%s'" % object.Title()
+    #comment_param = "Une nouvelle conversation a été ajoutée à %s" % object.aboslute_url()
+
+    #try:
+        #plone_tool = getToolByName(self, 'plone_utils')
+        #host = plone_tool.getMailHost()
+        #encoding = plone_tool.getSiteEncoding()
+        #message = comment_param
+        #send_to_address = send_to_address_param
+        #send_from_address = send_from_address_param
+        #subject = subject_param
+        #return host.secureSend(message, send_to_address,
+                               #send_from_address, subject=subject,
+                               #subtype='plain', charset=encoding,
+                               #debug=False, From=send_from_address)
+    #except Exception, message:
+        #print "There was a problem during the send of an e-mail for object : %s." % object
+        #print "The exception is : %s." % message
+
+    #return
+
+def notifyConvMembersByMail(self, state_change, **kw):
+    """ WF script used for ploneboard_comment_workflow """
+    object = state_change['object']
+
+    #get the container, the PloneboardConversation
+    container = object.getParentNode()
+    #we will build a list of e-mails to send to
+    emails=["support@communesplone.be",]
+
+    plone_tool = getToolByName(self, 'plone_utils')
+    mt = getToolByName(self, 'portal_membership')
+    #remove for the ric the acquisition on comments
+    if mt.checkPermission(ModifyPortalContent, object):
+        plone_tool.acquireLocalRoles(object, status=0)
+
+    catalog = getToolByName(self, 'portal_catalog')
+    #loop on every comments...
+    comments = catalog.searchResults(portal_type="PloneboardComment", path="/".join(container.getPhysicalPath()))
+    i = 0
+    for comment in comments:
+        i = i + 1
+        creator = comment.Creator
+        user = mt.getMemberById(creator)
+        email = user.getProperty('email')
+        if email not in emails:
+            emails.append(email)
+
+    #we remove the e-mail of the current comment creator
+    #as it is not necessary for him to be warned... ;-)
+    creator = object.Creator()
+    user = mt.getMemberById(creator)
+    email = user.getProperty('email')
+    emails.remove(email)
+
+    send_from_address_param = "support@communesplone.be"
+    send_to_address_param = emails
+    if i == 1:
+        #a new conversation has been started and contain only one comment
+        subject_param = "Nouvelle conversation '%s'" % container.Title()
+        comment_param = "Une nouvelle conversation '%s' a démarré à %s." % (container.Title(), container.absolute_url())
+    else:
+        subject_param = "Nouveau commentaire pour la conversation '%s'" % container.Title()
+        comment_param = "Un nouveau commentaire a été ajouté à la conversation '%s' à %s." % (container.Title(), container.absolute_url())
+
+    try:
+        host = plone_tool.getMailHost()
+        encoding = plone_tool.getSiteEncoding()
+        message = comment_param
+        send_to_address = ','.join(send_to_address_param)
+        send_from_address = send_from_address_param
+        subject = subject_param
+        result = host.secureSend(message, send_to_address,
+                        send_from_address, subject=subject,
+                        subtype='plain', charset=encoding,
+                        debug=True, From=send_from_address)
+        print result
+    except Exception, message:
+        print "There was a problem during the send of an e-mail for object : %s." % object
+        print "The exception is : %s." % message
+
+    return
