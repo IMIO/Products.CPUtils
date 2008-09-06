@@ -64,6 +64,10 @@ def read_zopeconffile(zodbfilename, lines):
         line = line.strip('\n\t ')
         if line.startswith('%include'):
             otherfilename = line.split()[1]
+            if RSYNCDIR:
+                if otherfilename.startswith('/'):
+                    otherfilename = otherfilename[1:]
+                otherfilename = os.path.join(RSYNCDIR, otherfilename)
             read_zopeconffile(otherfilename, lines)
             continue
         lines.append(line)
