@@ -16,6 +16,7 @@ BACKUP_DIR = '/srv/backups/zope'
 RSYNCDIR = '' # prefix dir containing the copy of the rsync command
 FSTEST = True
 FSREFS = False
+OVW_FS = False # overwrite fs file when restoring if already exist
 
 def verbose(*messages):
     print '>>', ' '.join(messages)
@@ -147,7 +148,7 @@ def restoredb(fs, repozopath, fspath):
     start = datetime.now()
     fsfilename = os.path.join(fspath, fs)
     backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir), os.path.splitext(fs)[0]) 
-    if os.path.exists(fsfilename):
+    if not OVW_FS and os.path.exists(fsfilename):
         error("\tfs file '%s' already exists ! Restoring in backup dir '%s' ..."%(fsfilename, backupdir))
         fsfilename = os.path.join(backupdir, fs)
         #return
