@@ -13,7 +13,7 @@ from datetime import datetime
 
 buildout_inst_type = None #True for buildout, False for manual instance
 BACKUP_DIR = '/srv/backups/zope'
-RSYNCDIR = '' # prefix dir containing the copy of the rsync command
+RSYNCDIR = '/xxx/' # prefix dir containing the copy of the rsync command
 FSTEST = True
 FSREFS = False
 OVW_FS = False # overwrite fs file when restoring if already exist
@@ -244,7 +244,10 @@ try:
     if arg.startswith('#'):
         sys.exit(0)
     instdir, days, user, pwd = arg.split(';')
-    instdir = os.path.join(RSYNCDIR, instdir)
+    if RSYNCDIR:
+        if instdir.startswith('/'):
+            instdir = instdir[1:]
+        instdir = os.path.join(RSYNCDIR, instdir)
     verbose("Start of restoring dbs of %s"%(instdir))
 except IndexError:
     error("No parameter found")
