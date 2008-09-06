@@ -13,7 +13,7 @@ from datetime import datetime
 
 buildout_inst_type = None #True for buildout, False for manual instance
 BACKUP_DIR = '/srv/backups/zope'
-RSYNCDIR = '/xxx/' # prefix dir containing the copy of the rsync command
+RSYNCDIR = '' # prefix dir containing the copy of the rsync command
 FSTEST = True
 FSREFS = False
 OVW_FS = False # overwrite fs file when restoring if already exist
