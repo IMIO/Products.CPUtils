@@ -245,21 +245,14 @@ def main():
         packdb(port,db[0])
         backupdb(db[1], repozopath, fspath)
 
-    #we delete every .old created during packing in the /var directory of the zope instance
-    if buildout_inst_type:
-        dir_path = instdir + '/var/filestorage/'
-    else:
-        dir_path = instdir + '/var/'
-
-    for file in shutil.os.listdir(dir_path):
+    for file in shutil.os.listdir(fspath):
         if file.endswith('.fs.old'):
-            #we do no more delete fs.old to safely backup this file as zodb file
-            shutil.os.unlink(dir_path + file)
-            verbose("\t%s deleted" % (dir_path + file))
+            shutil.os.unlink(fspath + file)
+            verbose("\t%s deleted" % (fspath + file))
         elif file.endswith('.fs.pack'):
-            shutil.os.unlink(dir_path + file)
+            shutil.os.unlink(fspath + file)
             error("! .pack file found : pack not correctly ended")
-            verbose("\t%s deleted" % (dir_path + file))
+            verbose("\t%s deleted" % (fspath + file))
 
 #------------------------------------------------------------------------------
 
