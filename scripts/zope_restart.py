@@ -7,7 +7,7 @@ import shutil
 
 buildout_inst_type = None #True for buildout, False for manual instance
 was_running = True
-backup_serveur = 'root@uvcwbac.all2all.org:/backup/villesetcommunes/files4'
+ROTATE_CONF_FILE = 'logrotate.conf'
 
 def verbose(*messages):
     print '>>', ' '.join(messages)
@@ -58,8 +58,10 @@ def stop_instance(path):
     if cmd_err:
         error("\t\tError when stopping instance : '%s'" % "".join(cmd_err))
     elif cmd_out:
+        cmd_out = ''.join(cmd_out)
         if 'daemon manager not running' in cmd_out:
             was_running = False
+            error('\t\tInstance not running')
         elif 'daemon process stopped' in cmd_out:
             verbose('\t\tWell stopped')
         else:
@@ -69,56 +71,49 @@ def stop_instance(path):
 
 #------------------------------------------------------------------------------
 
-def backup_all_fs(path):
-    """
-        Copy the db files to the backup server. 
-        This need that the instance must be stopped. 
-        => Not efficient with larges fs.
-        fs.old is backuped instead. 
-    """
-    cmd = 'rsync -aHuz --delete --inplace --include="*.fs" -e ssh '
-    cmd += path + '/ ' + backup_serveur + path + '/'
+def start_instance(path):
+    """ Start the instance """
+    if buildout_inst_type:
+        cmd = path + '/bin/instance start'
+    else:
+        cmd = path + '/bin/zopectl start'
 
     verbose("\tRunning command '%s'" % cmd)
     (cmd_out, cmd_err) = runCommand(cmd)
 
     if cmd_err:
-        error("\t\tError when running rsync : '%s'" % "".join(cmd_err))
+        error("\t\tError when starting instance : '%s'" % "".join(cmd_err))
     elif cmd_out:
-#         if 'daemon manager not running' in cmd_out:
-#             was_running = False
-#         elif 'daemon process stopped' in cmd_out:
-#             verbose('\t\tWell stopped')
-#         else:
-        verbose("\t\tOutput when running rsync : '%s'" % "".join(cmd_out))
+        cmd_out = ''.join(cmd_out)
+        if 'daemon process started' in cmd_out:
+            verbose('\t\tWell started')
+        else:
+            verbose("\t\tOutput when starting instance : '%s'" % "".join(cmd_out))
     else:
         error("\t\tNo output for command : '%s'" % cmd)
 
 #------------------------------------------------------------------------------
 
-def backup_new_fs(path):
+def rotate_logs(path):
     """
-        Copy only new db files to the backup server. 
-        Pack will not produce an fs.old file the first transaction days. 
-        We will backup the fs if fs.old doesn't exist. 
-        That's the fact for new db's => little fs => no large time to copy it
+        Rotate logs of the instance
     """
-    cmd = 'rsync -aHuz --delete --inplace --include="*.fs" -e ssh '
-    cmd += path + '/ ' + backup_serveur + path + '/'
+    verbose("\tLog rotation on %s"%path)
+    rotate_conf = os.path.join(path, ROTATE_CONF_FILE)
+    if not os.path.exists(rotate_conf):
+        error("\t\tRotate conf file doesn't exist '%s'"%rotate_conf)
+        return
+#    cmd = '/usr/sbin/logrotate -d ' #debug
+    cmd = '/usr/sbin/logrotate '
+    cmd += rotate_conf
 
     verbose("\tRunning command '%s'" % cmd)
-    return
     (cmd_out, cmd_err) = runCommand(cmd)
 
     if cmd_err:
-        error("\t\tError when running rsync : '%s'" % "".join(cmd_err))
+        error("\t\tError when running logrotate : '%s'" % "".join(cmd_err))
     elif cmd_out:
-#         if 'daemon manager not running' in cmd_out:
-#             was_running = False
-#         elif 'daemon process stopped' in cmd_out:
-#             verbose('\t\tWell stopped')
-#         else:
-        verbose("\t\tOutput when running rsync : '%s'" % "".join(cmd_out))
+        verbose("\t\tOutput when running logrotate : '%s'" % "".join(cmd_out))
     else:
         error("\t\tNo output for command : '%s'" % cmd)
 
@@ -143,16 +138,13 @@ def main():
         sys.exit(1)
 
     # 1. Stop the instance if running
-    #stop_instance(tmp)
+    stop_instance(tmp)
 
-    # 2. Copy all the fs to the backup server
-    #backup_all_fs(tmp)
-    # 2. Copy only new fs to the backup server
-    backup_new_fs(tmp)
+    # 2. Rotate the logs of the instance
+    rotate_logs(tmp)
 
-    # 3. Run logrotate on instance logs
-
-    # 4. Restart the instance if it was running
+    # 3. Restart the instance if it was running
+    start_instance(tmp)
 
 #------------------------------------------------------------------------------
 
