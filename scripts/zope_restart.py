@@ -12,7 +12,8 @@ ROTATE_CONF_FILE = 'logrotate.conf'
 def verbose(*messages):
     print '>>', ' '.join(messages)
 def error(*messages):
-    print >>sys.stderr, '!!', (' '.join(messages))
+#    print >>sys.stderr, '!!', (' '.join(messages))
+    print '!!', (' '.join(messages))
 
 #------------------------------------------------------------------------------
 
@@ -58,8 +59,8 @@ def stop_instance(path):
     if cmd_err:
         error("\t\tError when stopping instance : '%s'" % "".join(cmd_err))
     elif cmd_out:
-        cmd_out = ''.join(cmd_out)
-        if 'daemon manager not running' in cmd_out:
+        cmd_out = (''.join(cmd_out)).strip('\n ')
+        if 'daemon process not running' in cmd_out or 'daemon manager not running' in cmd_out:
             was_running = False
             error('\t\tInstance not running')
         elif 'daemon process stopped' in cmd_out:
@@ -73,6 +74,8 @@ def stop_instance(path):
 
 def start_instance(path):
     """ Start the instance """
+    if not was_running:
+        return
     if buildout_inst_type:
         cmd = path + '/bin/instance start'
     else:
@@ -84,9 +87,9 @@ def start_instance(path):
     if cmd_err:
         error("\t\tError when starting instance : '%s'" % "".join(cmd_err))
     elif cmd_out:
-        cmd_out = ''.join(cmd_out)
+        cmd_out = (''.join(cmd_out)).strip('\n ')
         if 'daemon process started' in cmd_out:
-            verbose('\t\tWell started')
+            verbose('\t\tWell started : %s'%cmd_out)
         else:
             verbose("\t\tOutput when starting instance : '%s'" % "".join(cmd_out))
     else:
@@ -115,7 +118,8 @@ def rotate_logs(path):
     elif cmd_out:
         verbose("\t\tOutput when running logrotate : '%s'" % "".join(cmd_out))
     else:
-        error("\t\tNo output for command : '%s'" % cmd)
+        pass
+        #error("\t\tNo output for command : '%s'" % cmd)
 
 #------------------------------------------------------------------------------
 

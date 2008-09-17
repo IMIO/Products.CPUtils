@@ -20,7 +20,8 @@ BACKUP_DIR = '/srv/backups/zope'
 def verbose(*messages):
     print '>>', ' '.join(messages)
 def error(*messages):
-    print >>sys.stderr, '!!', (' '.join(messages))
+#    print >>sys.stderr, '!!', (' '.join(messages))
+    print '!!', (' '.join(messages))
 
 #------------------------------------------------------------------------------
 

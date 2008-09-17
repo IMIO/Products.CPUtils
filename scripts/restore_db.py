@@ -21,7 +21,8 @@ OVW_FS = False # overwrite fs file when restoring if already exist
 def verbose(*messages):
     print '>>', ' '.join(messages)
 def error(*messages):
-    print >>sys.stderr, '!!', (' '.join(messages))
+#    print >>sys.stderr, '!!', (' '.join(messages))
+    print '!!', (' '.join(messages))
 
 #------------------------------------------------------------------------------
 
