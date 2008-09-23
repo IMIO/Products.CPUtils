@@ -182,6 +182,8 @@ def backupdb(fs, repozopath, fspath):
     repozofilename = os.path.join(repozopath, 'bin', 'repozo.py')
     pythonpath = os.path.join(repozopath, 'lib', 'python')
     backupcmd = "env PYTHONPATH=%s %s -Bv "%(pythonpath, repozofilename)
+    if options.fullbackup:
+        backupcmd += '-F '
     # -B / -R : backup or recover
     # -r backupdir
     # -F : full backup
@@ -191,7 +193,11 @@ def backupdb(fs, repozopath, fspath):
 #        backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir))
 #        if not os.path.exists(backupdir):
 #            os.mkdir(backupdir)
-    backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir), os.path.splitext(fs)[0]) 
+    backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir), os.path.splitext(fs)[0])
+    if os.path.exists(backupdir) and options.fullbackup:
+        for file in shutil.os.listdir(backupdir):
+            shutil.os.unlink(os.path.join(backupdir, file))
+            verbose("\t%s deleted because we do a full backup" % (os.path.join(backupdir, file)))
     if not os.path.exists(backupdir):
         os.makedirs(backupdir)
     verbose("\tBackup of '%s' with script '%s'" % (fsfilename, repozofilename))    
@@ -258,18 +264,26 @@ def main():
 #------------------------------------------------------------------------------
 
 try:
-    arg = sys.argv[1]
-    if arg.startswith('#'):
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option("-i", "--infos", dest="infos",
+                  default=None,
+                  help="infos about instance formatted like: "
+                       "\"instance_path;transactions_days_number;admin_user;admin_password\"")
+    parser.add_option("-F", "--full", dest="fullbackup",
+                  help="do a full backup, not an incremental one",
+                  default=False, action="store_true")
+    (options, args) = parser.parse_args()
+    if options.infos.startswith('#'):
         sys.exit(0)
-    instdir, days, user, pwd = arg.split(';')
-    verbose("Start of packing, backuping %s, days=%s"%(instdir, days))
-except IndexError:
-    error("No parameter found")
-    sys.exit(1)
+    instdir, days, user, pwd = options.infos.split(';')
 except ValueError:
-    error("No enough parameters")
+    error("Problem in parameters")
+    parser.print_help()
     sys.exit(1)
 
 if __name__ == '__main__':
+    verbose("Start of packing, backuping %s, days=%s, full_backup=%s"%(instdir, days, options.fullbackup))
+#    sys.exit(0)
     main()
     verbose("End of packing, backuping %s"%(instdir))
