@@ -34,12 +34,13 @@ def object_info(self):
     from Products.CMFCore.WorkflowCore import WorkflowException
     try:
         purl = getToolByName(self, 'portal_url')
+        wtool = getToolByName(self, 'portal_workflow')
+        putils = getToolByName(self, "plone_utils")
 #        out.append("portal path='%s'" % purl.getPortalPath())
         out.append("current object path='/%s'" % '/'.join(purl.getRelativeContentPath(self)))
         out.append("current object id='%s'" % self.getId())
         out.append("current object portal type/class='%s'/'%s'" % (self.getPortalTypeName(),self.meta_type))
-        out.append("folderish='%s'" % self.isPrincipiaFolderish)
-        wtool = getToolByName(self, 'portal_workflow')
+        out.append("is folderish='%s'" % self.isPrincipiaFolderish)
         try:
             workflows = ';'.join([wfw.getId() for wfw in wtool.getWorkflowsFor(self)])
             state = wtool.getInfoFor(self, 'review_state')
@@ -48,9 +49,26 @@ def object_info(self):
             workflows = '-'
             state = '-'
             transitions = '-'
-        out.append("workflows='%s'" % workflows)
-        out.append("state='%s'" % state)
-        out.append("transitions='%s'" % transitions)
+        out.append("\nAbout workflows:")
+        out.append("> workflows='%s'" % workflows)
+        out.append("> state='%s'" % state)
+        out.append("> transitions='%s'" % transitions)
+        out.append("\nAbout local roles:")
+        out.append("> acquisition set='%s'"%putils.isLocalRoleAcquired(self))
+        localroles = self.get_local_roles()
+        if len(localroles):
+            out.append('> local roles :')
+        else:
+            out.append('> local roles : Nothing defined !')
+        for principalId, lr in localroles:
+            out.append("\t'%s' has roles '%s'"%(principalId, ';'.join(lr)))
+        inhlocalroles = putils.getInheritedLocalRoles(self)
+        if len(inhlocalroles):
+            out.append('> inherited local roles :')
+        else:
+            out.append('> inherited local roles : Nothing defined !')
+        for principalId, lr, pType, pId in inhlocalroles:
+            out.append("\t%s '%s' has roles '%s'"%(pType, principalId, ';'.join(lr)))
     except Exception, msg:
         out.append("! EXCEPTION !:%s"%msg)
     return '\n'.join(out)
