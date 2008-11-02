@@ -41,6 +41,7 @@ def object_info(self):
         out.append("current object id='%s'" % self.getId())
         out.append("current object portal type/class='%s'/'%s'" % (self.getPortalTypeName(),self.meta_type))
         out.append("is folderish='%s'" % self.isPrincipiaFolderish)
+        out.append("creator='%s'" % self.Creator())
         try:
             workflows = ';'.join([wfw.getId() for wfw in wtool.getWorkflowsFor(self)])
             state = wtool.getInfoFor(self, 'review_state')
