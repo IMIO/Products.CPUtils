@@ -39,7 +39,7 @@ def install(self, reinstall=False):
     portal = getToolByName(self, 'portal_url').getPortalObject()
     #Add of some external methods
     # pack_db method must not be added here
-    for method in ('object_info', ):
+    for method in ('object_info', 'audit_catalog'):
         method_name = 'cputils_'+method
         if not hasattr(portal.aq_inner.aq_explicit, method_name):
             logger.info("REALLY Adding external method '%s'" % method_name)
@@ -52,7 +52,7 @@ def uninstall(self, reinstall=False):
     """
     portal = getToolByName(self, 'portal_url').getPortalObject()
     #remove the external methods
-    for method in ('object_info', ):
+    for method in ('object_info', 'audit_catalog'):
         method_name = 'cputils_'+method
         try:
             portal.manage_delObjects(method_name)
