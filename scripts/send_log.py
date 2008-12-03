@@ -20,7 +20,7 @@ logfilename = '/var/log/cron_scripts.log'
 hostname = 'mydomain.be'
 today = datetime.date.today().strftime("%Y-%m-%d")
 yesterday = (datetime.date.today()-datetime.timedelta(1)).strftime("%Y-%m-%d")
-header = (  'To: sge@uvcw.be', 
+header = (  'To: server@communesplone.be', 
             'From: root@%s'%hostname,
             'Subject: %s cron_scripts.log from %s'%(today,hostname) )
 bodylines = []
