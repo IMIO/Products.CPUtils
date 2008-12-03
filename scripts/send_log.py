@@ -56,7 +56,6 @@ def read_log_file(filename, lines):
 
 #------------------------------------------------------------------------------
 
-verbose("Start of send_log.py")
 verbose("Searching in log between %s and %s"%(yesterday, today))
 
 read_log_file(logfilename, bodylines)
