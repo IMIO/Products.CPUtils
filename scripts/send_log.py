@@ -23,7 +23,7 @@ yesterday = (datetime.date.today()-datetime.timedelta(1)).strftime("%Y-%m-%d")
 header = (  'To: server@communesplone.be', 
             'From: root@%s'%hostname,
             'Subject: %s cron_scripts.log from %s'%(today,hostname) )
-bodylines = []
+bodylines = ['']
 
 #------------------------------------------------------------------------------
 
