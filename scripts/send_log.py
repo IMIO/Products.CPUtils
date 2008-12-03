@@ -17,12 +17,13 @@ def error(*messages):
 
 MAIL = "/usr/sbin/sendmail"
 logfilename = '/var/log/cron_scripts.log'
-header = (  'To: sgeulette@gmail.com', 
-            'From: sge@ub8.be',
-            'Subject: My Test email' )
-bodylines = []
+hostname = 'mydomain.be'
 today = datetime.date.today().strftime("%Y-%m-%d")
 yesterday = (datetime.date.today()-datetime.timedelta(1)).strftime("%Y-%m-%d")
+header = (  'To: sge@uvcw.be', 
+            'From: root@%s'%hostname,
+            'Subject: %s cron_scripts.log from %s'%(today,hostname) )
+bodylines = []
 
 #------------------------------------------------------------------------------
 
