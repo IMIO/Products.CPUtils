@@ -69,9 +69,10 @@ def notifyConvMembersByMail(self, state_change, **kw):
         i = i + 1
         creator = comment.Creator
         user = mt.getMemberById(creator)
-        email = user.getProperty('email')
-        if email not in emails:
-            emails.append(email)
+        if user is not None:
+            email = user.getProperty('email')
+            if email not in emails:
+                emails.append(email)
 
     #we remove the e-mail of the current comment creator as it is not necessary for him to be warned
     creator = object.Creator()
