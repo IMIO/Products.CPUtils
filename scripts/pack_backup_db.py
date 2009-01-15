@@ -133,13 +133,17 @@ def read_zopectlfile(zopectlfilename):
     except IOError:
         error("! Cannot open %s file" % zopectlfilename)
         return
+    zopepath = ''
+    pythonfile = ''
     for line in zfile.readlines():
         line = line.strip('\n\t ')
         if line.startswith('ZOPE_HOME'):
             zopepath = line.split('=')[1]
             zopepath = zopepath.strip('"\' ')
-            return zopepath
-    return ''
+        elif line.startswith('PYTHON'):
+            pythonfile = line.split('=')[1]
+            pythonfile = zopepath.strip('"\' ')
+    return(zopepath, pythonfile)
 
 #------------------------------------------------------------------------------
 
@@ -177,15 +181,15 @@ def packdb(port, db):
 
 #------------------------------------------------------------------------------
 
-def backupdb(fs, zopepath, fspath):
+def backupdb(fs, zopepath, fspath, pythonfile):
     """ call the repozo script to backup file """
     repozofilename = os.path.join(zopepath, 'bin', 'repozo.py')
     pythonpath = os.path.join(zopepath, 'lib', 'python')
     if not os.path.exists(repozofilename):
         repozofilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'repozo.py')
     elif not os.path.exists(repozofilename):
-        repozofilename = os.path.join(pythonpath, 'zodb', 'scripts', 'repozo.py')
-    backupcmd = "env PYTHONPATH=%s %s -Bv "%(pythonpath, repozofilename)
+        repozofilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'repozo.py')
+    backupcmd = "env PYTHONPATH=%s %s %s -Bv "%(pythonpath, pythonfile, repozofilename)
     if options.fullbackup:
         backupcmd += '-F '
     # -B / -R : backup or recover
@@ -248,13 +252,13 @@ def main():
 
     # Getting some informations in config file
     (port, dbs) = treat_zopeconflines(zodbfilename)
-    zopepath = read_zopectlfile(zopectlfilename)
+    (zopepath, pythonfile) = read_zopectlfile(zopectlfilename)
     #verbose("repozo path='%s'"%zopepath)
 
     # Treating each db
     for db in dbs:
         packdb(port,db[0])
-        backupdb(db[1], zopepath, fspath)
+        backupdb(db[1], zopepath, fspath, pythonfile)
 
     for file in shutil.os.listdir(fspath):
         if file.endswith('.fs.old'):
