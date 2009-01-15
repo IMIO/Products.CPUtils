@@ -140,9 +140,9 @@ def read_zopectlfile(zopectlfilename):
         if line.startswith('ZOPE_HOME'):
             zopepath = line.split('=')[1]
             zopepath = zopepath.strip('"\' ')
-        elif line.startswith('PYTHON'):
+        elif line.startswith('PYTHON='):
             pythonfile = line.split('=')[1]
-            pythonfile = zopepath.strip('"\' ')
+            pythonfile = pythonfile.strip('"\' ')
     return(zopepath, pythonfile)
 
 #------------------------------------------------------------------------------
