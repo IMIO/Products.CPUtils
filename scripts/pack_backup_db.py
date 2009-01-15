@@ -177,10 +177,14 @@ def packdb(port, db):
 
 #------------------------------------------------------------------------------
 
-def backupdb(fs, repozopath, fspath):
+def backupdb(fs, zopepath, fspath):
     """ call the repozo script to backup file """
-    repozofilename = os.path.join(repozopath, 'bin', 'repozo.py')
-    pythonpath = os.path.join(repozopath, 'lib', 'python')
+    repozofilename = os.path.join(zopepath, 'bin', 'repozo.py')
+    pythonpath = os.path.join(zopepath, 'lib', 'python')
+    if not os.path.exists(repozofilename):
+        repozofilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'repozo.py')
+    elif not os.path.exists(repozofilename):
+        repozofilename = os.path.join(pythonpath, 'zodb', 'scripts', 'repozo.py')
     backupcmd = "env PYTHONPATH=%s %s -Bv "%(pythonpath, repozofilename)
     if options.fullbackup:
         backupcmd += '-F '
@@ -244,13 +248,13 @@ def main():
 
     # Getting some informations in config file
     (port, dbs) = treat_zopeconflines(zodbfilename)
-    repozopath = read_zopectlfile(zopectlfilename)
-    #verbose("repozo path='%s'"%repozopath)
+    zopepath = read_zopectlfile(zopectlfilename)
+    #verbose("repozo path='%s'"%zopepath)
 
     # Treating each db
     for db in dbs:
         packdb(port,db[0])
-        backupdb(db[1], repozopath, fspath)
+        backupdb(db[1], zopepath, fspath)
 
     for file in shutil.os.listdir(fspath):
         if file.endswith('.fs.old'):
