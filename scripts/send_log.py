@@ -6,6 +6,7 @@
 
 import os
 import datetime
+import sys
 
 def verbose(*messages):
     print '>>', ' '.join(messages)
@@ -59,6 +60,16 @@ def read_log_file(filename, lines):
 verbose("Searching in log between %s and %s"%(yesterday, today))
 
 read_log_file(logfilename, bodylines)
+# when logrotate is run, the logfile is cleared and 
+# renamed in .1 (with 'delaycompress' option for logrotate)
+# we open the .1 file to get those lines
+if len(bodylines) < 10 and os.path.exists(logfilename+'.1'):
+    rotatedlines = ['']
+    read_log_file(logfilename+'.1', rotatedlines)
+    bodylines[0:0] = rotatedlines
+
+#print '\n'.join(bodylines)
+#sys.exit(0)
 
 # open a pipe to the mail program and
 # write the data to the pipe
