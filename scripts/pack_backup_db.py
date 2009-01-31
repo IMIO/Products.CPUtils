@@ -15,6 +15,7 @@ method = 'cputils_pack_db'
 module = 'CPUtils.utils'
 function = 'pack_db'
 buildout_inst_type = None #True for buildout, False for manual instance
+zeo_type = False #True for zeo
 BACKUP_DIR = '/srv/backups/zope'
 
 def verbose(*messages):
@@ -85,7 +86,31 @@ def treat_zopeconflines(zodbfilename):
     """
     lines = []
     read_zopeconffile(zodbfilename, lines)
-
+    zeo_fs = {}
+    if zeo_type:
+        zeoconffile = os.path.join(instdir, 'parts', 'zeo', 'etc', 'zeo.conf')
+        lines2 = []
+        read_zopeconffile(zeoconffile, lines2)
+        fsflag = False
+        fsnb = 0
+        for line in lines2:
+            if line.startswith('<filestorage '):
+                fsflag = True
+                fsnb = line.split()[1].strip(' >')
+                #verbose("fsnb '%s'"%fsnb)
+                continue
+            if fsflag and line.startswith('path '):
+                fsflag = False
+                fs = line.split()[1]
+                fs = os.path.basename(fs)
+                #verbose("fs '%s'"%fs)
+                if zeo_fs.has_key(fsnb):
+                    error("Filestorage number '%s' already found"%fsnb)
+                else:
+                    zeo_fs[fsnb] = fs
+                fsflag = False
+                fsnb = 0
+                continue
     port = ''
     httpflag = False
     fsflag = False
@@ -107,10 +132,18 @@ def treat_zopeconflines(zodbfilename):
             dbname = dbname.rstrip('>')
             if dbname == 'temporary':
                 dbname = ''
-        if line.startswith('<filestorage>'):
+        if line.startswith('storage '): # ZEO
+            fsnb = line.split()[1]
+            if zeo_fs.has_key(fsnb):
+                dbs.append([dbname, zeo_fs[fsnb]])
+            else:
+                error("Filestorage number '%s' not found in zeo.conf ?"%fsnb)
+            dbname = ''
+            continue
+        if line.startswith('<filestorage>'): # NOT ZEO
             fsflag = True
             continue
-        if fsflag and line.startswith('path'):
+        if fsflag and line.startswith('path'): # NOT ZEO
             fsflag = False
             fs = line.split()[1]
             fs = os.path.basename(fs)
@@ -186,6 +219,8 @@ def backupdb(fs, zopepath, fspath, pythonfile):
     repozofilename = os.path.join(zopepath, 'bin', 'repozo.py')
     pythonpath = os.path.join(zopepath, 'lib', 'python')
     if not os.path.exists(repozofilename):
+        repozofilename = os.path.join(instdir, 'bin', 'repozo')
+    elif not os.path.exists(repozofilename):
         repozofilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'repozo.py')
     elif not os.path.exists(repozofilename):
         repozofilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'repozo.py')
@@ -224,7 +259,8 @@ def backupdb(fs, zopepath, fspath, pythonfile):
 #------------------------------------------------------------------------------
 
 def main():
-    global buildout_inst_type
+    global buildout_inst_type, zeo_type
+    instance_section = 'instance'
 
     tmp = instdir
     if tmp.endswith('/'):
@@ -242,8 +278,13 @@ def main():
         sys.exit(1)
 
     if buildout_inst_type:
-        zodbfilename = instdir + '/parts/instance/etc/zope.conf'
-        zopectlfilename = instdir + '/parts/instance/bin/zopectl'
+        if os.path.exists(os.path.join(tmp, 'bin', 'zeo')):
+            zeo_type = True
+            verbose("\tInstance is a zeo !")
+        if os.path.exists(os.path.join(tmp, 'bin', 'instance1')):
+            instance_section = 'instance1'
+        zodbfilename = instdir + '/parts/%s/etc/zope.conf'%instance_section
+        zopectlfilename = instdir + '/parts/%s/bin/zopectl'%instance_section
         fspath = instdir + '/var/filestorage/'
     else:
         zodbfilename = instdir + '/etc/zope.conf'
