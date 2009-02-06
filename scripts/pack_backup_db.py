@@ -259,29 +259,28 @@ def backupdb(fs, zopepath, fspath, pythonfile):
 #------------------------------------------------------------------------------
 
 def main():
-    global buildout_inst_type, zeo_type
+    global buildout_inst_type, zeo_type, instdir
     instance_section = 'instance'
 
-    tmp = instdir
-    if tmp.endswith('/'):
-        tmp = tmp[0:-1]
-    verbose("Working on instance %s" % tmp)
+    if instdir.endswith('/'):
+        instdir = instdir[0:-1]
+    verbose("Working on instance %s" % instdir)
 
-    if os.path.exists(os.path.join(tmp,'parts')):
+    if os.path.exists(os.path.join(instdir,'parts')):
         buildout_inst_type = True
         verbose("\tInstance is a buildout !")
-    elif os.path.exists(os.path.join(tmp,'etc')):
+    elif os.path.exists(os.path.join(instdir,'etc')):
         buildout_inst_type = False
         verbose("\tInstance is a manual installation !")
-    elif not os.path.exists(tmp) or True:
-        error("! Invalid instance path '%s' or instance type not detected"%tmp)
+    elif not os.path.exists(instdir) or True:
+        error("! Invalid instance path '%s' or instance type not detected"%instdir)
         sys.exit(1)
 
     if buildout_inst_type:
-        if os.path.exists(os.path.join(tmp, 'bin', 'zeo')):
+        if os.path.exists(os.path.join(instdir, 'bin', 'zeo')):
             zeo_type = True
             verbose("\tInstance is a zeo !")
-        if os.path.exists(os.path.join(tmp, 'bin', 'instance1')):
+        if os.path.exists(os.path.join(instdir, 'bin', 'instance1')):
             instance_section = 'instance1'
         zodbfilename = instdir + '/parts/%s/etc/zope.conf'%instance_section
         zopectlfilename = instdir + '/parts/%s/bin/zopectl'%instance_section
@@ -296,6 +295,12 @@ def main():
     (zopepath, pythonfile) = read_zopectlfile(zopectlfilename)
     #verbose("repozo path='%s'"%zopepath)
 
+    # We remove the folder containing all instance dbs in case of a full backup
+    # It's necessary to avoid keeping old files to safe disk space
+    if options.fullbackup:
+        backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir))
+        shutil.rmtree(backupdir)
+        verbose("\t%s deleted when full backup" % (backupdir))
     # Treating each db
     for db in dbs:
         packdb(port,db[0])
