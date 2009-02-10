@@ -42,18 +42,34 @@ def object_info(self):
         out.append("current object portal type/class='%s'/'%s'" % (self.getPortalTypeName(),self.meta_type))
         out.append("is folderish='%s'" % self.isPrincipiaFolderish)
         out.append("creator='%s'" % self.Creator())
+        workflow = False
+#        import pdb; pdb.set_trace()
         try:
-            workflows = ';'.join([wfw.getId() for wfw in wtool.getWorkflowsFor(self)])
+            workflows = [wfw.getId() for wfw in wtool.getWorkflowsFor(self)]
             state = wtool.getInfoFor(self, 'review_state')
             transitions = ';'.join([trans['name'] for trans in wtool.getTransitionsFor(self)])
+            workflow = True
         except WorkflowException:
-            workflows = '-'
+            workflows = ['-']
             state = '-'
             transitions = '-'
         out.append("\nAbout workflows:")
-        out.append("> workflows='%s'" % workflows)
+        out.append("> workflows='%s'" % ';'.join(workflows))
         out.append("> state='%s'" % state)
         out.append("> transitions='%s'" % transitions)
+        if workflow:
+            for wfid in workflows:
+                out.append("> Permissions info for state '%s' in workflow '%s'"%(state, wfid))
+                wf = wtool.getWorkflowById(wfid)
+                if hasattr(wf.states, state):
+                    st = getattr(wf.states, state)
+                    permissions = st.getManagedPermissions()
+                    if permissions:
+                        for permission in permissions:
+                            dic = st.getPermissionInfo(permission)
+                            out.append("\t'%s' for '%s', acquired=%s"%(permission,', '.join(dic['roles']),dic['acquired']))
+                    else:
+                        out.append('\tno permissions redefined on this state !')
         out.append("\nAbout local roles:")
         out.append("> acquisition set='%s'"%putils.isLocalRoleAcquired(self))
         localroles = self.get_local_roles()
