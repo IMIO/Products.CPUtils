@@ -6,6 +6,7 @@ import datetime
 import shutil
 
 buildout_inst_type = None #True for buildout, False for manual instance
+zeo_type = False #True for zeo
 was_running = True
 ROTATE_CONF_FILE = 'logrotate.conf'
 
@@ -45,11 +46,14 @@ def runCommand(cmd):
 
 #------------------------------------------------------------------------------
 
-def stop_instance(path):
+def stop_instance(instance_section, path):
     """ Stop the instance """
     global was_running
     if buildout_inst_type:
-        cmd = path + '/bin/instance stop'
+        cmd = ''
+        if zeo_type:
+            cmd = path + '/bin/zeo stop;'
+        cmd += path + '/bin/%s stop'%instance_section
     else:
         cmd = path + '/bin/zopectl stop'
 
@@ -72,12 +76,15 @@ def stop_instance(path):
 
 #------------------------------------------------------------------------------
 
-def start_instance(path):
+def start_instance(instance_section, path):
     """ Start the instance """
     if not was_running:
         return
     if buildout_inst_type:
-        cmd = path + '/bin/instance start'
+        cmd = ''
+        if zeo_type:
+            cmd = path + '/bin/zeo start;'
+        cmd += path + '/bin/%s start'%instance_section
     else:
         cmd = path + '/bin/zopectl start'
 
@@ -124,7 +131,8 @@ def rotate_logs(path):
 #------------------------------------------------------------------------------
 
 def main():
-    global buildout_inst_type
+    global buildout_inst_type, zeo_type
+    instance_section = 'instance'
 
     tmp = instdir
     if tmp.endswith('/'):
@@ -141,18 +149,28 @@ def main():
         error("! Invalid instance path '%s' or instance type not detected"%tmp)
         sys.exit(1)
 
+    if buildout_inst_type:
+        if os.path.exists(os.path.join(tmp, 'bin', 'zeo')):
+            zeo_type = True
+            verbose("\tInstance is a zeo !")
+        if os.path.exists(os.path.join(tmp, 'bin', 'instance1')):
+            instance_section = 'instance1'
+
     if not subcommand:
         # 1. Stop the instance if running
-        stop_instance(tmp)
+        stop_instance(instance_section, tmp)
 
         # 2. Rotate the logs of the instance
         rotate_logs(tmp)
 
         # 3. Restart the instance if it was running
-        start_instance(tmp)
+        start_instance(instance_section, tmp)
     else:
         if buildout_inst_type:
-            cmd = tmp + '/bin/instance %s'%subcommand
+            cmd = ''
+            if zeo_type:
+                cmd = tmp + '/bin/zeo %s;'%subcommand
+            cmd += tmp + '/bin/%s %s'%(instance_section, subcommand)
         else:
             cmd = tmp + '/bin/zopectl %s'%subcommand
 
