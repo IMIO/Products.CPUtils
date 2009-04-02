@@ -141,28 +141,45 @@ def main():
         error("! Invalid instance path '%s' or instance type not detected"%tmp)
         sys.exit(1)
 
-    # 1. Stop the instance if running
-    stop_instance(tmp)
+    if not subcommand:
+        # 1. Stop the instance if running
+        stop_instance(tmp)
 
-    # 2. Rotate the logs of the instance
-    rotate_logs(tmp)
+        # 2. Rotate the logs of the instance
+        rotate_logs(tmp)
 
-    # 3. Restart the instance if it was running
-    start_instance(tmp)
+        # 3. Restart the instance if it was running
+        start_instance(tmp)
+    else:
+        if buildout_inst_type:
+            cmd = tmp + '/bin/instance %s'%subcommand
+        else:
+            cmd = tmp + '/bin/zopectl %s'%subcommand
+
+        verbose("\tRunning command '%s'" % cmd)
+        (cmd_out, cmd_err) = runCommand(cmd)
+        verbose("\toutput: '%s'" % "".join(cmd_out))
 
 #------------------------------------------------------------------------------
 
 try:
-    arg = sys.argv[1]
-    if arg.startswith('#'):
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option("-i", "--infos", dest="infos",
+                  default=None,
+                  help="infos about instance formatted like: "
+                       "\"instance_path;transactions_days_number;admin_user;admin_password\"")
+    parser.add_option("-c", "--command", dest="subcommand",
+                  help="subcommand name like: start, stop, restart, status",
+                  default='')
+    (options, args) = parser.parse_args()
+    if options.infos.startswith('#'):
         sys.exit(0)
-    instdir, days, user, pwd = arg.split(';')
-#    print instdir, days, user, pwd
-except IndexError:
-    error("No parameter found")
-    sys.exit(1)
+    instdir, days, user, pwd = options.infos.split(';')
+    subcommand = options.subcommand
 except ValueError:
-    error("No enough parameters")
+    error("Problem in parameters")
+    parser.print_help()
     sys.exit(1)
 
 if __name__ == '__main__':
