@@ -191,6 +191,53 @@ def delete_users(self, delete=False):
 
 ###############################################################################
 
+def change_user_properties(self, kw=''):
+    """
+        change user properties with parameter like 
+        kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097
+    """
+    def return_properties(dic, member):
+        ret = ''
+        for key in dic.keys():
+            if member.hasProperty(key):
+                ret += "%s='%s',"%(key, member.getProperty(key))
+            else:
+                ret += "%s not found,"%(key)
+        return ret
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    out = ['<h1>all Users</h1>']
+    if not kw:
+        out.append("available properties:%s<br />"%portal.portal_memberdata.propertyItems())
+
+    out.append("parameter=%s"%kw)
+    dic = {}
+    for tup in kw.split('|'):
+        keyvalue = tup.split(':')
+        if len(keyvalue)==2:
+            (key, value) = keyvalue
+            if value == 'True':
+                value = True
+            elif value == 'False':
+                value = False
+            dic[key] = value
+        else:
+            out.append("problem in param '%s'"%tup)
+    out.append("build dictionary=%s<br/>"%dic)
+    for u in portal.acl_users.getUserIds():
+        member = portal.portal_membership.getMemberById(u)
+        out.append("USER:'%s'"%(u))
+        #out.append("->  old properties=%s"%portal.portal_membership.getMemberInfo(memberId=u))
+        #display not all properties
+        out.append("->  old properties: %s"%return_properties(dic, member))
+        if len(dic):
+            member.setMemberProperties(dic)
+            out.append("->  new properties: %s"%return_properties(dic, member))
+    return '<br/>'.join(out)
+
+###############################################################################
+
 
 ###############################################################################
 
