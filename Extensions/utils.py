@@ -6,6 +6,23 @@ def check_role(self, role='Manager', context=None):
 
 ###############################################################################
 
+def install(self):
+    """
+        Install cputils methods where the user is (root of zope?)
+    """
+    from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
+    from AccessControl.SecurityManagement import getSecurityManager
+    user = getSecurityManager().getUser()
+    if not user.has_role('Manager'):
+        return "You must be a zope manager to run this script"
+    for method in ('object_info', 'audit_catalog'):
+        method_name = 'cputils_'+method
+        if not hasattr(self.aq_inner.aq_explicit, method_name):
+            #without aq_explicit, if the id exists at a higher level, it is found !
+            manage_addExternalMethod(self, method_name, '', 'CPUtils.utils', method)
+
+###############################################################################
+
 def pack_db(self, days=0):
     """
         pack a db of the zope instance
@@ -27,8 +44,8 @@ def object_info(self):
     """
         return various information on the current object
     """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
+#    if not check_role(self):
+#        return "You must have a manager role to run this script"
     out = []
     from Products.CMFCore.utils import getToolByName
     from Products.CMFCore.WorkflowCore import WorkflowException
@@ -130,3 +147,53 @@ def audit_catalog(self):
 
     out.append("<br />FIN")
     return '<br />'.join(out)
+
+###############################################################################
+
+def delete_subscribers(self, delete=False):
+    """
+        delete inactive subscribers (maybe robots) of PloneGazette. 
+        script to be run on the subscriber's folder context
+    """
+    ids = []
+    out = ['<h1>Inactive subscribers</h1>']
+    for obj in self.objectValues():
+        if obj.meta_type == 'Subscriber' and not obj.active:
+            out.append(obj.Title())
+            ids.append(obj.getId())
+    if delete:
+        self.manage_delObjects(ids)
+    return '<br />'.join(out)
+
+###############################################################################
+
+def delete_users(self, delete=False):
+    """
+        delete users added by robots. 
+    """
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    out = ['<h1>all Users</h1>']
+    i=0
+    for u in portal.acl_users.getUserIds():
+        i += 1
+    #  if i >100:
+    #    break
+        member = portal.portal_membership.getMemberById(u)
+        email = member.getProperty('email')
+        if email.endswith('.com') and not ( email.endswith('gmail.com') or email.endswith('hotmail.com')) :
+            out.append("<span>%s, %s, deleted</span>"%(u,email))
+            if delete:
+                portal.portal_membership.deleteMembers([u], delete_memberareas=1, delete_localroles=0)
+        else:
+            out.append("<span>%s, %s, kept</span>"%(u,email))
+    return '<br/>'.join(out)
+
+###############################################################################
+
+
+###############################################################################
+
+
+###############################################################################
+
