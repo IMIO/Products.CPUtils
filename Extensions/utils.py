@@ -15,7 +15,7 @@ def install(self):
     user = getSecurityManager().getUser()
     if not user.has_role('Manager'):
         return "You must be a zope manager to run this script"
-    for method in ('object_info', 'audit_catalog'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -191,7 +191,7 @@ def delete_users(self, delete=False):
 
 ###############################################################################
 
-def change_user_properties(self, kw=''):
+def change_user_properties(self, kw='', dochange=''):
     """
         change user properties with parameter like 
         kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097
@@ -205,13 +205,26 @@ def change_user_properties(self, kw=''):
                 ret += "%s not found,"%(key)
         return ret
 
+    def return_all_properties(dic, member):
+        ret = ''
+        for key in dic.keys():
+            if member.hasProperty(key):
+                ret += "%s='%s',"%(key, member.getProperty(key))
+            else:
+                ret += "%s not found,"%(key)
+        return ret
+
     from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject()
-    out = ['<h1>all Users</h1>']
+    out = []
     if not kw:
-        out.append("available properties:%s<br />"%portal.portal_memberdata.propertyItems())
+        #out.append("available properties:%s"%portal.portal_memberdata.propertyItems())
+        out.append("call the script followed by needed parameters:")
+        out.append("-> kw=propertyname1:value1|propertyname2:value2")
+        out.append("-> dochange=1")
+        out.append("by example ...?kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097&dochange=1<br/>")
 
-    out.append("parameter=%s"%kw)
+    out.append("given keyword parameters:%s"%kw)
     dic = {}
     for tup in kw.split('|'):
         keyvalue = tup.split(':')
@@ -222,18 +235,25 @@ def change_user_properties(self, kw=''):
             elif value == 'False':
                 value = False
             dic[key] = value
-        else:
+        elif tup:
             out.append("problem in param '%s'"%tup)
     out.append("build dictionary=%s<br/>"%dic)
+
+    out.append('<h2>all Users</h2>')
+    change_property=False
+    if dochange not in ('', '0', 'False', 'false'):
+        change_property=True
     for u in portal.acl_users.getUserIds():
         member = portal.portal_membership.getMemberById(u)
-        out.append("USER:'%s'"%(u))
+        out.append("<br/>USER:'%s'"%(u))
         #out.append("->  old properties=%s"%portal.portal_membership.getMemberInfo(memberId=u))
         #display not all properties
-        out.append("->  old properties: %s"%return_properties(dic, member))
+        out.append("=>  all properties: %s"%return_all_properties(dict(portal.portal_memberdata.propertyItems()), member))
         if len(dic):
-            member.setMemberProperties(dic)
-            out.append("->  new properties: %s"%return_properties(dic, member))
+            out.append("->  old properties: %s"%return_properties(dic, member))
+            if change_property:
+                member.setMemberProperties(dic)
+                out.append("->  new properties: %s"%return_properties(dic, member))
     return '<br/>'.join(out)
 
 ###############################################################################
