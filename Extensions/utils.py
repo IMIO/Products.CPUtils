@@ -155,6 +155,8 @@ def delete_subscribers(self, delete=False):
         delete inactive subscribers (maybe robots) of PloneGazette. 
         script to be run on the subscriber's folder context
     """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
     ids = []
     out = ['<h1>Inactive subscribers</h1>']
     for obj in self.objectValues():
@@ -172,6 +174,8 @@ def delete_users(self, delete=False):
         delete users added by robots. 
     """
     from Products.CMFCore.utils import getToolByName
+    if not check_role(self):
+        return "You must have a manager role to run this script"
     portal = getToolByName(self, "portal_url").getPortalObject()
     out = ['<h1>all Users</h1>']
     i=0
@@ -205,16 +209,9 @@ def change_user_properties(self, kw='', dochange=''):
                 ret += "%s not found,"%(key)
         return ret
 
-    def return_all_properties(dic, member):
-        ret = ''
-        for key in dic.keys():
-            if member.hasProperty(key):
-                ret += "%s='%s',"%(key, member.getProperty(key))
-            else:
-                ret += "%s not found,"%(key)
-        return ret
-
     from Products.CMFCore.utils import getToolByName
+    if not check_role(self):
+        return "You must have a manager role to run this script"
     portal = getToolByName(self, "portal_url").getPortalObject()
     out = []
     if not kw:
@@ -248,7 +245,7 @@ def change_user_properties(self, kw='', dochange=''):
         out.append("<br/>USER:'%s'"%(u))
         #out.append("->  old properties=%s"%portal.portal_membership.getMemberInfo(memberId=u))
         #display not all properties
-        out.append("=>  all properties: %s"%return_all_properties(dict(portal.portal_memberdata.propertyItems()), member))
+        out.append("=>  all properties: %s"%return_properties(dict(portal.portal_memberdata.propertyItems()), member))
         if len(dic):
             out.append("->  old properties: %s"%return_properties(dic, member))
             if change_property:
