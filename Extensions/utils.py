@@ -173,9 +173,9 @@ def delete_users(self, delete=False):
     """
         delete users added by robots. 
     """
-    from Products.CMFCore.utils import getToolByName
     if not check_role(self):
         return "You must have a manager role to run this script"
+    from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject()
     out = ['<h1>all Users</h1>']
     i=0
@@ -200,6 +200,8 @@ def change_user_properties(self, kw='', dochange=''):
         change user properties with parameter like 
         kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097
     """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
     def return_properties(dic, member):
         ret = ''
         for key in dic.keys():
@@ -210,8 +212,6 @@ def change_user_properties(self, kw='', dochange=''):
         return ret
 
     from Products.CMFCore.utils import getToolByName
-    if not check_role(self):
-        return "You must have a manager role to run this script"
     portal = getToolByName(self, "portal_url").getPortalObject()
     out = []
     if not kw:
