@@ -30,8 +30,8 @@ def pack_db(self, days=0):
     from Products.CMFCore.utils import getToolByName
     from AccessControl.SecurityManagement import getSecurityManager
     user = getSecurityManager().getUser()
-    if not user.has_role('Manager'):
-        return "You must be a zope manager to run this script"
+#    if not user.has_role('Manager'):
+#        return "You must be a zope manager to run this script"
     import time
     t=time.time()-days*86400
     db=self._p_jar.db()
