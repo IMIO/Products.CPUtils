@@ -3,9 +3,6 @@
 # File: CPUtils.py
 #
 # Copyright (c) 2008 by CommunesPlone
-# Generator: ArchGenXML Version 1.5.2
-#            http://plone.org/products/archgenxml
-#
 # GNU General Public License (GPL)
 #
 # This program is free software; you can redistribute it and/or
@@ -27,25 +24,9 @@
 __author__ = """Stephan GEULETTE <stephan.geulette@uvcw.be>"""
 __docformat__ = 'plaintext'
 
-
-# There are three ways to inject custom code here:
-#
-#   - To set global configuration variables, create a file AppConfig.py.
-#       This will be imported in config.py, which in turn is imported in
-#       each generated class and in this file.
-#   - To perform custom initialisation after types have been registered,
-#       use the protected code section at the bottom of initialize().
-#   - To register a customisation policy, create a file CustomizationPolicy.py
-#       with a method register(context) to register the policy.
-
 import logging
 logger = logging.getLogger('CPUtils')
 logger.info('Installing Product')
-
-try:
-    import CustomizationPolicy
-except ImportError:
-    CustomizationPolicy = None
 
 import os, os.path
 from Globals import package_home
@@ -67,35 +48,111 @@ DirectoryView.registerDirectory('skins', product_globals)
 DirectoryView.registerDirectory('skins/CPUtils',
                                     product_globals)
 
-##code-section custom-init-head #fill in your manual code here
-##/code-section custom-init-head
+
+from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
+from Products.CMFCore.utils import getToolByName
+
+def getPloneVersion():
+    pv = ''
+    import Globals
+    cfg = Globals.App.ApplicationManager.getConfiguration()
+    for productdir in cfg.products:
+        plonedir = os.path.join(productdir,'CMFPlone')
+        if os.path.exists(plonedir):
+            for name in ('version.txt', 'VERSION.txt', 'VERSION.TXT'):
+                versionfile = os.path.join(plonedir,name)
+                if os.path.exists(versionfile):
+                    file=open(versionfile, 'r')
+                    data=file.readline()
+                    file.close()
+                    pv = data.strip()
+                    return pv
+    return pv
+
+def getQIFilteringInformation(self):
+    from AccessControl.SecurityManagement import getSecurityManager
+    doFiltering = True
+    hiddenProducts = ['def']
+    shownProducts = ['def']
+    user = getSecurityManager().getUser()
+    portal = getToolByName(self, 'portal_url').getPortalObject()
+    if user.__module__ == 'Products.PluggableAuthService.PropertiedUser':
+        doFiltering = False
+    if hasattr(portal, 'hiddenProducts'):
+        hp = list(portal.hiddenProducts)
+        hiddenProducts += [p.strip() for p in hp]
+    if hasattr(portal, 'shownProducts'):
+        sp = list(portal.shownProducts)
+        shownProducts += [p.strip() for p in sp]
+    return doFiltering, hiddenProducts, shownProducts
+
+def listInstallableProducts25(self,skipInstalled=1):
+    """List candidate CMF products for
+    installation -> list of dicts with keys:(id,hasError,status)
+    """
+    try:
+        from zpi.zope import not_installed, hot_plug
+        #print 'Packman support(hotplug) installed'
+    except ImportError:
+        def not_installed(s): return []
+
+    # reset the list of broken products
+    self.errors = {}
+    pids = self.Control_Panel.Products.objectIds() + not_installed(self)
+    pids = [pid for pid in pids if self.isProductInstallable(pid)]
+
+    if skipInstalled:
+        installed=[p['id'] for p in self.listInstalledProducts(showHidden=1)]
+        pids=[r for r in pids if r not in installed]
+
+    from Products.CPUtils.__init__ import getQIFilteringInformation
+    (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
+
+    res=[]
+    for r in pids:
+        p=self._getOb(r,None)
+        if doFiltering and r in hiddenProducts and r not in shownProducts:
+            continue
+        if p:
+            res.append({'id':r, 'status':p.getStatus(),
+                        'hasError':p.hasError()})
+        else:
+            res.append({'id':r, 'status':'new', 'hasError':0})
+    res.sort(lambda x,y: cmp(x.get('id',None),y.get('id',None)))
+    return res
+
+def listInstalledProducts25(self, showHidden=0):
+    """Returns a list of products that are installed -> list of
+    dicts with keys:(id, hasError, status, isLocked, isHidden,
+    installedVersion)
+    """
+    pids = [o.id for o in self.objectValues()
+            if o.isInstalled() and (o.isVisible() or showHidden)]
+
+    from Products.CPUtils.__init__ import getQIFilteringInformation
+    (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
+
+    res=[]
+    for r in pids:
+        p = self._getOb(r,None)
+        if doFiltering and r in hiddenProducts and r not in shownProducts:
+            continue
+        res.append({'id':r, 'status':p.getStatus(),
+                    'hasError':p.hasError(),
+                    'isLocked':p.isLocked(),
+                    'isHidden':p.isHidden(),
+                    'installedVersion':p.getInstalledVersion()})
+    res.sort(lambda x,y: cmp(x.get('id',None),y.get('id',None)))
+    return res
 
 
-def initialize(context):
-    ##code-section custom-init-top #fill in your manual code here
-    ##/code-section custom-init-top
-
-    # imports packages and types for registration
-
-
-    # Initialize portal content
-    content_types, constructors, ftis = process_types(
-        listTypes(PROJECTNAME),
-        PROJECTNAME)
-
-    cmfutils.ContentInit(
-        PROJECTNAME + ' Content',
-        content_types      = content_types,
-        permission         = DEFAULT_ADD_CONTENT_PERMISSION,
-        extra_constructors = constructors,
-        fti                = ftis,
-        ).initialize(context)
-
-    # Apply customization-policy, if theres any
-    if CustomizationPolicy and hasattr(CustomizationPolicy, 'register'):
-        CustomizationPolicy.register(context)
-        print 'Customization policy for CPUtils installed'
-
-    ##code-section custom-init-bottom #fill in your manual code here
-    ##/code-section custom-init-bottom
-
+#def initialize(context):
+logger.info("MONKEY PATCHING QuickInstallerTool!")
+#import pdb; pdb.set_trace()
+plone_version = getPloneVersion()
+if not plone_version:
+    logger.error('CMFPlone version NOT FOUND: MONKEY PATCH NOT APPLIED')
+elif plone_version.startswith('2.5'):
+    QuickInstallerTool.listInstallableProducts = listInstallableProducts25
+    QuickInstallerTool.listInstalledProducts = listInstalledProducts25
+    logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%plone_version)
