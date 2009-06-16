@@ -13,7 +13,7 @@ def install(self):
     from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
     from AccessControl.SecurityManagement import getSecurityManager
     user = getSecurityManager().getUser()
-    if not user.has_role('Manager'):
+    if user.__module__ != 'Products.PluggableAuthService.PropertiedUser':
         return "You must be a zope manager to run this script"
     for method in ('object_info', 'audit_catalog', 'change_user_properties'):
         method_name = 'cputils_'+method
@@ -28,10 +28,8 @@ def pack_db(self, days=0):
         pack a db of the zope instance
     """
     from Products.CMFCore.utils import getToolByName
-    from AccessControl.SecurityManagement import getSecurityManager
-    user = getSecurityManager().getUser()
-#    if not user.has_role('Manager'):
-#        return "You must be a zope manager to run this script"
+    if not check_role(self):
+        return "You must have a manager role to run this script"
     import time
     t=time.time()-days*86400
     db=self._p_jar.db()
