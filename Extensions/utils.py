@@ -4,6 +4,13 @@ def check_role(self, role='Manager', context=None):
     pms = getToolByName(self, 'portal_membership')
     return pms.getAuthenticatedMember().has_role(role, context)
 
+def check_zope_admin():
+    from AccessControl.SecurityManagement import getSecurityManager
+    user = getSecurityManager().getUser()
+    if user.__module__ == 'Products.PluggableAuthService.PropertiedUser':
+        return True
+    return False
+
 ###############################################################################
 
 def install(self):
@@ -11,9 +18,7 @@ def install(self):
         Install cputils methods where the user is (root of zope?)
     """
     from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
-    from AccessControl.SecurityManagement import getSecurityManager
-    user = getSecurityManager().getUser()
-    if user.__module__ != 'Products.PluggableAuthService.PropertiedUser':
+    if not check_zope_admin():
         return "You must be a zope manager to run this script"
     for method in ('object_info', 'audit_catalog', 'change_user_properties'):
         method_name = 'cputils_'+method
