@@ -33,8 +33,9 @@ def pack_db(self, days=0):
         pack a db of the zope instance
     """
     from Products.CMFCore.utils import getToolByName
-    if not check_role(self):
-        return "You must have a manager role to run this script"
+# The user running this via urllib is not manager !!!!
+#    if not check_role(self):
+#        return "You must have a manager role to run this script"
     import time
     t=time.time()-days*86400
     db=self._p_jar.db()
