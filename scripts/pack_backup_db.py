@@ -204,10 +204,13 @@ def packdb(port, db):
 #                            if "/Control_Panel/Database/%s"%db not in ret_html:
 #                                error("Problem during compression of %s"%db)
 #                                log.debug(ret_html) 
+                        verbose("\t%s"%ret_html)
                     except IOError, msg:
                         error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
             except Exception, msg:
                 error("! Cannot open URL %s, aborting : %s" % (url_em, msg))
+        else:
+            verbose("\t%s"%ret_html)
     except IOError, msg:
         error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
     verbose("\t\t-> elapsed time %s"%(datetime.now()-start))

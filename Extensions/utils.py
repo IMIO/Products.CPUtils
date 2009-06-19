@@ -11,6 +11,14 @@ def check_zope_admin():
         return True
     return False
 
+def fileSize(nb):
+    sizeletter = {1:'k', 2:'M', 3:'G', 4:'T'}
+    for x in range(1,4):
+        quot = nb//1024**x
+        if quot < 1024:
+            break
+    return "%.1f%s"%(float(nb)/1024**x,sizeletter[x])
+
 ###############################################################################
 
 def install(self):
@@ -32,15 +40,21 @@ def pack_db(self, days=0):
     """
         pack a db of the zope instance
     """
+    out = []
     from Products.CMFCore.utils import getToolByName
 # The user running this via urllib is not manager !!!!
 #    if not check_role(self):
 #        return "You must have a manager role to run this script"
+#    import pdb; pdb.set_trace()
     import time
     t=time.time()-days*86400
     db=self._p_jar.db()
+    sz_bef = db.getSize()
     t=db.pack(t)
-    return "well packed"
+    sz_aft = db.getSize()
+    out.append("Size %s => %s"%(fileSize(sz_bef),fileSize(sz_aft)))
+    out.append("well packed")
+    return ', '.join(out)
 
 ###############################################################################
 
