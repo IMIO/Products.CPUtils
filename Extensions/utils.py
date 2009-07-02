@@ -273,6 +273,43 @@ def change_user_properties(self, kw='', dochange=''):
 
 ###############################################################################
 
+def ploneboard_correct_modified(self):
+    """
+        This script corrects the modified date of conversations after a migration. 
+        The modified date becomes last modified comment. 
+    """
+    from Products.CMFCore.utils import getToolByName
+    from DateTime.DateTime import DateTime
+
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    portal_url = getToolByName(self, "portal_url")
+    portal = portal_url.getPortalObject()
+
+    kw = {}
+    kw['portal_type'] = ('PloneboardConversation')
+        #kw['review_state'] = ('private',) #'published'
+        #kw['path'] = '/' # '/'.join(context.getPhysicalPath())
+    kw['sort_on'] = 'created'
+        #kw['sort_order'] = 'reverse'
+
+    results = portal.portal_catalog.searchResults(kw)
+    
+    out = []
+    for r in results :
+        conv = r.getObject()
+#        print "%s, %s, %s, %s"%(r.id, conv.Title(), r.created, r.modified)
+        out.append("%s, %s, %s, %s"%(r.id, conv.Title(), r.created, r.modified))
+        last_modification_date = None
+        for com in conv.getComments():
+#            print "\t%s, %s, %s, %s"%(com.getId(), com.Title(), com.CreationDate(), com.ModificationDate())
+            out.append("\t%s, %s, %s, %s"%(com.getId(), com.Title(), com.CreationDate(), com.ModificationDate()))
+            #com.setModificationDate(com.CreationDate())
+            #print "\t%s"%com.ModificationDate()
+            last_modification_date = com.CreationDate()
+        #conv.setModificationDate(last_modification_date)
+    return "\n".join(out)
 
 ###############################################################################
 
