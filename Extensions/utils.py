@@ -297,6 +297,7 @@ def ploneboard_correct_modified(self):
     results = portal.portal_catalog.searchResults(kw)
     
     out = []
+    out.append("%d conversations found"%len(results))
     for r in results :
         conv = r.getObject()
 #        print "%s, %s, %s, %s"%(r.id, conv.Title(), r.created, r.modified)
