@@ -273,7 +273,7 @@ def change_user_properties(self, kw='', dochange=''):
 
 ###############################################################################
 
-def ploneboard_correct_modified(self):
+def ploneboard_correct_modified(self, dochange=''):
     """
         This script corrects the modified date of conversations after a migration. 
         The modified date becomes last modified comment. 
@@ -283,6 +283,12 @@ def ploneboard_correct_modified(self):
 
     if not check_role(self):
         return "You must have a manager role to run this script"
+
+    if not dochange:
+        #out.append("available properties:%s"%portal.portal_memberdata.propertyItems())
+        out.append("To change modification date, call the script with param:")
+        out.append("-> dochange=1")
+        out.append("by example ...?dochange=1<br/>")
 
     portal_url = getToolByName(self, "portal_url")
     portal = portal_url.getPortalObject()
@@ -306,10 +312,15 @@ def ploneboard_correct_modified(self):
         for com in conv.getComments():
 #            print "\t%s, %s, %s, %s"%(com.getId(), com.Title(), com.CreationDate(), com.ModificationDate())
             out.append("\t%s, %s, %s"%(com.getId(), com.Title(), com.CreationDate()))
-            com.setModificationDate(com.CreationDate())
+            if dochange:
+                com.setModificationDate(com.CreationDate())
+                com.reindexObject()
             #print "\t%s"%com.ModificationDate()
             last_modification_date = com.CreationDate()
-        conv.setModificationDate(last_modification_date)
+        out.append('=> new modification date = %s'%last_modification_date)
+        if dochange:
+            conv.setModificationDate(last_modification_date)
+            conv.reindexObject()
     return "\n".join(out)
 
 ###############################################################################
