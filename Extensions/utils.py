@@ -306,7 +306,7 @@ def ploneboard_correct_modified(self):
         for com in conv.getComments():
 #            print "\t%s, %s, %s, %s"%(com.getId(), com.Title(), com.CreationDate(), com.ModificationDate())
             out.append("\t%s, %s, %s, %s"%(com.getId(), com.Title(), com.CreationDate()))
-            #com.setModificationDate(com.CreationDate())
+            com.setModificationDate(com.CreationDate())
             #print "\t%s"%com.ModificationDate()
             last_modification_date = com.CreationDate()
         conv.setModificationDate(last_modification_date)
