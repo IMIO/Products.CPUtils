@@ -289,7 +289,7 @@ def ploneboard_correct_modified(self, dochange=''):
         #out.append("available properties:%s"%portal.portal_memberdata.propertyItems())
         out.append("To really change modification date, call the script with param:")
         out.append("-> dochange=1")
-        out.append("by example ...?dochange=1<br/>")
+        out.append("by example ...?dochange=1\n")
 
     portal_url = getToolByName(self, "portal_url")
     portal = portal_url.getPortalObject()
@@ -303,7 +303,7 @@ def ploneboard_correct_modified(self, dochange=''):
 
     results = portal.portal_catalog.searchResults(kw)
     
-    out.append("%d conversations found"%len(results))
+    out.append("%d conversations found\n"%len(results))
     for r in results :
         conv = r.getObject()
 #        print "%s, %s, %s, %s"%(r.id, conv.Title(), r.created, r.modified)
@@ -314,13 +314,13 @@ def ploneboard_correct_modified(self, dochange=''):
             out.append("\t%s, %s, %s"%(com.getId(), com.Title(), com.CreationDate()))
             if dochange:
                 com.setModificationDate(com.CreationDate())
-                com.reindexObject()
+                #com.reindexObject()
             #print "\t%s"%com.ModificationDate()
             last_modification_date = com.CreationDate()
         out.append('=> new modification date = %s'%last_modification_date)
         if dochange:
             conv.setModificationDate(last_modification_date)
-            conv.reindexObject()
+            #conv.reindexObject()
     return "\n".join(out)
 
 ###############################################################################
