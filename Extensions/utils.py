@@ -277,6 +277,7 @@ def ploneboard_correct_modified(self, dochange=''):
     """
         This script corrects the modified date of conversations after a migration. 
         The modified date becomes last modified comment. 
+        The portal_catalog must be updated !!
     """
     from Products.CMFCore.utils import getToolByName
     from DateTime.DateTime import DateTime
@@ -290,6 +291,7 @@ def ploneboard_correct_modified(self, dochange=''):
         out.append("To really change modification date, call the script with param:")
         out.append("-> dochange=1")
         out.append("by example ...?dochange=1\n")
+        out.append("You must update the portal_catalog after running the script\n")
 
     portal_url = getToolByName(self, "portal_url")
     portal = portal_url.getPortalObject()
@@ -314,13 +316,13 @@ def ploneboard_correct_modified(self, dochange=''):
             out.append("\t%s, %s, %s"%(com.getId(), com.Title(), com.CreationDate()))
             if dochange:
                 com.setModificationDate(com.CreationDate())
-                #com.reindexObject()
+                #com.reindexObject() #avoid
             #print "\t%s"%com.ModificationDate()
             last_modification_date = com.CreationDate()
         out.append('=> new modification date = %s'%last_modification_date)
         if dochange:
             conv.setModificationDate(last_modification_date)
-            #conv.reindexObject()
+            #conv.reindexObject() #avoid
     return "\n".join(out)
 
 ###############################################################################
