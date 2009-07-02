@@ -284,9 +284,10 @@ def ploneboard_correct_modified(self, dochange=''):
     if not check_role(self):
         return "You must have a manager role to run this script"
 
+    out = []
     if not dochange:
         #out.append("available properties:%s"%portal.portal_memberdata.propertyItems())
-        out.append("To change modification date, call the script with param:")
+        out.append("To really change modification date, call the script with param:")
         out.append("-> dochange=1")
         out.append("by example ...?dochange=1<br/>")
 
@@ -302,7 +303,6 @@ def ploneboard_correct_modified(self, dochange=''):
 
     results = portal.portal_catalog.searchResults(kw)
     
-    out = []
     out.append("%d conversations found"%len(results))
     for r in results :
         conv = r.getObject()
