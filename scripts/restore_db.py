@@ -139,10 +139,16 @@ def read_zopectlfile(zopectlfilename):
 
 #------------------------------------------------------------------------------
 
-def restoredb(fs, repozopath, fspath):
+def restoredb(fs, zopepath, fspath):
     """ call the repozo script to restore fs """
-    repozofilename = os.path.join(repozopath, 'bin', 'repozo.py')
-    pythonpath = os.path.join(repozopath, 'lib', 'python')
+    repozofilename = os.path.join(zopepath, 'bin', 'repozo.py')
+    pythonpath = os.path.join(zopepath, 'lib', 'python')
+    if not os.path.exists(repozofilename):
+        repozofilename = os.path.join(instdir, 'bin', 'repozo')
+    elif not os.path.exists(repozofilename):
+        repozofilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'repozo.py')
+    elif not os.path.exists(repozofilename):
+        repozofilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'repozo.py')
     restorecmd = "env PYTHONPATH=%s %s -Rv "%(pythonpath, repozofilename)
     # -B / -R : backup or recover
     # -r backupdir
@@ -171,7 +177,11 @@ def restoredb(fs, repozopath, fspath):
     verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
 
     if FSTEST:
-        fstestfilename = os.path.join(repozopath, 'bin', 'fstest.py')
+        fstestfilename = os.path.join(zopepath, 'bin', 'fstest.py')
+        if not os.path.exists(fstestfilename):
+            fstestfilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'fstest.py')
+        elif not os.path.exists(fstestfilename):
+            fstestfilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'fstest.py')
         fstestcmd = "env PYTHONPATH=%s %s "%(pythonpath, fstestfilename)
         # -v : print a line by transaction
         # -vv : print a line by object
@@ -188,7 +198,11 @@ def restoredb(fs, repozopath, fspath):
         verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
 
     if FSREFS:
-        fsrefsfilename = os.path.join(repozopath, 'bin', 'fsrefs.py')
+        fsrefsfilename = os.path.join(zopepath, 'bin', 'fsrefs.py')
+        if not os.path.exists(fsrefsfilename):
+            fsrefsfilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'fsrefs.py')
+        elif not os.path.exists(fsrefsfilename):
+            fsrefsfilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'fsrefs.py')
         fsrefscmd = "env PYTHONPATH=%s %s "%(pythonpath, fsrefsfilename)
         # -v : print a line by transaction
         # -vv : print a line by object
@@ -235,16 +249,16 @@ def main():
 
     # Getting some informations in config file
     (port, dbs) = treat_zopeconflines(zodbfilename)
-    repozopath = read_zopectlfile(zopectlfilename)
+    zopepath = read_zopectlfile(zopectlfilename)
     if RSYNCDIR:
-        if repozopath.startswith('/'):
-            repozopath = repozopath[1:]
-        repozopath = os.path.join(RSYNCDIR, repozopath)
-    verbose("repozo path='%s'"%repozopath)
+        if zopepath.startswith('/'):
+            zopepath = zopepath[1:]
+        zopepath = os.path.join(RSYNCDIR, zopepath)
+    verbose("zope path='%s'"%zopepath)
 
     # Treating each db
     for db in dbs:
-        restoredb(db[1], repozopath, fspath)
+        restoredb(db[1], zopepath, fspath)
 
 #------------------------------------------------------------------------------
 
