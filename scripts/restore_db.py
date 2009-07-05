@@ -224,6 +224,13 @@ def copyfs(fs, zopepath, fspath):
     fsfilename = os.path.join(fspath, fs)
     backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir), os.path.splitext(fs)[0])
     backupfile = os.path.join(backupdir,fs)
+    if not os.path.exists(backupfile):
+        for filename in os.listdir(backupdir):
+            filepath = os.path.join(backupdir, filename)
+            if filepath.endswith('.fs'):
+                backupfile = filepath
+                break
+
     if os.path.exists(fsfilename):
         error("\tfs file '%s' already exists !"%(fsfilename))
         return
