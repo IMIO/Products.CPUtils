@@ -218,6 +218,27 @@ def restoredb(fs, zopepath, fspath):
 
 #------------------------------------------------------------------------------
 
+def copyfs(fs, zopepath, fspath):
+    """ copy the fs file in the right place """
+    start = datetime.now()
+    fsfilename = os.path.join(fspath, fs)
+    backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir), os.path.splitext(fs)[0])
+    backupfile = os.path.join(backupdir,fs)
+    if os.path.exists(fsfilename):
+        error("\tfs file '%s' already exists !"%(fsfilename))
+        return
+    verbose("\tCopy of '%s' to '%s'" % (backupfile, fsfilename))    
+    cmd = 'cp %s %s' % (backupfile, fsfilename)
+    verbose("\tRunning command '%s'" % cmd)
+    (cmd_out, cmd_err) = runCommand(cmd)
+    if cmd_err:
+        verbose("\t\tError when copying : '%s'" % "".join(cmd_err))
+    elif cmd_out:
+        verbose("\t\tError when copying : '%s'" % "".join(cmd_out))
+    verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
+
+#------------------------------------------------------------------------------
+
 def main():
     global buildout_inst_type
 
