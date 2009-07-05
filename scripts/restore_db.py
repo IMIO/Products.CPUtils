@@ -236,7 +236,11 @@ def main():
     # Getting some informations in config file
     (port, dbs) = treat_zopeconflines(zodbfilename)
     repozopath = read_zopectlfile(zopectlfilename)
-    #verbose("repozo path='%s'"%repozopath)
+    if RSYNCDIR:
+        if repozopath.startswith('/'):
+            repozopath = repozopath[1:]
+        repozopath = os.path.join(RSYNCDIR, repozopath)
+    verbose("repozo path='%s'"%repozopath)
 
     # Treating each db
     for db in dbs:
