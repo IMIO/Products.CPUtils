@@ -287,7 +287,7 @@ def main():
         zodbfilename = instdir + '/parts/instance/etc/zope.conf'
         zopectlfilename = instdir + '/parts/instance/bin/zopectl'
         fspath = instdir + '/var/filestorage/'
-        PYTHONCMD = read_buildoutfile(os.path.join(instdir, 'bin', 'buildout')
+        PYTHONCMD = read_buildoutfile(os.path.join(instdir, 'bin', 'buildout'))
     else:
         zodbfilename = instdir + '/etc/zope.conf'
         zopectlfilename = instdir + '/bin/zopectl'
