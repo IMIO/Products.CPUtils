@@ -144,6 +144,8 @@ def restoredb(fs, zopepath, fspath):
     repozofilename = os.path.join(zopepath, 'bin', 'repozo.py')
     pythonpath = os.path.join(zopepath, 'lib', 'python')
     if not os.path.exists(repozofilename):
+        repozofilename = os.path.join(instdir, 'bin', 'repozo')
+    elif not os.path.exists(repozofilename):
         repozofilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'repozo.py')
     elif not os.path.exists(repozofilename):
         repozofilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'repozo.py')
