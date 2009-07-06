@@ -17,7 +17,7 @@ RSYNCDIR = '' # prefix dir containing the copy of the rsync command
 FSTEST = True
 FSREFS = False
 OVW_FS = False # overwrite fs file when restoring if already exist
-PYTHONCMD = ''
+PYTHONBIN = ''
 
 def verbose(*messages):
     print '>>', ' '.join(messages)
@@ -152,7 +152,7 @@ def read_buildoutfile(buildoutfilename):
         if line.startswith('#!'):
             zfile.close()
             return line.strip('#! ')
-    return PYTHONCMD
+    return PYTHONBIN
 
 #------------------------------------------------------------------------------
 
@@ -166,7 +166,7 @@ def restoredb(fs, zopepath, fspath):
         repozofilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'repozo.py')
     elif not os.path.exists(repozofilename):
         repozofilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'repozo.py')
-    restorecmd = "env PYTHONPATH=%s %s %s -Rv "%(pythonpath, PYTHONCMD, repozofilename)
+    restorecmd = "env PYTHONPATH=%s %s %s -Rv "%(pythonpath, PYTHONBIN, repozofilename)
     # -B / -R : backup or recover
     # -r backupdir
     # -F : full backup
@@ -199,7 +199,7 @@ def restoredb(fs, zopepath, fspath):
             fstestfilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'fstest.py')
         elif not os.path.exists(fstestfilename):
             fstestfilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'fstest.py')
-        fstestcmd = "env PYTHONPATH=%s %s %s "%(pythonpath, PYTHONCMD, fstestfilename)
+        fstestcmd = "env PYTHONPATH=%s %s %s "%(pythonpath, PYTHONBIN, fstestfilename)
         # -v : print a line by transaction
         # -vv : print a line by object
         start = datetime.now()
@@ -220,7 +220,7 @@ def restoredb(fs, zopepath, fspath):
             fsrefsfilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'fsrefs.py')
         elif not os.path.exists(fsrefsfilename):
             fsrefsfilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'fsrefs.py')
-        fsrefscmd = "env PYTHONPATH=%s %s %s "%(pythonpath, PYTHONCMD, fsrefsfilename)
+        fsrefscmd = "env PYTHONPATH=%s %s %s "%(pythonpath, PYTHONBIN, fsrefsfilename)
         # -v : print a line by transaction
         # -vv : print a line by object
         start = datetime.now()
@@ -243,16 +243,16 @@ def copyfs(fs, zopepath, fspath):
     fsfilename = os.path.join(fspath, fs)
     backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir), os.path.splitext(fs)[0])
     backupfile = os.path.join(backupdir,fs)
-    if not os.path.exists(backupfile):
-        for filename in os.listdir(backupdir):
-            filepath = os.path.join(backupdir, filename)
-            if filepath.endswith('.fs'):
-                backupfile = filepath
-                break
+#    if not os.path.exists(backupfile):
+#        for filename in os.listdir(backupdir):
+#            filepath = os.path.join(backupdir, filename)
+#            if filepath.endswith('.fs'):
+#                backupfile = filepath
+#                break
 
-    if os.path.exists(fsfilename):
-        error("\tfs file '%s' already exists !"%(fsfilename))
-        return
+#    if os.path.exists(fsfilename):
+#        error("\tfs file '%s' already exists !"%(fsfilename))
+#        return
     verbose("\tCopy of '%s' to '%s'" % (backupfile, fsfilename))    
     cmd = 'cp %s %s' % (backupfile, fsfilename)
     verbose("\tRunning command '%s'" % cmd)
@@ -266,7 +266,7 @@ def copyfs(fs, zopepath, fspath):
 #------------------------------------------------------------------------------
 
 def main():
-    global buildout_inst_type, PYTHONCMD
+    global buildout_inst_type, PYTHONBIN
 
     tmp = instdir
     if tmp.endswith('/'):
@@ -287,7 +287,7 @@ def main():
         zodbfilename = instdir + '/parts/instance/etc/zope.conf'
         zopectlfilename = instdir + '/parts/instance/bin/zopectl'
         fspath = instdir + '/var/filestorage/'
-        PYTHONCMD = read_buildoutfile(os.path.join(instdir, 'bin', 'buildout'))
+        PYTHONBIN = read_buildoutfile(os.path.join(instdir, 'bin', 'buildout'))
     else:
         zodbfilename = instdir + '/etc/zope.conf'
         zopectlfilename = instdir + '/bin/zopectl'
