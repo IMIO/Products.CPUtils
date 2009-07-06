@@ -17,6 +17,7 @@ RSYNCDIR = '' # prefix dir containing the copy of the rsync command
 FSTEST = True
 FSREFS = False
 OVW_FS = False # overwrite fs file when restoring if already exist
+PYTHONCMD = ''
 
 def verbose(*messages):
     print '>>', ' '.join(messages)
@@ -139,6 +140,22 @@ def read_zopectlfile(zopectlfilename):
 
 #------------------------------------------------------------------------------
 
+def read_buildoutfile(buildoutfilename):
+    """ read the buildout file to find the python path """
+    try:
+        zfile = open( buildoutfilename, 'r')
+    except IOError:
+        error("! Cannot open %s file" % buildoutfilename)
+        return
+    for line in zfile.readlines():
+        line = line.strip('\n\t ')
+        if line.startswith('#!'):
+            zfile.close()
+            return line.strip('#! ')
+    return PYTHONCMD
+
+#------------------------------------------------------------------------------
+
 def restoredb(fs, zopepath, fspath):
     """ call the repozo script to restore fs """
     repozofilename = os.path.join(zopepath, 'bin', 'repozo.py')
@@ -149,7 +166,7 @@ def restoredb(fs, zopepath, fspath):
         repozofilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'repozo.py')
     elif not os.path.exists(repozofilename):
         repozofilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'repozo.py')
-    restorecmd = "env PYTHONPATH=%s %s -Rv "%(pythonpath, repozofilename)
+    restorecmd = "env PYTHONPATH=%s %s %s -Rv "%(pythonpath, PYTHONCMD, repozofilename)
     # -B / -R : backup or recover
     # -r backupdir
     # -F : full backup
@@ -182,7 +199,7 @@ def restoredb(fs, zopepath, fspath):
             fstestfilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'fstest.py')
         elif not os.path.exists(fstestfilename):
             fstestfilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'fstest.py')
-        fstestcmd = "env PYTHONPATH=%s %s "%(pythonpath, fstestfilename)
+        fstestcmd = "env PYTHONPATH=%s %s %s "%(pythonpath, PYTHONCMD, fstestfilename)
         # -v : print a line by transaction
         # -vv : print a line by object
         start = datetime.now()
@@ -203,7 +220,7 @@ def restoredb(fs, zopepath, fspath):
             fsrefsfilename = os.path.join(zopepath, 'utilities', 'ZODBTools', 'fsrefs.py')
         elif not os.path.exists(fsrefsfilename):
             fsrefsfilename = os.path.join(pythonpath, 'ZODB', 'scripts', 'fsrefs.py')
-        fsrefscmd = "env PYTHONPATH=%s %s "%(pythonpath, fsrefsfilename)
+        fsrefscmd = "env PYTHONPATH=%s %s %s "%(pythonpath, PYTHONCMD, fsrefsfilename)
         # -v : print a line by transaction
         # -vv : print a line by object
         start = datetime.now()
@@ -270,6 +287,7 @@ def main():
         zodbfilename = instdir + '/parts/instance/etc/zope.conf'
         zopectlfilename = instdir + '/parts/instance/bin/zopectl'
         fspath = instdir + '/var/filestorage/'
+        PYTHONCMD = read_buildoutfile(os.path.join(instdir, 'bin', 'buildout')
     else:
         zodbfilename = instdir + '/etc/zope.conf'
         zopectlfilename = instdir + '/bin/zopectl'
