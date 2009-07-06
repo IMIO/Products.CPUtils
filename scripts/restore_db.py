@@ -237,7 +237,7 @@ def restoredb(fs, zopepath, fspath):
 
 #------------------------------------------------------------------------------
 
-def copyfs(fs, zopepath, fspath):
+def copyfs(fs, fspath):
     """ copy the fs file in the right place """
     start = datetime.now()
     fsfilename = os.path.join(fspath, fs)
@@ -304,7 +304,10 @@ def main():
 
     # Treating each db
     for db in dbs:
-        restoredb(db[1], zopepath, fspath)
+        if RSYNCDIR:
+            copyfs(db[1], fspath)
+        else:
+            restoredb(db[1], zopepath, fspath)
 
 #------------------------------------------------------------------------------
 
