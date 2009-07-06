@@ -266,7 +266,7 @@ def copyfs(fs, zopepath, fspath):
 #------------------------------------------------------------------------------
 
 def main():
-    global buildout_inst_type
+    global buildout_inst_type, PYTHONCMD
 
     tmp = instdir
     if tmp.endswith('/'):
