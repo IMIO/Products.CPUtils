@@ -209,9 +209,11 @@ def restoredb(fs, zopepath, fspath):
         (cmd_out, cmd_err) = runCommand(cmd)
 
         if cmd_err:
-            verbose("\t\tError when testing : '%s'" % "".join(cmd_err))
+            error("\t\tError when testing : '%s'" % "".join(cmd_err))
         elif cmd_out:
-            verbose("\t\tError when testing : '%s'" % "".join(cmd_out))
+            error("\t\tError when testing : '%s'" % "".join(cmd_out))
+        else:
+            verbose("\t\tAll seems OK")
         verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
 
     if FSREFS:
