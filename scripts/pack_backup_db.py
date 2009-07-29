@@ -302,8 +302,9 @@ def main():
     # It's necessary to avoid keeping old files to safe disk space
     if options.fullbackup:
         backupdir = os.path.join(BACKUP_DIR, os.path.basename(instdir))
-        shutil.rmtree(backupdir)
-        verbose("\t%s deleted when full backup" % (backupdir))
+        if os.path.exists(backupdir):
+            shutil.rmtree(backupdir)
+            verbose("\t%s deleted when full backup" % (backupdir))
     # Treating each db
     for db in dbs:
         packdb(port,db[0])
