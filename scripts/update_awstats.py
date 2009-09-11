@@ -20,10 +20,10 @@ def debug(*messages):
     print 'TRACE:', ' '.join(messages)
 #------------------------------------------------------------------------------
 
-CONF_DIR = '/etc/awstats'
-#CONF_DIR = '/home/srv/temp/awstats'
-APACHE_DIR = '/var/log/apache2'
-#APACHE_DIR = '/home/srv/temp/apache2_logs'
+#CONF_DIR = '/etc/awstats'
+CONF_DIR = '/home/srv/temp/awstats'
+#APACHE_DIR = '/var/log/apache2'
+APACHE_DIR = '/home/srv/temp/apache2_logs'
 INCLUDE_ARCHIVED = False
 AWSTATS_CMD = '/usr/lib/cgi-bin/awstats.pl'
 TRACE = False
@@ -32,7 +32,7 @@ gunzip = 'gunzip'
 
 #------------------------------------------------------------------------------
 
-def getFiles(dirpath, extensions, namestart):
+def getFiles(dirpath, extensions, namestart, sort=False):
     """ Read the dir and return some files """
     files = []
     for filename in os.listdir(dirpath):
@@ -48,8 +48,10 @@ def getFiles(dirpath, extensions, namestart):
         if namestart and not filename.startswith(namestart):
             continue
         debug("Kept '%s'"%filename)
-        #filepath = os.path.join(dirpath, filename)
-        files.append(filename)
+        filepath = os.path.join(dirpath, filename)
+        files.append(filepath)
+    if sort:
+        files.sort(compare_file_modiftime, reverse=True)
     return files
 
 #-------------------------------------------------
@@ -97,13 +99,22 @@ def runCommand(cmd):
 
 #------------------------------------------------------------------------------
 
+def compare_file_modiftime(file1, file2):
+    """ compare file in function of modification time """
+    date1 = datetime.datetime.fromtimestamp(os.stat(file1).st_mtime)
+    date2 = datetime.datetime.fromtimestamp(os.stat(file2).st_mtime)
+    return cmp(date1, date2)
+
+#------------------------------------------------------------------------------
+
 def main():
     verbose("Reading conf files")
-    for conffile in getFiles(CONF_DIR, ('conf',), ''):
+    for conffilepath in getFiles(CONF_DIR, ('conf',), '', sort=True):
+        conffile = os.path.basename(conffilepath)
         verbose("Reading %s"%conffile)
         lines = []
 #        import pdb; pdb.set_trace()
-        readFile(os.path.join(CONF_DIR,conffile), lines)
+        readFile(conffilepath, lines)
         for line in lines:
             line = line.strip('\n\t ')
 #            debug("line '%s'"%line)
@@ -111,17 +122,17 @@ def main():
                 line = line[7:].strip('=" ')
                 logfilename = os.path.basename(line)
                 verbose("\tFound apache log name '%s'"%logfilename)
-                logfiles = getFiles(APACHE_DIR, [], logfilename)
+                logfiles = getFiles(APACHE_DIR, [], logfilename, sort=True)
                 if not logfiles:
                     error("No log files found in '%s'"%APACHE_DIR)
                 #we remove begin and end: awstats. xxx .conf 
                 configname = conffile[8:-5]
                 verbose("\tconfig name = '%s'"%configname)
-                for logfile in logfiles:
+                for logfilepath in logfiles:
+                    logfile = os.path.basename(logfilepath)
                     if not (logfile.endswith('.log') or logfile.endswith('.log.1') or logfile.endswith('.gz')):
                         error("Logfile found but not recognized '%s'"%logfile)
                         continue
-                    logfilepath = os.path.join(APACHE_DIR, logfile)
                     verbose("\tLogfile found '%s'"%logfile)
                     if logfile.endswith('.gz'):
                         #we need to decompress the file
