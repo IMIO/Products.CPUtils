@@ -154,7 +154,7 @@ def main():
                     if cmd_err:
                         error("error running command %s : %s" % (command, ''.join(cmd_err)))
                     if cmd_out:
-                        verbose("\t\t>>OUTPUT: %s" % (''.join(cmd_out)))
+                        verbose("\t>>OUTPUT: %s" % (''.join(cmd_out)))
                     if logfile.endswith('.gz'):
                         os.remove(logfilepath)
                         verbose("\t'%s' deleted"%logfilepath)
