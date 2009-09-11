@@ -51,7 +51,7 @@ def getFiles(dirpath, extensions, namestart, sort=False):
         filepath = os.path.join(dirpath, filename)
         files.append(filepath)
     if sort:
-        files.sort(compare_file_modiftime, reverse=True)
+        files.sort(compare_file_modiftime)
     return files
 
 #-------------------------------------------------
@@ -148,7 +148,7 @@ def main():
                         if cmd_err:
                             error("error running command %s : %s" % (command, ''.join(cmd_err)))
                         logfilepath = destination[:-3]
-                    command = "%s -config=%s -Logfile=%s"%(AWSTATS_CMD, configname, logfilepath)
+                    command = "%s -config=%s -Logfile=%s -update"%(AWSTATS_CMD, configname, logfilepath)
                     verbose("\t>> Running '%s'"%command)
                     (cmd_out, cmd_err) = runCommand(command)
                     if cmd_err:
