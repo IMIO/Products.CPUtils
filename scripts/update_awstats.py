@@ -153,7 +153,7 @@ def main():
                     (cmd_out, cmd_err) = runCommand(command)
                     if cmd_err:
                         error("error running command %s : %s" % (command, ''.join(cmd_err)))
-                    if cmd_err:
+                    if cmd_out:
                         verbose("\t\t>>OUTPUT: %s" % (''.join(cmd_out)))
                     if logfile.endswith('.gz'):
                         os.remove(logfilepath)
