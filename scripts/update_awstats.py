@@ -120,6 +120,9 @@ def main():
 #            debug("line '%s'"%line)
             if line.startswith('LogFile'):
                 line = line[7:].strip('=" ')
+                #to avoid line like LogFile="/usr/share/doc/awstats/examples/logresolvemerge.pl /srv/apache/apache2_logs/*_access.log |"
+                if line.find('|') >= 0:
+                    break
                 logfilename = os.path.basename(line)
                 verbose("\tFound apache log name '%s'"%logfilename)
                 logfiles = getFiles(APACHE_DIR, [], logfilename, sort=True)
