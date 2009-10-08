@@ -327,6 +327,38 @@ def ploneboard_correct_modified(self, dochange=''):
 
 ###############################################################################
 
+def configure_fckeditor(self, default=1, allusers=1, custom=1):
+    """
+        configure fckeditor with default parameters.
+        This method can be called as an external method, with the following parameters : ...?default=1&alluser=0&custom=0
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+
+    try:
+        pqi = getToolByName(self, 'portal_quickinstaller')
+        if not pqi.isProductInstalled('FCKeditor'):
+            pqi.installProduct('FCKeditor')
+    except Exception, msg:
+        return "FCKeditor cannot be installed: '%s'"%msg
+
+    #setting default editor to FCKeditor
+    if default:
+        portal.portal_memberdata.manage_changeProperties(wysiwyg_editor='FCKeditor')
+
+    #changing editor of all users
+    if allusers:
+        change_user_properties(portal, kw='wysiwyg_editor:FCKeditor', dochange=1)
+
+    #setting custom toolbar
+    if custom:
+        fckprops = portal.portal_properties.fckeditor_properties
+        fckprops.manage_changeProperties(fck_toolbar='Custom')
+        fckprops.manage_changeProperties(fck_custom_toolbar="[\n['Templates'], \n['Cut','Copy','Paste','PasteText'], \n['Undo','Redo','-','Find','Replace'], \n['Bold','Italic','Underline','StrikeThrough'], \n['OrderedList','UnorderedList'], \n['JustifyLeft','JustifyCenter','JustifyRight','JustifyFull'], \n['Link','Unlink'], \n['Image','Table','Rule','SpecialChar'], \n['Style','FontFormat','TextColor'], \n['FitWindow'],['Source'] \n]")
+
 
 ###############################################################################
 
