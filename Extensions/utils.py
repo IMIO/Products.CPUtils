@@ -28,7 +28,7 @@ def install(self):
     from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    for method in ('object_info', 'audit_catalog', 'change_user_properties'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -356,8 +356,9 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1):
     #setting custom toolbar
     if custom:
         fckprops = portal.portal_properties.fckeditor_properties
-        fckprops.manage_changeProperties(fck_toolbar='Custom')
-        fckprops.manage_changeProperties(fck_custom_toolbar="[\n['Templates'], \n['Cut','Copy','Paste','PasteWord','PasteText'], \n['Undo','Redo','-','Find','Replace'], \n['Bold','Italic','Underline','StrikeThrough'], \n['OrderedList','UnorderedList'], \n['JustifyLeft','JustifyCenter','JustifyRight','JustifyFull'], \n['Link','Unlink'], \n['Image','Table','Rule','SpecialChar'], \n['Style','FontFormat','TextColor'], \n['FitWindow'],['Source'] \n]")
+        if fckprops.getProperty('fck_toolbar') != 'Custom':
+            fckprops.manage_changeProperties(fck_custom_toolbar="[\n['Templates'], \n['Cut','Copy','Paste','PasteWord','PasteText'], \n['Undo','Redo','-','Find','Replace'], \n['Bold','Italic','Underline','StrikeThrough'], \n['OrderedList','UnorderedList'], \n['JustifyLeft','JustifyCenter','JustifyRight','JustifyFull'], \n['Link','Unlink'], \n['Image','Table','Rule','SpecialChar'], \n['Style','FontFormat','TextColor'], \n['FitWindow'],['Source'] \n]")
+            fckprops.manage_changeProperties(fck_toolbar='Custom')
 
 
 ###############################################################################
