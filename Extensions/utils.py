@@ -382,8 +382,8 @@ def list_users(self, output='csv', sort='users'):
     out.append("You can call the script with the following parameters:")
     out.append("-> output=screen => output for screen or csv (default=csv)")
     out.append("-> sort=groups (or users) => output is sorted following groups (default=users)")
-    out.append("by example /cputils_list_users?output=screen&sort=groups%s")
-    out.append("You can copy/paste the following lines in the right program like openoffice calc ;-) or Excel :-("%lf)
+    out.append("by example /cputils_list_users?output=screen&sort=groups")
+    out.append("You can copy/paste the following lines in the right program like openoffice calc ;-) or Excel :-(%s"%lf)
 
     if sort not in ('users', 'groups'):
         out.append("invalid parameter sort, value must be 'users' or 'groups'")
