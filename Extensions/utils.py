@@ -28,7 +28,7 @@ def install(self):
     from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -360,6 +360,76 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1):
             fckprops.manage_changeProperties(fck_custom_toolbar="[\n['Templates'], \n['Cut','Copy','Paste','PasteWord','PasteText'], \n['Undo','Redo','-','Find','Replace'], \n['Bold','Italic','Underline','StrikeThrough'], \n['OrderedList','UnorderedList'], \n['JustifyLeft','JustifyCenter','JustifyRight','JustifyFull'], \n['Link','Unlink'], \n['Image','Table','Rule','SpecialChar'], \n['Style','FontFormat','TextColor'], \n['FitWindow'],['Source'] \n]")
             fckprops.manage_changeProperties(fck_toolbar='Custom')
 
+###############################################################################
+
+def list_users(self, output='csv', sort='users'):
+    """
+        list users following parameters : 
+            group = True, group information is included
+            sort = 'users' or 'groups', sort key for output
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    lf = '\n'
+    lf = '<br />'
+    separator = ','
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    pg = getToolByName(self, "portal_groups")
+    out = []
+    out.append('<h2>Users list</h2>')
+    out.append("You can call the script with the following parameters:")
+    out.append("-> output=screen => output for screen or csv (default=csv)")
+    out.append("-> sort=groups (or users) => output is sorted following groups (default=users)")
+    out.append("by example /cputils_list_users?output=screen&sort=groups%s"%lf)
+
+    if sort not in ('users', 'groups'):
+        out.append("invalid parameter sort, value must be 'users' or 'groups'")
+        return
+    if output not in ('csv', 'screen'):
+        out.append("invalid parameter output, value must be 'csv' or 'screen'")
+        return
+
+    #import pdb; pdb.set_trace()
+    users = {}
+    groups = {}
+    for userid in portal.acl_users.getUserIds():
+        member = portal.portal_membership.getMemberById(userid)
+        if not users.has_key(userid):
+            users[userid] = {}
+        users[userid]['obj'] = member
+        groupids = pg.getGroupsForPrincipal(member)
+        users[userid]['groups'] = groupids
+        for groupid in groupids:
+            if not groups.has_key(groupid):
+                groups[groupid] = {}
+                groups[groupid]['users'] = []
+            groups[groupid]['users'].append(userid)
+
+    if sort == 'users':
+        if output == 'csv':
+            out.append(separator.join(['UserId', 'GroupId']))
+        for userid in users.keys():
+            if output == 'screen':
+                out.append("- userid: %s"%userid)
+            for groupid in users[userid]['groups']:
+                if output == 'csv':
+                    out.append(separator.join([userid, groupid]))
+                else:
+                    out.append('&emsp&emsp&rArr %s'%groupid)
+    elif sort == 'groups':
+        if output == 'csv':
+            out.append(separator.join(['GroupId', 'UserId', ]))
+        for groupid in groups.keys():
+            if output == 'screen':
+                out.append("- groupid: %s"%groupid)
+            for userid in groups[groupid]['users']:
+                if output == 'csv':
+                    out.append(separator.join([groupid, userid, ]))
+                else:
+                    out.append('&emsp&emsp&rArr %s'%userid)
+    return lf.join(out)
 
 ###############################################################################
 
