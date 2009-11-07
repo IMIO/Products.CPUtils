@@ -357,7 +357,7 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1):
     if custom:
         fckprops = portal.portal_properties.fckeditor_properties
         if fckprops.getProperty('fck_toolbar') != 'Custom':
-            fckprops.manage_changeProperties(fck_custom_toolbar="[\n['Templates'], \n['Cut','Copy','Paste','PasteWord','PasteText'], \n['Undo','Redo','-','Find','Replace'], \n['Bold','Italic','Underline','StrikeThrough'], \n['OrderedList','UnorderedList'], \n['JustifyLeft','JustifyCenter','JustifyRight','JustifyFull'], \n['Link','Unlink'], \n['Image','Table','Rule','SpecialChar'], \n['Style','FontFormat','TextColor'], \n['FitWindow'],['Source'] \n]")
+            fckprops.manage_changeProperties(fck_custom_toolbar="[\n['Templates','rtSpellCheck'], \n['Cut','Copy','Paste','PasteWord','PasteText'], \n['Undo','Redo','-','Find','Replace'], \n['Bold','Italic','Underline','StrikeThrough'], \n['OrderedList','UnorderedList'], \n['JustifyLeft','JustifyCenter','JustifyRight','JustifyFull'], \n['Link','Unlink'], \n['Image','Table','Rule','SpecialChar'], \n['Style','FontFormat','TextColor'], \n['FitWindow'],['Source'] \n]")
             fckprops.manage_changeProperties(fck_toolbar='Custom')
 
 ###############################################################################
