@@ -232,7 +232,7 @@ def initialize(context):
     elif plone_version.startswith('2.5'):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts25
         QuickInstallerTool.listInstalledProducts = listInstalledProducts25
-    elif plone_version.startswith('3.1') or plone_version.startswith('3.2'):
+    elif plone_version.startswith('3.'):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts31
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
 
