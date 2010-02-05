@@ -9,6 +9,7 @@ buildout_inst_type = None #True for buildout, False for manual instance
 zeo_type = False #True for zeo
 was_running = True
 ROTATE_CONF_FILE = 'logrotate.conf'
+TMPDIR = '/tmp'
 
 def verbose(*messages):
     print '>>', ' '.join(messages)
@@ -20,28 +21,30 @@ def error(*messages):
 
 def runCommand(cmd):
     """ run an os command and get back the stdout and stderr outputs """
-    ret = os.system(cmd + ' >_cmd_zr.out 2>_cmd_zr.err')
+    outfile = os.path.join(TMPDIR, '_cmd_zr.out')
+    errfile = os.path.join(TMPDIR, '_cmd_zr.err')
+    ret = os.system(cmd + ' >%s 2>%s'%(outfile, errfile))
     stdout = stderr = []
     try:
-        if os.path.exists('_cmd_zr.out'):
-            ofile = open( '_cmd_zr.out', 'r')
+        if os.path.exists(outfile):
+            ofile = open( outfile, 'r')
             stdout = ofile.readlines()
             ofile.close()
-            os.remove('_cmd_zr.out')
+            os.remove(outfile)
         else:
-            error("File %s does not exist" % '_cmd_zr.out')
+            error("File %s does not exist" % outfile)
     except IOError:
-        error("Cannot open %s file" % '_cmd_zr.out')
+        error("Cannot open %s file" % outfile)
     try:
-        if os.path.exists('_cmd_zr.err'):
-            ifile = open( '_cmd_zr.err', 'r')
+        if os.path.exists(errfile):
+            ifile = open( errfile, 'r')
             stderr = ifile.readlines()
             ifile.close()
-            os.remove('_cmd_zr.err')
+            os.remove(errfile)
         else:
-            error("File %s does not exist" % '_cmd_zr.err')
+            error("File %s does not exist" % errfile)
     except IOError:
-        error("Cannot open %s file" % '_cmd_zr.err')
+        error("Cannot open %s file" % errfile)
     return( stdout,stderr )
 
 #------------------------------------------------------------------------------
