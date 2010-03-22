@@ -434,3 +434,19 @@ def list_users(self, output='csv', sort='users'):
 
 ###############################################################################
 
+def checkPOSKey(self):
+    """
+        Call a method from the script checkPOSKeyErrors to check the dbs
+    """
+    lf = '<br />'
+    from Products.CPUtils.scripts import checkPOSKeyErrors
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    (output,errors) = checkPOSKeyErrors.check(self)
+    if not errors:
+        errors.append('No POSKey errors found')
+    return lf.join(errors)
+
+###############################################################################
+
