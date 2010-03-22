@@ -33,7 +33,7 @@ TRACE = False
 ###############################################################################
 
 def main():
-    global instdir, tempdir, buildout_inst_type
+    global instdir, tempdir, buildout_inst_type, user, pwd
     try:
         from optparse import OptionParser
         parser = OptionParser()
@@ -67,16 +67,21 @@ def main():
 
     if buildout_inst_type:
         inst_type = 'buildout'
+        zodbfilename = os.path.join(instdir, 'parts/instance/etc/zope.conf')
+        fspath = os.path.join(instdir, 'var/filestorage/')
     else:
         inst_type = 'manual'
+        zodbfilename = os.path.join(instdir, 'etc/zope.conf')
+        fspath = os.path.join(instdir, 'var/')
 
     instance = os.path.basename(instdir)
     if not tempdir:
         tempdir = os.path.join(instdir, 'temp')
     hostname = socket.gethostname()
 
-    trace("host='%s', inst='%s', zodbf='%s', zopectlf='%s', fspath='%s', products='%s'"
-        %(hostname, instance, zodbfilename, zopectlfilename, fspath, productsdir))
+    port = treat_zopeconflines(zodbfilename, fspath)
+
+    trace("host='%s', inst='%s'"%(hostname, instance))
 
     #creating and calling external method in zope
     host = "http://localhost:%s" % port
@@ -133,10 +138,80 @@ def main():
                 current_url = url_pv
                 verbose("Running again '%s'"%current_url)
                 ret_html = urllib.urlopen(current_url).read()
-        verbose("checkPOSKey ='%s'"%ret_html)
+        verbose("checkPOSKey html return = '%s'"%ret_html)
     except Exception, msg:
         error("Cannot open URL %s, aborting: '%s'" % (current_url,msg))
         sys.exit(1)
+
+#------------------------------------------------------------------------------
+
+def read_zopeconffile(zodbfilename, lines):
+    """ read the zope conf filename and include subfile """
+    try:
+        zfile = open( zodbfilename, 'r')
+    except IOError:
+        error("! Cannot open %s file" % zodbfilename)
+        return
+    for line in zfile.readlines():
+        line = line.strip('\n\t ')
+        if line.startswith('%include'):
+            otherfilename = line.split()[1]
+            read_zopeconffile(otherfilename, lines)
+            continue
+        lines.append(line)
+    zfile.close()
+
+#------------------------------------------------------------------------------
+
+def treat_zopeconflines(zodbfilename, fspath):
+    """
+        read zope configuration lines to get informations
+    """
+    lines = []
+    read_zopeconffile(zodbfilename, lines)
+
+    httpflag = False
+    mp_name = mp_path = mp_fs = mp_fspath = None
+    mp_size = 0
+    for line in lines:
+        line = line.strip()
+        if line.startswith('<http-server>'):
+            httpflag = True
+            continue
+        if line.startswith('<zodb_db '):
+            #<zodb_db main>
+            if mp_name:
+                error("\tnext db found while end tag not found: previous dbname '%s', current line '%s'"%(mp_name, line))
+            mp_name = line.split()[1]
+            mp_name = mp_name.strip('> ')
+            if mp_name == 'temporary':
+                mp_name = None
+            continue
+        if mp_name and line.startswith('</zodb_db>'):
+            mp_name = mp_path = mp_fs = mp_fspath = None
+            mp_size = 0
+            continue
+        if mp_name and line.startswith('path '):
+            #path $INSTANCE/var/Data.fs
+            mp_fs = os.path.basename(line.split()[1])
+            if not mp_fs.endswith('.fs'):
+                error("Error getting fs name in '%s'"%line)
+            mp_fspath = os.path.join(fspath, mp_fs)
+            if os.path.exists(mp_fspath):
+                mp_size = int(os.path.getsize(mp_fspath)/1048576)
+            else:
+                error("Db file '%s' doesn't exist"%mp_fspath)
+                mp_fspath = ''
+            continue
+        if mp_name and line.startswith('mount-point '):
+            #mount-point /
+            mp_path = line.split()[1]
+            if not mp_path.startswith('/'):
+                error("Error getting path name in '%s'"%line)
+            continue
+        if httpflag and line.startswith('address'):
+            port = line.split()[1]
+    return port
 
 #------------------------------------------------------------------------------
 
@@ -150,7 +225,7 @@ class MyUrlOpener(urllib.FancyURLopener):
 
 #------------------------------------------------------------------------------
 
-def _checkAttributes(obj, output, errors):
+def _checkAttributes(obj, errors):
     from ZODB.POSException import POSKeyError
     # very dumb checks for list and dict (like) attributes
     # is very slow but ensures that all attributes are checked
@@ -176,15 +251,15 @@ def _checkAttributes(obj, output, errors):
 
 #------------------------------------------------------------------------------
 
-def _sub(master, output, errors):
+def _sub(master, errors):
     from ZODB.POSException import POSKeyError
     for oid in master.objectIds():
        try:
            obj = getattr(master, oid)
            trace('%s->%s' % ('/'.join(master.getPhysicalPath()), obj.getId()))
-           output.append('%s->%s' % ('/'.join(master.getPhysicalPath()), obj.getId()))
+           #output.append('%s->%s' % ('/'.join(master.getPhysicalPath()), obj.getId()))
            if hasattr(obj, 'objectIds') and obj.getId() != 'Control_Panel':
-               _sub(obj, output, errors)
+               _sub(obj, errors)
 
            # check catalog explicitly
            if obj.meta_type in ['ZCatalog', 'Catalog', 'Plone Catalog Tool'] \
@@ -193,9 +268,9 @@ def _sub(master, output, errors):
                        try:
                            index = obj._catalog.indexes.get(idxid)
                            trace('%s->INDEX: %s' % ('/'.join(obj.getPhysicalPath()), idxid))
-                           output.append('%s->INDEX: %s' % ('/'.join(obj.getPhysicalPath()), idxid))
+                           #output.append('%s->INDEX: %s' % ('/'.join(obj.getPhysicalPath()), idxid))
 
-                           _checkAttributes(index, output, errors)
+                           _checkAttributes(index, errors)
 
                        except POSKeyError, ex:
                            error('Error %s on INDEX %s (%s)' % (str(ex), idxid, '/'.join(obj.getPhysicalPath())))
@@ -203,7 +278,7 @@ def _sub(master, output, errors):
 
                    # support for lexicon
                    for lexid in obj.objectIds():
-                       _checkAttributes(getattr(obj, lexid), output, errors)
+                       _checkAttributes(getattr(obj, lexid), errors)
                       
        except POSKeyError, ex:
            error('Error %s on %s (%s)' % (str(ex), oid, '/'.join(master.getPhysicalPath())))
@@ -211,13 +286,11 @@ def _sub(master, output, errors):
 
 #------------------------------------------------------------------------------
 
-def check(app):
+def check(app, errors=[]):
     verbose("Begin of POSKey check")
     sys.setrecursionlimit(20000)
-    output = errors = []
-    _sub(app, output, errors)
+    _sub(app, errors)
     verbose("End of POSKey check")
-    return (output, errors)
 
 #------------------------------------------------------------------------------
 

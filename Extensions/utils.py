@@ -443,7 +443,8 @@ def checkPOSKey(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
 
-    (output,errors) = checkPOSKeyErrors.check(self)
+    errors = []
+    checkPOSKeyErrors.check(self, errors)
     if not errors:
         errors.append('No POSKey errors found')
     return lf.join(errors)
