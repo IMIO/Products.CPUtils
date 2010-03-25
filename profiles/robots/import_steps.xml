@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<import-steps>
+  <import-step id="cputils.robots"
+               version="20100325-01"
+               handler="Products.CPUtils.setuphandlers.setRobots"
+               title="CPUtils: set robots.txt in portal_skins/custom">
+    Import step installing a robots.txt file in portal_skins/custom, avoiding robots to index site
+  </import-step>
+</import-steps>

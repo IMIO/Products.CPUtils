@@ -1,0 +1,14 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="CPUtils">
+
+  <genericsetup:registerProfile
+      name="robots"
+      title="CPUtils: set robots.txt in portal_skins/custom"
+      directory="profiles/robots"
+      description='Specific profile for test sites.'
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+</configure>
