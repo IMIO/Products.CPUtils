@@ -36,5 +36,7 @@ def setRobots(context):
             output.append("File created")
         else:
             output.append("File NOT created")
+    else:
+        output.append("File '%s' in '%s' already exists"%(name, 'portal_skins/custom'))
 
     return '\n'.join(output)
