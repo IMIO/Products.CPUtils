@@ -31,7 +31,7 @@ def setRobots(context):
 #        getattr(obj, name): This doesn't work because getattr() uses acquisition !!!!
     if name not in zopeFolder.objectIds():
         output.append("Creating file '%s' in '%s'"%(name, 'portal_skins/custom'))
-        zopeFolder.manage_addProduct['OFSP'].manage_addFile(id=name, file=data)
+        zopeFolder.manage_addProduct['OFSP'].manage_addFile(id=name, file=data, title='Remove this file in production mode! A effacer une fois le site en production!')
         if name in zopeFolder.objectIds():
             output.append("File created")
         else:
