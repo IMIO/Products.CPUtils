@@ -28,11 +28,14 @@ def install(self):
     from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users'):
+    methods = []
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
             manage_addExternalMethod(self, method_name, '', 'CPUtils.utils', method)
+            methods.append(method_name)
+    return "Those methods have been added: "+' ,'.join(methods)
 
 ###############################################################################
 
