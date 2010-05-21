@@ -437,6 +437,52 @@ def list_users(self, output='csv', sort='users'):
 
 ###############################################################################
 
+def recreate_users_groups(self):
+    """copy users from old acl_users to the new one """
+
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+
+    if 'oldacl' not in portal.objectIds():
+        return "First you must create a folder at Plonesite root named 'oldacl' and containing a copy of another acl_users"
+
+    if 'acl_users' not in portal.oldacl.objectIds():
+        return "You must import a Plonesite acl_users folder in the folder named '/oldacl'"
+
+    old_acl = portal.oldacl.acl_users
+    acl = portal.acl_users
+    prg = portal.portal_registration
+    pgr = portal.portal_groups
+    messages = []
+    
+    #import pdb; pdb.set_trace()
+    for gd in old_acl.searchGroups():
+        g = old_acl.source_groups.getGroupById(gd['groupid'])
+        if g.getId() not in acl.getGroupIds():
+            pgr.addGroup(g.getId(), roles = g.getRoles(), groups = g.getGroups())
+            messages.append("Group '%s' is added"%g.getId())
+        else:
+            messages.append("Group '%s' already exists"%g.getId())
+
+    users = old_acl.getUsers()
+    #thanks http://blog.kagesenshi.org/2008/05/exporting-plone30-memberdata-and.html
+    passwords=old_acl.source_users._user_passwords
+    for user in users:
+        if user.getUserId() not in [ud['userid'] for ud in acl.searchUsers()]:
+            newuser = prg.addMember(user.getUserId(), passwords[user.getUserId()], roles=user.getRoles(), domains=user.getDomains())
+            messages.append("User '%s' is added"%user.getUserId())
+            for groupid in user.getGroupIds():
+                pgr.addPrincipalToGroup(user.getUserId(), groupid)
+                messages.append("    -> Added in group '%s'"%groupid)
+        else:
+            messages("User '%s' already exists"%user.getUserId())
+    return "\n".join(messages)
+
+###############################################################################
+
 def checkPOSKey(self):
     """
         Call a method from the script checkPOSKeyErrors to check the dbs
@@ -451,6 +497,3 @@ def checkPOSKey(self):
     if not errors:
         errors.append('No POSKey errors found')
     return lf.join(errors)
-
-###############################################################################
-
