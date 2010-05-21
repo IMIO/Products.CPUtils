@@ -29,7 +29,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'recreate_users_groups'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -273,6 +273,47 @@ def change_user_properties(self, kw='', dochange=''):
                 member.setMemberProperties(dic)
                 out.append("->  new properties: %s"%return_properties(dic, member))
     return '<br/>'.join(out)
+
+###############################################################################
+
+def store_user_properties(self):
+    """
+        store all user properties
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    out = []
+    txt = []
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    target_dir = portal
+
+    #import pdb; pdb.set_trace()
+    if 'users_properties' not in target_dir.objectIds():
+        self.manage_addDTMLDocument(id='users_properties', title='All users properties')
+        out.append("Document '%s/users_properties' added"%'/'.join(target_dir.getPhysicalPath()))
+
+    properties_names = dict(portal.portal_memberdata.propertyItems()).keys()
+    properties_names.sort()
+    txt.append('User\t'+'\t'.join(properties_names))
+    userids = [ud['userid'] for ud in portal.acl_users.searchUsers()]
+    for user in userids:
+        member = portal.portal_membership.getMemberById(user)
+        line = [user]
+        for name in properties_names:
+            if member.hasProperty(name):
+                line.append(str(member.getProperty(name)))
+            else:
+                line.append('')
+                out.append("!!! User '%s' hasn't property '%s'"%(user, name))
+        txt.append('\t'.join(line))
+    doc = self.users_properties
+    doc.raw = '\n'.join(txt)
+    out.append("Document '%s/users_properties' updated !"%'/'.join(target_dir.getPhysicalPath()))
+
+    return '\n'.join(out)
 
 ###############################################################################
 
