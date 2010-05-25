@@ -301,10 +301,10 @@ def store_user_properties(self):
     properties_names = [name for name in properties_names if name not in skipped_properties]
     txt.append('User\t'+'\t'.join(properties_names))
     userids = [ud['userid'] for ud in portal.acl_users.searchUsers()]
-    count = 0
+    count = 1
     for user in userids:
         member = portal.portal_membership.getMemberById(user)
-        line = ["%3d"%count, user]
+        line = ["%03d"%count, user]
         for name in properties_names:
             if member.hasProperty(name):
                 line.append(str(member.getProperty(name)))
