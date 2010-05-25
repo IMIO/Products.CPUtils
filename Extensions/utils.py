@@ -29,7 +29,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'recreate_users_groups'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -297,11 +297,14 @@ def store_user_properties(self):
 
     properties_names = dict(portal.portal_memberdata.propertyItems()).keys()
     properties_names.sort()
+    skipped_properties = ['description', ]
+    properties_names = [name for name in properties_names if name not in skipped_properties]
     txt.append('User\t'+'\t'.join(properties_names))
     userids = [ud['userid'] for ud in portal.acl_users.searchUsers()]
+    count = 0
     for user in userids:
         member = portal.portal_membership.getMemberById(user)
-        line = [user]
+        line = ["%3d"%count, user]
         for name in properties_names:
             if member.hasProperty(name):
                 line.append(str(member.getProperty(name)))
@@ -309,10 +312,83 @@ def store_user_properties(self):
                 line.append('')
                 out.append("!!! User '%s' hasn't property '%s'"%(user, name))
         txt.append('\t'.join(line))
+        count += 1
     doc = self.users_properties
     doc.raw = '\n'.join(txt)
     out.append("Document '%s/users_properties' updated !"%'/'.join(target_dir.getPhysicalPath()))
 
+    return '\n'.join(out)
+
+###############################################################################
+
+def load_user_properties(self, dochange=''):
+    """
+        load saved user properties
+    """
+
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+
+    out=[]
+    if 'oldacl' not in portal.objectIds():
+        return "First you must create a folder at Plonesite root named 'oldacl' and containing the imported 'user_properties' DTMLDocument (created with external method 'store_user_properties')"
+
+    if 'users_properties' not in portal.oldacl.objectIds():
+        return "You must import in the folder named '/oldacl' the DTMLDocument named 'user_properties' (created with external method 'store_user_properties')"
+
+    change_property=False
+    if dochange not in ('', '0', 'False', 'false'):
+        change_property=True
+
+    properties_names = dict(portal.portal_memberdata.propertyItems())
+    skipped_properties = ['error_log_update', 'ext_editor', 'last_login_time', 'listed', 'login_time', 'visible_ids', 'wysiwyg_editor', ]
+
+    #import pdb; pdb.set_trace()
+    
+    doc = portal.oldacl.users_properties
+    lines = doc.raw.splitlines()
+    if not len(lines) > 1:
+        return "No information found in document: content='%s'"%doc.raw
+    columns = {}
+
+    header_line = True
+    for line in lines:
+        infos = line.split('\t')
+        count = infos[0]
+        user = infos[1]
+        props = {}
+        if header_line and infos[0] != 'User':
+            return "No header line in document: content='%s'"%doc.raw
+        for i in range(2, len(infos)):
+            property = infos[i]
+            if not property: continue
+            if header_line:
+                if property in skipped_properties:
+                    property = ''
+                    #this column is made empty, this will not be used when reading value
+                elif property not in properties_names:
+                    out.append("Warning: old property '%s' not found in portal_memberdata properties"%property)
+                columns[i] = property
+            elif columns[i]:
+                props[columns[i]] = property
+
+        if header_line:
+            header_line = False
+            continue
+
+        if props:
+            out.append("%3d, User '%s' has changed properties '%s'"%(count, user, str(props)))
+            if change_property:
+                member = portal.portal_membership.getMemberById(user)
+                if member is None:
+                    out.append("%3d, User '%s' not found !!"%(count, user))
+                    continue
+                member.setMemberProperties(props)
+        else:
+            out.append("%3d, User '%s' hasn't change in properties"%(count, user))
     return '\n'.join(out)
 
 ###############################################################################
