@@ -357,10 +357,9 @@ def load_user_properties(self, dochange=''):
     header_line = True
     for line in lines:
         infos = line.split('\t')
-        count = infos[0]
         user = infos[1]
         props = {}
-        if header_line and infos[0] != 'User':
+        if header_line and user != 'User':
             return "No header line in document: content='%s'"%doc.raw
         for i in range(2, len(infos)):
             property = infos[i]
@@ -373,22 +372,23 @@ def load_user_properties(self, dochange=''):
                     out.append("Warning: old property '%s' not found in portal_memberdata properties"%property)
                 columns[i] = property
             elif columns[i]:
-                props[columns[i]] = property
+                props[columns[i]] = property.replace('|', '\r\n')
 
         if header_line:
             header_line = False
             continue
 
+        count = int(infos[0])
         if props:
-            out.append("%3d, User '%s' has changed properties '%s'"%(count, user, str(props)))
+            out.append("%03d, User '%s' has changed properties '%s'"%(count, user, str(props)))
             if change_property:
                 member = portal.portal_membership.getMemberById(user)
                 if member is None:
-                    out.append("%3d, User '%s' not found !!"%(count, user))
+                    out.append("%03d, User '%s' not found !!"%(count, user))
                     continue
                 member.setMemberProperties(props)
         else:
-            out.append("%3d, User '%s' hasn't change in properties"%(count, user))
+            out.append("%03d, User '%s' hasn't change in properties"%(count, user))
     return '\n'.join(out)
 
 ###############################################################################
