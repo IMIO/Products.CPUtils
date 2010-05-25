@@ -297,9 +297,9 @@ def store_user_properties(self):
 
     properties_names = dict(portal.portal_memberdata.propertyItems()).keys()
     properties_names.sort()
-    skipped_properties = ['description', ]
-    properties_names = [name for name in properties_names if name not in skipped_properties]
-    txt.append('User\t'+'\t'.join(properties_names))
+#    skipped_properties = ['description', ]
+#    properties_names = [name for name in properties_names if name not in skipped_properties]
+    txt.append('Count\tUser\t'+'\t'.join(properties_names))
     userids = [ud['userid'] for ud in portal.acl_users.searchUsers()]
     count = 1
     for user in userids:
@@ -307,7 +307,7 @@ def store_user_properties(self):
         line = ["%03d"%count, user]
         for name in properties_names:
             if member.hasProperty(name):
-                line.append(str(member.getProperty(name)))
+                line.append(str(member.getProperty(name)).replace('\r\n', '|'))
             else:
                 line.append('')
                 out.append("!!! User '%s' hasn't property '%s'"%(user, name))
