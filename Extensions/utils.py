@@ -343,6 +343,9 @@ def load_user_properties(self, dochange=''):
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
 
+    if not change_property:
+        out.append("The following changes are not applied: you must run the script with the parameter '...?dochange=1'")
+
     properties_names = dict(portal.portal_memberdata.propertyItems())
     skipped_properties = ['error_log_update', 'ext_editor', 'last_login_time', 'listed', 'login_time', 'visible_ids', 'wysiwyg_editor', ]
 
