@@ -12,7 +12,7 @@ msgstr ""
 "Domain: cputils\n"
 
 #: login_form.pt
-#. Default: "The connection to the site is temporary suspended for maintenance operations. <a href="contact-info">Contact the site administrator</a> for more information."
+#. Default: 'The connection to the site is temporary suspended for maintenance operations. <a href="contact-info">Contact the site administrator</a> for more information.'
 msgid "no_source_users"
 msgstr ""
 
