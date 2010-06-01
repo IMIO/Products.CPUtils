@@ -11,4 +11,12 @@
       provides="Products.GenericSetup.interfaces.EXTENSION"
       />
 
+  <genericsetup:registerProfile
+      name="default"
+      title="CPUtils"
+      directory="profiles/default"
+      description='Install profile.'
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
 </configure>
