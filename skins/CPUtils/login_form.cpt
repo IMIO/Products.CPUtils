@@ -28,8 +28,7 @@
                  ac_name auth/name_cookie|string:__ac_name;
                  ac_password auth/pw_cookie|string:__ac_password;
                  ac_persist auth/persist_cookie|nothing;
-                 login_name python:request.get('login_name', request.get(ac_name, ''));
-                 plugins python:context.checkActivatedPlugins();">
+                 login_name python:request.get('login_name', request.get(ac_name, ''));">
 
 <dl class="portalMessage error"
     id="enable_cookies_message"
@@ -48,11 +47,12 @@
 
 
 <metal:login define-macro="login">
+<tal:def define="plugins python:context.checkActivatedPlugins();">
 <form tal:attributes="action python:context.absolute_url()+'/'+template.id"
       class="enableAutoFocus"
       method="post"
       id="login_form"
-      tal:condition="python:auth and 'source_users' in plugins">
+      tal:condition="python:auth and 'source_users' in context.checkActivatedPlugins()">
 
     <fieldset id="login-form">
 
@@ -175,7 +175,7 @@
     </p>
 </div>
 
-
+</tal:def>
 </metal:login>
 
 </div>

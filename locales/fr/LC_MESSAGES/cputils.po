@@ -13,7 +13,7 @@ msgstr ""
 "X-is-fallback-for: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
 
 #: login_form.pt
-#. Default: "The connection to the site is temporary suspended for maintenance operations. <a href=\"contact-info\">Contact the site administrator</a> for more information.</p>"
+#. Default: "The connection to the site is temporary suspended for maintenance operations. <a href=\"contact-info\">Contact the site administrator</a> for more information."
 msgid "no_source_users"
-msgstr "LA CONNEXION AU SITE EST TEMPORAIREMENT SUSPENDUE EN RAISON D'OPERATIONS DE MAINTENANCE. VEUILLEZ ESSAYER DE VOUS CONNECTER UN PEU PLUS TARD. Si besoin, <a href=\"contact-info\">contactez l'administrateur du site</a> pour obtenir d'avantages d'informations.</p>"
+msgstr "LA CONNEXION AU SITE EST TEMPORAIREMENT SUSPENDUE EN RAISON D'OPERATIONS DE MAINTENANCE. VEUILLEZ ESSAYER DE VOUS CONNECTER UN PEU PLUS TARD. Si besoin, <a href=\"contact-info\">contactez l'administrateur du site</a> pour obtenir d'avantages d'informations."
 
