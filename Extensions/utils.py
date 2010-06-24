@@ -300,10 +300,18 @@ def store_user_properties(self):
 #    skipped_properties = ['description', ]
 #    properties_names = [name for name in properties_names if name not in skipped_properties]
     txt.append('Count\tUser\t'+'\t'.join(properties_names))
-    userids = [ud['userid'] for ud in portal.acl_users.searchUsers()]
+#    userids = [ud['userid'] for ud in portal.acl_users.searchUsers()]
     count = 1
-    for user in userids:
+    for dic in portal.acl_users.searchUsers():
+        user = dic['userid']
+        out.append("Current member '%s'"%(user))
+        if dic['pluginid'] != 'source_users':
+            #out.append("! Not a user type '%s'"%(dic['principal_type']))
+            continue
         member = portal.portal_membership.getMemberById(user)
+        if member is None:
+            out.append("! Member not found ")
+            continue
         line = ["%03d"%count, user]
         for name in properties_names:
             if member.hasProperty(name):
@@ -598,7 +606,7 @@ def recreate_users_groups(self):
                 pgr.addPrincipalToGroup(user.getUserId(), groupid)
                 messages.append("    -> Added in group '%s'"%groupid)
         else:
-            messages("User '%s' already exists"%user.getUserId())
+            messages.append("User '%s' already exists"%user.getUserId())
     return "\n".join(messages)
 
 ###############################################################################
