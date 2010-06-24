@@ -603,6 +603,8 @@ def recreate_users_groups(self):
             newuser = prg.addMember(user.getUserId(), passwords[user.getUserId()], roles=user.getRoles(), domains=user.getDomains())
             messages.append("User '%s' is added"%user.getUserId())
             for groupid in user.getGroupIds():
+                if groupid == 'AuthenticatedUsers':
+                    continue
                 pgr.addPrincipalToGroup(user.getUserId(), groupid)
                 messages.append("    -> Added in group '%s'"%groupid)
         else:
