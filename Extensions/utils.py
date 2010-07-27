@@ -29,7 +29,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties', 'correct_language'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -656,11 +656,11 @@ def sync_properties(self, base='', update='', dochange=''):
     out.append(".red { color: red; } ")
     out.append("</style></head>")
     out.append('<h2>Synchronize properties of objects</h2>')
-    out.append("<p>You can call the script with the following parameters:")
-    out.append("<p>-> base=path => path of base object to synchronize, beginning at the root of the plone site (those properties will be kept)")
-    out.append("<p>-> update=path => path of update object (containing new properties), beginning at the root of the plone site")
-    out.append("<p>-> dochange=1 => really do the change. By default, only prints changes")
-    out.append("<p>by example /cputils_sync_properties?base=portal_skins/custom/cpskin3_properties&update=portal_skins/acptheme_cpskin3_theme1/cpskin3_properties</p>")
+    out.append("<p>You can call the script with the following parameters:<br />")
+    out.append("-> base=path => path of base object to synchronize, beginning at the root of the plone site (those properties will be kept)<br />")
+    out.append("-> update=path => path of update object (containing new properties), beginning at the root of the plone site<br />")
+    out.append("-> dochange=1 => really do the change. By default, only prints changes<br />")
+    out.append("by example /cputils_sync_properties?base=portal_skins/custom/cpskin3_properties&update=portal_skins/acptheme_cpskin3_theme1/cpskin3_properties</p>")
 
     if not base:
         out.append("<p>!! You must enter the 'base' parameter</p>")
@@ -724,4 +724,77 @@ def sync_properties(self, base='', update='', dochange=''):
             base_obj.manage_addProperty(new_prop, update_dic[new_prop], update_obj.getPropertyType(new_prop))
 
     out.append('</tbody></table>')
+    return lf.join(out)
+
+###############################################################################
+
+def correct_language(self, default='', dochange=''):
+    """
+        correct language objects, set as neutral if no translation exists 
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    lf = '\n'
+#    lf = '<br />'
+    separator = ','
+    change_property = False
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    pqi = portal.portal_quickinstaller
+
+    out = []
+    out.append('<head><style type="text/css">')
+    out.append("table { border: 1px solid black; border-collapse:collapse; }")
+    out.append("table th { border: 1px solid black; background: #8297FD; }")
+    out.append("table td { border: 1px solid black; padding: 2px }")
+    out.append(".red { color: red; } ")
+    out.append("</style></head>")
+    out.append('<h2>Corrects language of untranslated objects</h2>')
+    out.append("<p>You can call the script with the following parameters:<br />")
+    out.append("-> default=code => language code for untranslated objects (default to neutral)<br />")
+    out.append("-> dochange=1 => really do the change. By default, only prints changes<br />")
+    out.append("by example /cputils_correct_language?default=fr&dochange=1</p>")
+
+    if 'LinguaPlone' not in [p['id'] for p in pqi.listInstalledProducts()]:
+        out.append("<p>LinguaPlone not installed ! Not necessary to do this operation</p>")
+        return lf.join(out)
+    
+    kw = {}
+    #kw['portal_type'] = ('Document','Link','Image','File','Folder','Large Plone Folder','Wrapper','Topic')
+    #kw['review_state'] = ('private',) #'published'
+    #kw['path'] = '/' # '/'.join(context.getPhysicalPath())
+    #kw['sort_on'] = 'created'
+    #kw['sort_order'] = 'reverse'
+    kw['Language'] = 'all'
+
+    if dochange not in ('', '0', 'False', 'false'):
+        change_property=True
+
+    #import pdb; pdb.set_trace()
+    results = portal.portal_catalog.searchResults(kw)
+    out.append("<table><thead><tr>")
+    out.append("<th>Language</th>")
+    out.append("<th>Path</th>")
+    out.append("<th>New value</th>")
+    out.append("</tr></thead><tbody>")
+
+    for brain in results:
+        obj = brain.getObject()
+        if brain.Language != default:
+            #we search for objects translated: no change for those objects
+            #condition= already language and (canonical with translations  or not canonical )
+            if brain.Language and ((obj.isCanonical() and obj.getDeletableLanguages()) or not obj.isCanonical()):
+                out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td /></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+            else:
+                out.append("""<tr class="red"><td>%s</td><td><a href="%s">%s</a></td><td>%s</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath(), default or "neutral"))
+                if change_property:
+                    obj.setLanguage(default)
+                    obj.reindexObject()
+        else:
+            out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td /></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+
+    out.append('</tbody></table>')
+
     return lf.join(out)
