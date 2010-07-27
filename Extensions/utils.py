@@ -29,7 +29,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -627,3 +627,101 @@ def checkPOSKey(self):
     if not errors:
         errors.append('No POSKey errors found')
     return lf.join(errors)
+
+###############################################################################
+
+def sync_properties(self, base='', update='', dochange=''):
+    """
+        Synchronize properties between objects
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    lf = '\n'
+#    lf = '<br />'
+    separator = ','
+    base_path = base
+    update_path = update
+    base_obj = None
+    update_obj = None
+    change_property = False
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    out = []
+    out.append('<head><style type="text/css">')
+    out.append("table { border: 1px solid black; border-collapse:collapse; }")
+    out.append("table th { border: 1px solid black; background: #8297FD; }")
+    out.append("table td { border: 1px solid black; padding: 2px }")
+    out.append(".red { color: red; } ")
+    out.append("</style></head>")
+    out.append('<h2>Synchronize properties of objects</h2>')
+    out.append("<p>You can call the script with the following parameters:")
+    out.append("<p>-> base=path => path of base object to synchronize, beginning at the root of the plone site (those properties will be kept)")
+    out.append("<p>-> update=path => path of update object (containing new properties), beginning at the root of the plone site")
+    out.append("<p>-> dochange=1 => really do the change. By default, only prints changes")
+    out.append("<p>by example /cputils_sync_properties?base=portal_skins/custom/cpskin3_properties&update=portal_skins/acptheme_cpskin3_theme1/cpskin3_properties</p>")
+
+    if not base:
+        out.append("<p>!! You must enter the 'base' parameter</p>")
+        return lf.join(out)
+
+    if not update:
+        out.append("<p>!! You must enter the 'update' parameter</p>")
+        return lf.join(out)
+
+    base_path = base_path.lstrip('/')
+    base_obj = portal.unrestrictedTraverse(base_path)
+    if base_obj is None:
+        out.append("<p>base path '%s' not found in portal</p>"%base_path)
+        return lf.join(out)
+
+    update_path = update_path.lstrip('/')
+    update_obj = portal.unrestrictedTraverse(update_path)
+    if update_obj is None:
+        out.append("<p>update path '%s' not found in portal</p>"%update_path)
+        return lf.join(out)
+
+    if dochange not in ('', '0', 'False', 'false'):
+        change_property=True
+
+#    if not dochange:
+#        out.append("<p>To really change the base object to synchronize '%s', call the script with another param:</p>"%base_path)
+#        out.append("<p>-> dochange=1    , by example ...&dochange=1</p>")
+
+#    out.append('<p style="text-align: center;">*****</p>')
+    out.append("<table><thead><tr>")
+    out.append("<th>Property</th>")
+    out.append("<th>Status</th>")
+    out.append("<th>Base value</th>")
+    out.append("<th>Other value</th>")
+    out.append("<th>Kept</th>")
+    out.append("</tr></thead><tbody>")
+
+    #import pdb; pdb.set_trace()
+    base_dic = dict(base_obj.propertyItems())
+    base_keys = base_dic.keys()
+    base_keys.sort()
+    update_dic = dict(update_obj.propertyItems())
+
+    for base_prop in base_keys:
+        if update_dic.has_key(base_prop):
+            if base_dic[base_prop] == update_dic[base_prop]:
+                out.append("<tr><td>%s</td><td>==</td><td>%s</td><td>%s</td><td>%s</td></tr>"%(base_prop, base_dic[base_prop], base_dic[base_prop], base_dic[base_prop]))
+            else:
+                out.append("<tr><td>%s</td><td class='red'><></td><td>%s</td><td>%s</td><td>%s</td></tr>"%(base_prop, base_dic[base_prop], update_dic[base_prop], base_dic[base_prop]))
+            del update_dic[base_prop]
+        else:
+            out.append("<tr><td>%s</td><td class='red'>del</td><td>%s</td><td>%s</td><td>%s</td></tr>"%(base_prop, base_dic[base_prop], '', base_dic[base_prop]))
+    update_keys = update_dic.keys()
+    update_keys.sort()
+    
+    import pdb; pdb.set_trace()
+    for new_prop in update_keys:
+        out.append("<tr><td>%s</td><td class='red'>new</td><td>%s</td><td>%s</td><td>%s</td></tr>"%(new_prop, '', update_dic[new_prop], update_dic[new_prop]))
+        if change_property:
+#            base_obj.manage_changeProperties({newprop:update_dic[new_prop]})
+            base_obj.manage_addProperty(new_prop, update_dic[new_prop], update_obj.getPropertyType(new_prop))
+
+    out.append('</tbody></table>')
+    return lf.join(out)
