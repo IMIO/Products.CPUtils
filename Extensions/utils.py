@@ -775,8 +775,8 @@ def correct_language(self, default='', search='all', dochange=''):
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
 
-    #import pdb; pdb.set_trace()
     results = portal.portal_catalog.searchResults(kw)
+    out.append("<p>Number of retrieved objects: %d</p>"%len(results))
     out.append("<table><thead><tr>")
     out.append("<th>Language</th>")
     out.append("<th>Path</th>")
@@ -792,7 +792,7 @@ def correct_language(self, default='', search='all', dochange=''):
         #condition= already language and not canonical = translation
         elif brain.Language and not obj.isCanonical():
             out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td class="green">translation</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
-        #not a translation and language must be changed
+        #no translation and language must be changed
         elif brain.Language != default:
             out.append("""<tr><td class="red">%s</td><td><a href="%s">%s</a></td><td class="red">%s</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath(), default or "neutral"))
             if change_property:
