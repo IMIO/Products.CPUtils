@@ -779,7 +779,7 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
     kw['Language'] = search
 
     if filter:
-        filters = list(int(filter.strip()))
+        filters = [int(i) for i in list(filter.strip())]
 
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
