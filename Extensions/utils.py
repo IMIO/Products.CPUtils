@@ -29,7 +29,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties', 'correct_language'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -728,7 +728,7 @@ def sync_properties(self, base='', update='', dochange=''):
 
 ###############################################################################
 
-def correct_language(self, default='', dochange=''):
+def correct_language(self, default='', search='all', dochange=''):
     """
         correct language objects, set as neutral if no translation exists 
     """
@@ -750,12 +750,15 @@ def correct_language(self, default='', dochange=''):
     out.append("table th { border: 1px solid black; background: #8297FD; }")
     out.append("table td { border: 1px solid black; padding: 2px }")
     out.append(".red { color: red; } ")
+    out.append(".green { color: green; } ")
     out.append("</style></head>")
     out.append('<h2>Corrects language of untranslated objects</h2>')
     out.append("<p>You can call the script with the following parameters:<br />")
     out.append("-> default=code => language code for untranslated objects (default to neutral)<br />")
+    out.append("-> search=fr => language code of searched objects (default to all languages)<br />")
     out.append("-> dochange=1 => really do the change. By default, only prints changes<br />")
     out.append("by example /cputils_correct_language?default=fr&dochange=1</p>")
+    out.append('<p>New value in <span class="red">red</span> will be changed</p>')
 
     if 'LinguaPlone' not in [p['id'] for p in pqi.listInstalledProducts()]:
         out.append("<p>LinguaPlone not installed ! Not necessary to do this operation</p>")
@@ -767,7 +770,7 @@ def correct_language(self, default='', dochange=''):
     #kw['path'] = '/' # '/'.join(context.getPhysicalPath())
     #kw['sort_on'] = 'created'
     #kw['sort_order'] = 'reverse'
-    kw['Language'] = 'all'
+    kw['Language'] = search
 
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
@@ -782,18 +785,22 @@ def correct_language(self, default='', dochange=''):
 
     for brain in results:
         obj = brain.getObject()
-        if brain.Language != default:
-            #we search for objects translated: no change for those objects
-            #condition= already language and (canonical with translations  or not canonical )
-            if brain.Language and ((obj.isCanonical() and obj.getDeletableLanguages()) or not obj.isCanonical()):
-                out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td /></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
-            else:
-                out.append("""<tr class="red"><td>%s</td><td><a href="%s">%s</a></td><td>%s</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath(), default or "neutral"))
-                if change_property:
-                    obj.setLanguage(default)
-                    obj.reindexObject()
+        #we first search for translated objects: no change for those objects
+        #condition= already language and canonical with translations
+        if brain.Language and obj.isCanonical() and obj.getDeletableLanguages():
+            out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td class="green">canonical</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+        #condition= already language and not canonical = translation
+        elif brain.Language and not obj.isCanonical():
+            out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td class="green">translation</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+        #not a translation and language must be changed
+        elif brain.Language != default:
+            out.append("""<tr><td class="red">%s</td><td><a href="%s">%s</a></td><td class="red">%s</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath(), default or "neutral"))
+            if change_property:
+                obj.setLanguage(default)
+                obj.reindexObject()
+        #no change
         else:
-            out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td /></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+            out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td>unchanged</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
 
     out.append('</tbody></table>')
 
