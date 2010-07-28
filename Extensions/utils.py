@@ -728,7 +728,7 @@ def sync_properties(self, base='', update='', dochange=''):
 
 ###############################################################################
 
-def correct_language(self, default='', search='all', dochange=''):
+def correct_language(self, default='', search='all', dochange='', filter=0):
     """
         correct language objects, set as neutral if no translation exists 
     """
@@ -739,6 +739,7 @@ def correct_language(self, default='', search='all', dochange=''):
 #    lf = '<br />'
     separator = ','
     change_property = False
+    filters = [1,2,3,4]
 
     from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject()
@@ -756,6 +757,11 @@ def correct_language(self, default='', search='all', dochange=''):
     out.append("<p>You can call the script with the following parameters:<br />")
     out.append("-> default=code => language code for untranslated objects (default to neutral)<br />")
     out.append("-> search=fr => language code of searched objects (default to all languages)<br />")
+    out.append("-> filter=1 or filter=123 => filter numbers (default to all objects)<br />")
+    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;1 => displays only canonical objects<br />")
+    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;2 => displays only translations<br />")
+    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;3 => displays if object language is different from default<br />")
+    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;4 => displays unchanged objects<br />")
     out.append("-> dochange=1 => really do the change. By default, only prints changes<br />")
     out.append("by example /cputils_correct_language?default=fr&dochange=1</p>")
     out.append('<p>New value in <span class="red">red</span> will be changed</p>')
@@ -772,34 +778,42 @@ def correct_language(self, default='', search='all', dochange=''):
     #kw['sort_order'] = 'reverse'
     kw['Language'] = search
 
+    if filter:
+        filters = list(int(filter.strip()))
+
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
 
     results = portal.portal_catalog.searchResults(kw)
-    out.append("<p>Number of retrieved objects: %d</p>"%len(results))
+    out.append("<p>Number of retrieved objects (not filtered): %d</p>"%len(results))
     out.append("<table><thead><tr>")
     out.append("<th>Language</th>")
     out.append("<th>Path</th>")
     out.append("<th>New value</th>")
     out.append("</tr></thead><tbody>")
 
+    #out.append("<tr><td>%s</td></tr>"%';'.join(filters))
+
     for brain in results:
         obj = brain.getObject()
         #we first search for translated objects: no change for those objects
         #condition= already language and canonical with translations
         if brain.Language and obj.isCanonical() and obj.getDeletableLanguages():
-            out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td class="green">canonical</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+            if 1 in filters:
+                out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td class="green">canonical</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
         #condition= already language and not canonical = translation
         elif brain.Language and not obj.isCanonical():
-            out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td class="green">translation</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+            if 2 in filters:
+                out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td class="green">translation</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
         #no translation and language must be changed
         elif brain.Language != default:
-            out.append("""<tr><td class="red">%s</td><td><a href="%s">%s</a></td><td class="red">%s</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath(), default or "neutral"))
-            if change_property:
-                obj.setLanguage(default)
-                obj.reindexObject()
+            if 3 in filters:
+                out.append("""<tr><td class="red">%s</td><td><a href="%s">%s</a></td><td class="red">%s</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath(), default or "neutral"))
+                if change_property:
+                    obj.setLanguage(default)
+                    obj.reindexObject()
         #no change
-        else:
+        elif 4 in filters:
             out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td>unchanged</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
 
     out.append('</tbody></table>')
