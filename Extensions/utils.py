@@ -716,7 +716,6 @@ def sync_properties(self, base='', update='', dochange=''):
     update_keys = update_dic.keys()
     update_keys.sort()
     
-    import pdb; pdb.set_trace()
     for new_prop in update_keys:
         out.append("<tr><td>%s</td><td class='red'>new</td><td>%s</td><td>%s</td><td>%s</td></tr>"%(new_prop, '', update_dic[new_prop], update_dic[new_prop]))
         if change_property:
@@ -730,7 +729,7 @@ def sync_properties(self, base='', update='', dochange=''):
 
 def correct_language(self, default='', search='all', dochange='', filter=0):
     """
-        correct language objects, set as neutral if no translation exists 
+        correct language objects, set as neutral if no translation exists
     """
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
@@ -800,21 +799,21 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
         #condition= already language and canonical with translations
         if brain.Language and obj.isCanonical() and obj.getDeletableLanguages():
             if 1 in filters:
-                out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td class="green">canonical</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+                out.append("""<tr><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="green">canonical</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
         #condition= already language and not canonical = translation
         elif brain.Language and not obj.isCanonical():
             if 2 in filters:
-                out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td class="green">translation</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+                out.append("""<tr><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="green">translation</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
         #no translation and language must be changed
         elif brain.Language != default:
             if 3 in filters:
-                out.append("""<tr><td class="red">%s</td><td><a href="%s">%s</a></td><td class="red">%s</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath(), default or "neutral"))
+                out.append("""<tr><td class="red">%s</td><td><a href="%s" target="_blank">%s</a></td><td class="red">%s</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath(), default or "neutral"))
                 if change_property:
                     obj.setLanguage(default)
                     obj.reindexObject()
         #no change
         elif 4 in filters:
-            out.append("""<tr><td>%s</td><td><a href="%s">%s</a></td><td>unchanged</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+            out.append("""<tr><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td>unchanged</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
 
     out.append('</tbody></table>')
 
