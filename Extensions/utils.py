@@ -821,9 +821,9 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
 
 ###############################################################################
 
-def correct_pvc(self, unregister=''):
+def unregister_adapter(self, unregister=''):
     """
-        correct registered templates in portal_view_customizations
+        unregister lost adapter (product removed from the file system)
         for error "AttributeError: type object 'IThemeSpecific' has no attribute 'isOrExtends' "
     """
     if not check_zope_admin():
