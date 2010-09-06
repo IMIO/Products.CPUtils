@@ -819,45 +819,97 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
 
     return lf.join(out)
 
-###############################################################################
+def change_authentication_plugins(self, activate='', dochange=''):
+    """
+        activate or desactivate and save (in dtml doc) authentication plugin
+    """
 
-def unregister_adapter(self, unregister=''):
-    """
-        unregister lost adapter (product removed from the file system)
-        for error "AttributeError: type object 'IThemeSpecific' has no attribute 'isOrExtends' "
-    """
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-
-    lf = '\n'
-#    lf = '<br />'
-    out = []
-    out.append("<p>You can call the script with the following parameters:<br />")
-    out.append("-> unregister=... => name of the adapter to unregister (default to empty => list all adapters)<br />")
-
-    from zope.component import getSiteManager
-    from plone.browserlayer.interfaces import ILocalBrowserLayerType
+    
     from Products.CMFCore.utils import getToolByName
-    from five.customerize.interfaces import ITTWViewTemplate
-    portal = getToolByName(self, "portal_url").getPortalObject()
-    #import pdb; pdb.set_trace()
+    target_dir = '/'
+    out=[]
+    txt=[]
 
-    params = []
-    components = getSiteManager(portal)
-    for reg in components.registeredAdapters():
-        if unregister:
-            if reg.name == unregister:
-                params = [reg.factory, reg.required, reg.provided]
-                break
-        else:
-            out.append(reg.name)
-    if unregister:
-        try:
-            if components.unregisterAdapter(params[0], params[1], params[2], unregister):
-                out.append("Adapter '%s' unregistered"%unregister)
+    change_activate=False
+    if activate not in ('', '0', 'False', 'false'):
+        change_activate=True
+    
+    change_plugins=False
+    if dochange not in ('', '0', 'False', 'false'):
+        change_plugins=True
+
+    if not change_plugins:
+        out.append("The following changes are not applied: you must run the script with the parameter '...?dochange=1'")
+    
+    from Products.PluggableAuthService.interfaces.plugins import IAuthenticationPlugin
+    if change_activate:
+        #read authentication_plugins_sites dtml doc
+        if 'authentication_plugins_sites' not in self.objectIds():
+            return out.append("No DTMLDocument named 'authentication_plugins_sites' found")
+        doc = self.authentication_plugins_sites
+        lines = doc.raw.splitlines()
+        out.append("Read all lines from DTMLDocument named 'authentication_plugins_sites'")        
+        for line in lines:
+            out.append(str(line))
+            infos = line.split('\t')
+            site = infos[0]
+            if site.find('/') > 0:
+                (path,site) = site.split('/')
+                if hasattr(self,path):
+                    context = getattr(self, path)
+                else:
+                    continue
             else:
-                out.append("Adapter '%s' not unregistered !"%unregister)
-        except Exception, msg:
-            out.append("Adapter '%s' not unregistered : %s"%(unregister, msg))
-
-    return lf.join(out)
+                context = self                
+            if hasattr(context,site):
+                out.append('site found %s'%site)
+                obj = getattr(context, site)
+                plugins = obj.acl_users.plugins
+            else:
+                continue
+            auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
+            for i in range(1, len(infos)):
+                plugin = infos[i]         
+                if not plugin in auth_plugins['active']:
+                    #activate authentication plugins
+                    out.append('Activate plugins %s for %s'%(plugin,site))     
+                    if dochange:        
+                        plugins.activatePlugin(IAuthenticationPlugin,plugin)                  
+    else:
+        #save authentication_plugins_sites in dtml doc plugin from all site
+        if 'authentication_plugins_sites' not in self.objectIds():
+            self.manage_addDTMLDocument(id='authentication_plugins_sites', title='All authentication plugins sites')
+            out.append("Document '%s/authentication_plugins_sites' added"%'/'.join(self.getPhysicalPath()))      
+        for objid in self.objectIds(('Plone Site', 'Folder')):
+            obj = getattr(self, objid)
+            if obj.meta_type == 'Folder':
+                for sobjid in obj.objectIds('Plone Site'):
+                    sobj = getattr(obj, sobjid)
+                    plugins = sobj.acl_users.plugins
+                    auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
+                    plugLine = objid + '/' + sobjid
+                    for plug in list(auth_plugins['active']):
+                        plugLine = plugLine + '\t' + str(plug)
+                        if dochange:
+                            #desactivate authentication plugins
+                            out.append('Desactivate plugins %s for %s'%(str(plug),sobjid))                  
+                            plugins.deactivatePlugin(IAuthenticationPlugin,plug) 
+                    txt.append(plugLine)
+            elif obj.meta_type == 'Plone Site':
+                plugins = obj.acl_users.plugins
+                auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
+                plugLine = objid
+                for plug in list(auth_plugins['active']):
+                    plugLine = plugLine + '\t' + str(plug)
+                    if dochange:
+                        #desactivate authentication plugins
+                        out.append('Desactivate plugins %s for %s'%(str(plug),objid))                      
+                        plugins.deactivatePlugin(IAuthenticationPlugin,plug)                     
+                txt.append(plugLine)    
+                         
+        doc = self.authentication_plugins_sites
+        doc.raw = '\n'.join(txt)
+        out.append("Document '%s/authentication_plugins_sites' updated !"%'/'.join(self.getPhysicalPath())) 
+    return '\n'.join(out)
