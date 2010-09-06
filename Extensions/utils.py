@@ -831,7 +831,7 @@ def change_authentication_plugins(self, activate='', dochange=''):
     target_dir = '/'
     out=[]
     txt=[]
-
+    
     change_activate=False
     if activate not in ('', '0', 'False', 'false'):
         change_activate=True
@@ -875,7 +875,7 @@ def change_authentication_plugins(self, activate='', dochange=''):
                 if not plugin in auth_plugins['active']:
                     #activate authentication plugins
                     out.append('Activate plugins %s for %s'%(plugin,site))     
-                    if dochange:        
+                    if change_plugins:        
                         plugins.activatePlugin(IAuthenticationPlugin,plugin)                  
     else:
         #save authentication_plugins_sites in dtml doc plugin from all site
@@ -892,7 +892,7 @@ def change_authentication_plugins(self, activate='', dochange=''):
                     plugLine = objid + '/' + sobjid
                     for plug in list(auth_plugins['active']):
                         plugLine = plugLine + '\t' + str(plug)
-                        if dochange:
+                        if change_plugins:
                             #desactivate authentication plugins
                             out.append('Desactivate plugins %s for %s'%(str(plug),sobjid))                  
                             plugins.deactivatePlugin(IAuthenticationPlugin,plug) 
@@ -903,9 +903,9 @@ def change_authentication_plugins(self, activate='', dochange=''):
                 plugLine = objid
                 for plug in list(auth_plugins['active']):
                     plugLine = plugLine + '\t' + str(plug)
-                    if dochange:
-                        #desactivate authentication plugins
-                        out.append('Desactivate plugins %s for %s'%(str(plug),objid))                      
+                    out.append('Desactivate plugins %s for %s'%(str(plug),objid))   
+                    if change_plugins:
+                        #desactivate authentication plugins                                           
                         plugins.deactivatePlugin(IAuthenticationPlugin,plug)                     
                 txt.append(plugLine)    
                          
