@@ -18,6 +18,18 @@ def fileSize(nb):
         if quot < 1024:
             break
     return "%.1f%s"%(float(nb)/1024**x,sizeletter[x])
+    
+def get_all_site_objects(self):
+    allSiteObj = []
+    for objid in self.objectIds(('Plone Site', 'Folder')):
+        obj = getattr(self, objid)
+        if obj.meta_type == 'Folder':
+            for sobjid in obj.objectIds('Plone Site'):
+                sobj = getattr(obj, sobjid)
+                allSiteObj.append(sobj)
+        elif obj.meta_type == 'Plone Site':
+            allSiteObj.append(obj)
+    return allSiteObj
 
 ###############################################################################
 
@@ -827,8 +839,6 @@ def change_authentication_plugins(self, activate='', dochange=''):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     
-    from Products.CMFCore.utils import getToolByName
-    target_dir = '/'
     out=[]
     txt=[]
     
@@ -843,7 +853,7 @@ def change_authentication_plugins(self, activate='', dochange=''):
     if not change_plugins:
         out.append("The following changes are not applied: you must run the script with the parameter '...?dochange=1'")
     
-    from Products.PluggableAuthService.interfaces.plugins import IAuthenticationPlugin
+    from Products.PluggableAuthService.interfaces.plugins import IAuthenticationPlugin    
     if change_activate:
         #read authentication_plugins_sites dtml doc
         if 'authentication_plugins_sites' not in self.objectIds():
@@ -882,34 +892,81 @@ def change_authentication_plugins(self, activate='', dochange=''):
         if 'authentication_plugins_sites' not in self.objectIds():
             self.manage_addDTMLDocument(id='authentication_plugins_sites', title='All authentication plugins sites')
             out.append("Document '%s/authentication_plugins_sites' added"%'/'.join(self.getPhysicalPath()))      
-        for objid in self.objectIds(('Plone Site', 'Folder')):
-            obj = getattr(self, objid)
-            if obj.meta_type == 'Folder':
-                for sobjid in obj.objectIds('Plone Site'):
-                    sobj = getattr(obj, sobjid)
-                    plugins = sobj.acl_users.plugins
-                    auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
-                    plugLine = objid + '/' + sobjid
-                    for plug in list(auth_plugins['active']):
-                        plugLine = plugLine + '\t' + str(plug)
-                        if change_plugins:
-                            #desactivate authentication plugins
-                            out.append('Desactivate plugins %s for %s'%(str(plug),sobjid))                  
-                            plugins.deactivatePlugin(IAuthenticationPlugin,plug) 
-                    txt.append(plugLine)
-            elif obj.meta_type == 'Plone Site':
-                plugins = obj.acl_users.plugins
-                auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
-                plugLine = objid
-                for plug in list(auth_plugins['active']):
-                    plugLine = plugLine + '\t' + str(plug)
-                    out.append('Desactivate plugins %s for %s'%(str(plug),objid))   
-                    if change_plugins:
-                        #desactivate authentication plugins                                           
-                        plugins.deactivatePlugin(IAuthenticationPlugin,plug)                     
-                txt.append(plugLine)    
+        allSiteObj = get_all_site_objects(self)        
+        for obj in allSiteObj:
+            objPath = ""
+            for i in range(1,len(obj.getPhysicalPath())-1):
+                objPath = objPath + obj.getPhysicalPath()[i] + '/'
+            objid = obj.getId()
+            plugins = obj.acl_users.plugins
+            auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
+            plugLine = objPath + objid
+            for plug in list(auth_plugins['active']):
+                plugLine = plugLine + '\t' + str(plug)
+                out.append('Desactivate plugins %s for %s'%(str(plug),objPath + objid))   
+                if change_plugins:
+                    #desactivate authentication plugins                                           
+                    plugins.deactivatePlugin(IAuthenticationPlugin,plug)                     
+            txt.append(plugLine)    
                          
         doc = self.authentication_plugins_sites
         doc.raw = '\n'.join(txt)
-        out.append("Document '%s/authentication_plugins_sites' updated !"%'/'.join(self.getPhysicalPath())) 
+        out.append("Document '/authentication_plugins_sites' updated !") 
+    return '\n'.join(out)
+    
+def install_plone_product(self, productName='', installMode='', dochange=''):
+    """
+        install/reinstall or uninstall a plone product
+    """
+
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    
+    out=[]
+    
+    if productName == "":
+        out.append("please, choose a product to install")
+        return '\n'.join(out)
+   
+    install_product=False
+    if installMode not in ('', '0', 'False', 'false'):
+        install_product=True
+    
+    execute_change=False
+    if dochange not in ('', '0', 'False', 'false'):
+        execute_change=True
+
+    if not execute_change:
+        out.append("The following changes are not applied: you must run the script with the parameter '...?dochange=1'")
+    
+    #get all site on root or in first folder (by mountpoint)
+    allSiteObj = get_all_site_objects(self) 
+    if install_product:
+        #install or re-install product
+        for obj in allSiteObj:
+            objid = obj.getId()
+            if not obj.portal_quickinstaller.isProductInstallable(productName):
+                out.append('Bad Product name %s for %s'%(productName,objid)) 
+                continue
+            if  obj.portal_quickinstaller.isProductInstalled(productName):
+                out.append('Re-install product %s for %s'%(productName,objid))  
+                if execute_change:
+                    obj.portal_quickinstaller.installProducts(productName, reinstall=True) 
+            else:
+                out.append('Install product %s for %s'%(productName,objid))  
+                if execute_change: 
+                    obj.portal_quickinstaller.installProducts([productName])                 
+    else:
+        #uninstall product
+        for obj in allSiteObj:
+            objid = obj.getId()
+            if not obj.portal_quickinstaller.isProductInstallable(productName):
+                out.append('Bad Product name %s for %s'%(productName,objid))    
+                continue        
+            if  obj.portal_quickinstaller.isProductInstalled(productName):
+                out.append('Uninstall product %s for %s'%(productName,objid))  
+                if execute_change:
+                   obj.portal_quickinstaller.uninstallProducts([productName]) 
+            else:
+                out.append('product %s not installed for %s'%(productName,objid))  
     return '\n'.join(out)
