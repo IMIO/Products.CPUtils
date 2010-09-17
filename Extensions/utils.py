@@ -627,7 +627,7 @@ def recreate_users_groups(self):
 
 def checkPOSKey(self):
     """
-        Call a method from the script checkPOSKeyErrors to check the dbs
+        Call a method from the script checks to check the dbs
     """
     lf = '<br />'
     from Products.CPUtils.scripts import checkPOSKeyErrors
@@ -830,6 +830,51 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
     out.append('</tbody></table>')
 
     return lf.join(out)
+    
+ ###############################################################################
+    
+def unregister_adapter(self, unregister=''):
+	    """
+	        unregister lost adapter (product removed from the file system)
+	        for error "AttributeError: type object 'IThemeSpecific' has no attribute 'isOrExtends' "
+	    """
+	    if not check_zope_admin():
+	        return "You must be a zope manager to run this script"
+	
+	    lf = '\n'
+	#    lf = '<br />'
+	    out = []
+	    out.append("<p>You can call the script with the following parameters:<br />")
+	    out.append("-> unregister=... => name of the adapter to unregister (default to empty => list all adapters)<br />")
+	
+	    from zope.component import getSiteManager
+	    from plone.browserlayer.interfaces import ILocalBrowserLayerType
+	    from Products.CMFCore.utils import getToolByName
+	    from five.customerize.interfaces import ITTWViewTemplate
+	    portal = getToolByName(self, "portal_url").getPortalObject()
+	    #import pdb; pdb.set_trace()
+	
+	    params = []
+	    components = getSiteManager(portal)
+	    for reg in components.registeredAdapters():
+	        if unregister:
+	            if reg.name == unregister:
+	                params = [reg.factory, reg.required, reg.provided]
+                    break
+	        else:
+	            out.append(reg.name)
+	    if unregister:
+	        try:
+	            if components.unregisterAdapter(params[0], params[1], params[2], unregister):
+	                out.append("Adapter '%s' unregistered"%unregister)
+	            else:
+	                out.append("Adapter '%s' not unregistered !"%unregister)
+	        except Exception, msg:
+	            out.append("Adapter '%s' not unregistered : %s"%(unregister, msg))
+	
+	    return lf.join(out)    
+
+###############################################################################
 
 def change_authentication_plugins(self, activate='', dochange=''):
     """
@@ -914,6 +959,8 @@ def change_authentication_plugins(self, activate='', dochange=''):
         out.append("Document '/authentication_plugins_sites' updated !") 
     return '\n'.join(out)
     
+###############################################################################
+    
 def install_plone_product(self, productName='', installMode='', dochange=''):
     """
         install/reinstall or uninstall a plone product
@@ -970,3 +1017,96 @@ def install_plone_product(self, productName='', installMode='', dochange=''):
             else:
                 out.append('product %s not installed for %s'%(productName,objid))  
     return '\n'.join(out)
+    
+###############################################################################
+    
+def send_adminMail(self, dochange=''):
+    """
+        send mail to all admin user
+    """
+
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    
+    out=[]
+
+    send_mail=False
+    if dochange not in ('', '0', 'False', 'false'):
+        send_mail=True
+
+    if not send_mail:
+        out.append("The following changes are not applied: you must run the script with the parameter '...?dochange=1'")
+    
+    #get all site on root or in first folder (by mountpoint)
+    allSiteObj = get_all_site_objects(self) 
+
+    sendMailToAllAdminUser
+    
+    return '\n'.join(out)
+    
+###############################################################################
+
+def checkInstance(self, isProductInstance=''):
+    if not check_zope_admin():
+        return 'checkInstance run with a non admin user: we go out'    
+    try:
+        out = []
+        
+        is_Product_Instance=False
+        if isProductInstance not in ('', '0', 'False', 'false'):
+            is_Product_Instance=True
+        if is_Product_Instance:
+            out.append('>> ---Start checkInstance on "product instance" in threat---')
+        else:
+            out.append('>> ---Start checkInstance "test instance" in threat---')
+
+        allSiteObj = get_all_site_objects(self)  
+        isProductInstance = self.getId()
+        
+        from Products.CMFCore.utils import getToolByName
+        for obj in allSiteObj:
+            objid = obj.getId()  
+            objPath = ""
+            for i in range(1,len(obj.getPhysicalPath())-1):
+                objPath = objPath + obj.getPhysicalPath()[i] + '/'            
+            out.append(">> Site in analyse : %s"%objPath+objid)     
+            #1. Check if we are in debugMode (only for product instance)
+            if is_Product_Instance:
+                out.append(">> Check debugMode")
+                if obj.portal_css.debugmode:
+                    out.append("!! Css : %s"%obj.portal_css.debugmode)
+                if obj.portal_javascripts.debugmode:
+                    out.append("!! Javascripts : %s"%obj.portal_javascripts.debugmode)
+                if obj.portal_kss.debugmode:
+                    out.append("!! Kss : %s"%obj.portal_kss.debugmode) 
+            #2. Check if robot.txt exist in test instance and not exist in product instance
+            out.append(">> Check robots.txt")               
+            if is_Product_Instance and hasattr(obj.portal_skins.custom,"robots.txt"):
+                out.append("!! Have a file named 'robots.txt'")   
+            elif not is_Product_Instance and not hasattr(obj.portal_skins.custom,"robots.txt"):
+                out.append("!! Haven't a file named 'robots.txt'") 
+            #3. Check if hidden product properties exist
+            out.append(">> Check hidden product properties")
+            portal = getToolByName(obj, 'portal_url').getPortalObject()
+            if not hasattr(portal, 'hiddenProducts'):
+                out.append("!! No hidden product properties")            
+            #4. Check if connexion plugins is activate
+            out.append(">> Check connexion plugins")
+            plugins = obj.acl_users.plugins
+            auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
+            if not auth_plugins['active']:
+                out.append('!! No connexion plugins is activate')           
+            #5. Check if Ids is correct (without space)
+            out.append(">> Check Ids")
+            if objid.find(' ') >= 0:                
+                out.append("!! this site (%s) contain space characters in id"%objid)            
+            #6. Check if cache setup is installed (only for product instance)
+            if is_Product_Instance:
+                out.append(">> Check CacheSetup")
+                if  not obj.portal_quickinstaller.isProductInstalled("CacheSetup"):
+                    out.append("!! cache setup isn't installed")
+            out.append("")
+        return '\n'.join(out)
+    except Exception, message:
+        out.append("!! error in checkinstance %s"%str(message))
+        return '\n'.join(out) 
