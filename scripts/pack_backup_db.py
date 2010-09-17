@@ -10,28 +10,11 @@ import sys, urllib, os
 import datetime
 import shutil
 from datetime import datetime 
+from utils import *
 
-method = 'cputils_pack_db'
-module = 'CPUtils.utils'
-function = 'pack_db'
 buildout_inst_type = None #True for buildout, False for manual instance
 zeo_type = False #True for zeo
 BACKUP_DIR = '/srv/backups/zope'
-
-def verbose(*messages):
-    print '>>', ' '.join(messages)
-def error(*messages):
-#    print >>sys.stderr, '!!', (' '.join(messages))
-    print '!!', (' '.join(messages))
-
-#------------------------------------------------------------------------------
-
-class MyUrlOpener(urllib.FancyURLopener):
-    def prompt_user_passwd(self, host, realm):
-        return (user,pwd)
-    def __init__(self, *args):
-        self.version = "Zope Packer"
-        urllib.FancyURLopener.__init__(self, *args)
 
 #------------------------------------------------------------------------------
 
@@ -61,159 +44,11 @@ def runCommand(cmd):
         error("Cannot open %s file" % '_cmd_zr.err')
     return( stdout,stderr )
 
-#------------------------------------------------------------------------------
-
-def read_zopeconffile(zodbfilename, lines):
-    """ read the zope conf filename and include subfile """
-    try:
-        zfile = open( zodbfilename, 'r')
-    except IOError:
-        error("! Cannot open %s file" % zodbfilename)
-        return
-    for line in zfile.readlines():
-        line = line.strip('\n\t ')
-        if line.startswith('%include'):
-            otherfilename = line.split()[1]
-            read_zopeconffile(otherfilename, lines)
-            continue
-        lines.append(line)
-
-#------------------------------------------------------------------------------
-
-def treat_zopeconflines(zodbfilename):
-    """
-        read zope configuration lines to get informations
-    """
-    lines = []
-    read_zopeconffile(zodbfilename, lines)
-    zeo_fs = {}
-    if zeo_type:
-        zeoconffile = os.path.join(instdir, 'parts', 'zeo', 'etc', 'zeo.conf')
-        lines2 = []
-        read_zopeconffile(zeoconffile, lines2)
-        fsflag = False
-        fsnb = 0
-        for line in lines2:
-            if line.startswith('<filestorage '):
-                fsflag = True
-                fsnb = line.split()[1].strip(' >')
-                #verbose("fsnb '%s'"%fsnb)
-                continue
-            if fsflag and line.startswith('path '):
-                fsflag = False
-                fs = line.split()[1]
-                fs = os.path.basename(fs)
-                #verbose("fs '%s'"%fs)
-                if zeo_fs.has_key(fsnb):
-                    error("Filestorage number '%s' already found"%fsnb)
-                else:
-                    zeo_fs[fsnb] = fs
-                fsflag = False
-                fsnb = 0
-                continue
-    port = ''
-    httpflag = False
-    fsflag = False
-    dbs = []
-    dbname = ''
-    for line in lines:
-        #verbose("=>'%s'"%line)
-        if line.startswith('<http-server>'):
-            httpflag = True
-            continue
-        if httpflag and line.startswith('address'):
-            port = line.split()[1]
-            httpflag = False
-            continue
-        if line.startswith('<zodb_db'):
-            if dbname:
-                error("\tnext db found while fs not found: previous dbname '%s', current line '%s'"%(dbname, line))
-            dbname = line.split()[1]
-            dbname = dbname.rstrip('>')
-            if dbname == 'temporary':
-                dbname = ''
-        if line.startswith('storage '): # ZEO
-            fsnb = line.split()[1]
-            if zeo_fs.has_key(fsnb):
-                dbs.append([dbname, zeo_fs[fsnb]])
-            else:
-                error("Filestorage number '%s' not found in zeo.conf ?"%fsnb)
-            dbname = ''
-            continue
-        if line.startswith('<filestorage>'): # NOT ZEO
-            fsflag = True
-            continue
-        if fsflag and line.startswith('path'): # NOT ZEO
-            fsflag = False
-            fs = line.split()[1]
-            fs = os.path.basename(fs)
-            dbs.append([dbname, fs])
-            dbname = ''
-            continue
-    verbose("\tport='%s', dbs='%s'"%(port, ';'.join([','.join(dbinfo) for dbinfo in dbs])))
 
     if not port:
         error("! the port was not found in the config file '%s'"%zodbfilename)
 
     return(port, dbs)
-
-#------------------------------------------------------------------------------
-
-def read_zopectlfile(zopectlfilename):
-    """ read the zopectl file to find the zope path """
-    try:
-        zfile = open( zopectlfilename, 'r')
-    except IOError:
-        error("! Cannot open %s file" % zopectlfilename)
-        return
-    zopepath = ''
-    pythonfile = ''
-    for line in zfile.readlines():
-        line = line.strip('\n\t ')
-        if line.startswith('ZOPE_HOME'):
-            zopepath = line.split('=')[1]
-            zopepath = zopepath.strip('"\' ')
-        elif line.startswith('PYTHON='):
-            pythonfile = line.split('=')[1]
-            pythonfile = pythonfile.strip('"\' ')
-    return(zopepath, pythonfile)
-
-#------------------------------------------------------------------------------
-
-def packdb(port, db):
-    host = "http://localhost:%s" % port
-    urllib._urlopener = MyUrlOpener()
-    start = datetime.now()
-    verbose("\tPacking db '%s' for instance %s (%s days)" % (db, host, days))    
-    url_spd = "%s/Control_Panel/Database/%s/%s?days:float=%s" % (host, db, method, days)
-    #verbose("url='%s'"%url_spd)
-    try:
-        ret_html = urllib.urlopen(url_spd).read()
-        if 'the requested resource does not exist' in ret_html or 'error was encountered while publishing this resource' in ret_html:
-            verbose('\texternal method %s not exist : we will create it'%method)
-            url_em = "%s/manage_addProduct/ExternalMethod/manage_addExternalMethod?id=%s&module=%s&function=%s&title="%(host, method, module, function)
-            try:
-                ret_html = urllib.urlopen(url_em).read()
-                if 'the requested resource does not exist' in ret_html or 'error was encountered while publishing this resource' in ret_html:
-                    error('! Cannot create external method in zope')
-                elif 'The specified module,' in ret_html:
-                    error('! The specified module %s is not present in the instance'%module)
-                else:
-                    try:
-                        ret_html = urllib.urlopen(url_spd).read()
-#                            if "/Control_Panel/Database/%s"%db not in ret_html:
-#                                error("Problem during compression of %s"%db)
-#                                log.debug(ret_html) 
-                        verbose("\t%s"%ret_html)
-                    except IOError, msg:
-                        error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
-            except Exception, msg:
-                error("! Cannot open URL %s, aborting : %s" % (url_em, msg))
-        else:
-            verbose("\t%s"%ret_html)
-    except IOError, msg:
-        error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
-    verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
 
 #------------------------------------------------------------------------------
 
@@ -307,7 +142,7 @@ def main():
             verbose("\t%s deleted when full backup" % (backupdir))
     # Treating each db
     for db in dbs:
-        packdb(port,db[0])
+        packdb(port, db[0], days, 'cputils_pack_db', 'CPUtils.utils', 'pack_db'))
         backupdb(db[1], zopepath, fspath, pythonfile)
 
     for file in shutil.os.listdir(fspath):
