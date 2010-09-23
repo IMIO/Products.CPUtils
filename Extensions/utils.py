@@ -1127,18 +1127,22 @@ def checkInstance(self, isProductInstance=''):
             #1. Check if we are in debugMode (only for product instance)
             if is_Product_Instance:
                 out.append(">> Check debugMode")
-                if obj.portal_css.debugmode:
-                    out.append("!! Css : %s"%obj.portal_css.debugmode)
-                if obj.portal_javascripts.debugmode:
-                    out.append("!! Javascripts : %s"%obj.portal_javascripts.debugmode)
-                if obj.portal_kss.debugmode:
-                    out.append("!! Kss : %s"%obj.portal_kss.debugmode) 
+                if hasattr(obj,"portal_css"):                
+                    if obj.portal_css.debugmode:
+                        out.append("!! Css : %s"%obj.portal_css.debugmode)
+                if hasattr(obj,"portal_javascripts"): 
+                    if obj.portal_javascripts.debugmode:
+                        out.append("!! Javascripts : %s"%obj.portal_javascripts.debugmode)
+                if hasattr(obj,"portal_kss"): 
+                    if obj.portal_kss.debugmode:
+                        out.append("!! Kss : %s"%obj.portal_kss.debugmode) 
             #2. Check if robot.txt exist in test instance and not exist in product instance
-            out.append(">> Check robots.txt")               
-            if is_Product_Instance and hasattr(obj.portal_skins.custom,"robots.txt"):
-                out.append("!! Have a file named 'robots.txt'")   
-            elif not is_Product_Instance and not hasattr(obj.portal_skins.custom,"robots.txt"):
-                out.append("!! Haven't a file named 'robots.txt'") 
+            out.append(">> Check robots.txt")   
+            if hasattr(obj,"portal_skins.custom"):            
+                if is_Product_Instance and hasattr(obj.portal_skins.custom,"robots.txt"):
+                    out.append("!! Have a file named 'robots.txt'")   
+                elif not is_Product_Instance and not hasattr(obj.portal_skins.custom,"robots.txt"):
+                    out.append("!! Haven't a file named 'robots.txt'") 
             #3. Check if hidden product properties exist
             out.append(">> Check hidden product properties")
             portal = getToolByName(obj, 'portal_url').getPortalObject()
@@ -1157,8 +1161,9 @@ def checkInstance(self, isProductInstance=''):
             #6. Check if cache setup is installed (only for product instance)
             if is_Product_Instance:
                 out.append(">> Check CacheSetup")
-                if  not obj.portal_quickinstaller.isProductInstalled("CacheSetup"):
-                    out.append("!! cache setup isn't installed")
+                if hasattr(obj,"portal_quickinstaller"):
+                    if  not obj.portal_quickinstaller.isProductInstalled("CacheSetup"):
+                        out.append("!! cache setup isn't installed")
             out.append("")
         return '\n'.join(out)
     except Exception, message:
