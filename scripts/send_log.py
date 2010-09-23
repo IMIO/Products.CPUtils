@@ -17,7 +17,7 @@ def error(*messages):
 #------------------------------------------------------------------------------
 
 MAIL = "/usr/sbin/sendmail"
-logfilename = '/var/log/cron_scripts.log'
+logfilenames = ('/var/log/cron_scripts.log','/var/log/cron_scripts_checkInstances.log')
 hostname = 'mydomain.be'
 today = datetime.date.today().strftime("%Y-%m-%d")
 yesterday = (datetime.date.today()-datetime.timedelta(1)).strftime("%Y-%m-%d")
@@ -59,7 +59,8 @@ def read_log_file(filename, lines):
 
 verbose("Searching in log between %s and %s"%(yesterday, today))
 
-read_log_file(logfilename, bodylines)
+for logfilename in logfilenames:
+    read_log_file(logfilename, bodylines)
 # when logrotate is run, the logfile is cleared and 
 # renamed in .1 (with 'delaycompress' option for logrotate)
 # we open the .1 file to get those lines
