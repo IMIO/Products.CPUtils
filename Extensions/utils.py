@@ -978,13 +978,30 @@ def install_plone_product(self, productName='', installMode='', dochange=''):
     
     out=[]
     
+    out.append('<head><style type="text/css">')
+    out.append("table { border: 1px solid black; border-collapse:collapse; }")
+    out.append("table th { border: 1px solid black; background: #8297FD; }")
+    out.append("table td { border: 1px solid black; padding: 2px }")
+    out.append(".red { color: red; } ")
+    out.append(".green { color: green; } ")
+    out.append("</style></head>")
+    out.append('<h2>Install, Uninstall or Re-Install product</h2>')
+    out.append("<p>You can call the script with the following parameters:<br />")
+    out.append("-> productName=name of product => ie. contact<br />")
+    out.append("-> installMode='I','U' or 'R' => Install (Re-Install if product exist), Uninstall or Re-install (not install if product doesn't exist)<br />")
+    out.append("-> (Optional) dochange=1 => really do the change. By default, only prints changes<br />")
+    out.append("<p>by example /install_plone_product?productName=Linguaplone&installMode=I&dochange=1</p>")
+    
+    out.append("<table><thead><tr>")
+    out.append("</tr></thead><tbody>")    
     if productName == "":
-        out.append("please, choose a product to install")
+        out.append("""<tr><td class="red">please, choose a product to install</td><td class="red"></td></tr>""")
         return '\n'.join(out)
    
-    install_product=False
-    if installMode not in ('', '0', 'False', 'false'):
-        install_product=True
+    if installMode not in ('I', 'U', 'R'):
+        out.append("""<tr><td class="red">please, installMode must be in 'I','U' or 'R'</td><td class="red"></td></tr>""")
+        return '\n'.join(out)
+    out.append('</tbody></table>')
     
     execute_change=False
     if dochange not in ('', '0', 'False', 'false'):
@@ -995,19 +1012,19 @@ def install_plone_product(self, productName='', installMode='', dochange=''):
     
     #get all site on root or in first folder (by mountpoint)
     allSiteObj = get_all_site_objects(self) 
-    if install_product:
+    if installMode in ('I','R'):
         #install or re-install product
         for obj in allSiteObj:
             objid = obj.getId()
             if not obj.portal_quickinstaller.isProductInstallable(productName):
-                out.append('Bad Product name %s for %s'%(productName,objid)) 
+                out.append('<p>Bad Product name %s for %s</p>'%(productName,objid)) 
                 continue
-            if  obj.portal_quickinstaller.isProductInstalled(productName):
-                out.append('Re-install product %s for %s'%(productName,objid))  
+            if  obj.portal_quickinstaller.isProductInstalled(productName):                
+                out.append('<p>Re-install product %s for %s</p>'%(productName,objid))  
                 if execute_change:
                     obj.portal_quickinstaller.installProducts(productName, reinstall=True) 
-            else:
-                out.append('Install product %s for %s'%(productName,objid))  
+            elif installMode == 'I':
+                out.append('<p>Install product %s for %s</p>'%(productName,objid))  
                 if execute_change: 
                     obj.portal_quickinstaller.installProducts([productName])                 
     else:
@@ -1015,14 +1032,12 @@ def install_plone_product(self, productName='', installMode='', dochange=''):
         for obj in allSiteObj:
             objid = obj.getId()
             if not obj.portal_quickinstaller.isProductInstallable(productName):
-                out.append('Bad Product name %s for %s'%(productName,objid))    
+                out.append('<p>Bad Product name %s for %s</p>'%(productName,objid))    
                 continue        
             if  obj.portal_quickinstaller.isProductInstalled(productName):
-                out.append('Uninstall product %s for %s'%(productName,objid))  
+                out.append('<p>Uninstall product %s for %s</p>'%(productName,objid))  
                 if execute_change:
-                   obj.portal_quickinstaller.uninstallProducts([productName]) 
-            else:
-                out.append('product %s not installed for %s'%(productName,objid))  
+                   obj.portal_quickinstaller.uninstallProducts([productName])  
     return '\n'.join(out)
     
 ###############################################################################
