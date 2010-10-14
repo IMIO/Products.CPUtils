@@ -142,7 +142,7 @@ def main():
             verbose("\t%s deleted when full backup" % (backupdir))
     # Treating each db
     for db in dbs:
-        packdb(port, db[0], days, 'cputils_pack_db', 'CPUtils.utils', 'pack_db'))
+        packdb(port, db[0], days, 'cputils_pack_db', 'CPUtils.utils', 'pack_db')
         backupdb(db[1], zopepath, fspath, pythonfile)
 
     for file in shutil.os.listdir(fspath):
