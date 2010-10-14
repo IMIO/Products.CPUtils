@@ -122,7 +122,10 @@ class MyUrlOpener(urllib.FancyURLopener):
  
  #------------------------------------------------------------------------------
 
-def packdb(port, db, days, method, module, function):
+def packdb(port, db, days, method, module, function, user_, pwd_):
+    global user, pwd
+    user = user_
+    pwd = pwd_
     host = "http://localhost:%s" % port
     urllib._urlopener = MyUrlOpener()
     start = datetime.now()

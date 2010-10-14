@@ -52,6 +52,85 @@ def runCommand(cmd):
 
 #------------------------------------------------------------------------------
 
+def treat_zopeconflines(zodbfilename):
+    """
+        read zope configuration lines to get informations
+    """
+    lines = []
+    read_zopeconffile(zodbfilename, lines)
+    zeo_fs = {}
+    if zeo_type:
+        zeoconffile = os.path.join(instdir, 'parts', 'zeo', 'etc', 'zeo.conf')
+        lines2 = []
+        read_zopeconffile(zeoconffile, lines2)
+        fsflag = False
+        fsnb = 0
+        for line in lines2:
+            if line.startswith('<filestorage '):
+                fsflag = True
+                fsnb = line.split()[1].strip(' >')
+                #verbose("fsnb '%s'"%fsnb)
+                continue
+            if fsflag and line.startswith('path '):
+                fsflag = False
+                fs = line.split()[1]
+                fs = os.path.basename(fs)
+                #verbose("fs '%s'"%fs)
+                if zeo_fs.has_key(fsnb):
+                    error("Filestorage number '%s' already found"%fsnb)
+                else:
+                    zeo_fs[fsnb] = fs
+                fsflag = False
+                fsnb = 0
+                continue
+    port = ''
+    httpflag = False
+    fsflag = False
+    dbs = []
+    dbname = ''
+    for line in lines:
+        #verbose("=>'%s'"%line)
+        if line.startswith('<http-server>'):
+            httpflag = True
+            continue
+        if httpflag and line.startswith('address'):
+            port = line.split()[1]
+            httpflag = False
+            continue
+        if line.startswith('<zodb_db'):
+            if dbname:
+                error("\tnext db found while fs not found: previous dbname '%s', current line '%s'"%(dbname, line))
+            dbname = line.split()[1]
+            dbname = dbname.rstrip('>')
+            if dbname == 'temporary':
+                dbname = ''
+        if line.startswith('storage '): # ZEO
+            fsnb = line.split()[1]
+            if zeo_fs.has_key(fsnb):
+                dbs.append([dbname, zeo_fs[fsnb]])
+            else:
+                error("Filestorage number '%s' not found in zeo.conf ?"%fsnb)
+            dbname = ''
+            continue
+        if line.startswith('<filestorage>'): # NOT ZEO
+            fsflag = True
+            continue
+        if fsflag and line.startswith('path'): # NOT ZEO
+            fsflag = False
+            fs = line.split()[1]
+            fs = os.path.basename(fs)
+            dbs.append([dbname, fs])
+            dbname = ''
+            continue
+    verbose("\tport='%s', dbs='%s'"%(port, ';'.join([','.join(dbinfo) for dbinfo in dbs])))
+
+    if not port:
+        error("! the port was not found in the config file '%s'"%zodbfilename)
+
+    return(port, dbs)
+
+#------------------------------------------------------------------------------
+
 def backupdb(fs, zopepath, fspath, pythonfile):
     """ call the repozo script to backup file """
     repozofilename = os.path.join(zopepath, 'bin', 'repozo.py')
@@ -142,8 +221,8 @@ def main():
             verbose("\t%s deleted when full backup" % (backupdir))
     # Treating each db
     for db in dbs:
-        packdb(port, db[0], days, 'cputils_pack_db', 'CPUtils.utils', 'pack_db')
-        backupdb(db[1], zopepath, fspath, pythonfile)
+        packdb(port, db[0], days, 'cputils_pack_db', 'CPUtils.utils', 'pack_db', user,  pwd)
+        #backupdb(db[1], zopepath, fspath, pythonfile)
 
     for file in shutil.os.listdir(fspath):
         if file.endswith('.fs.old'):
