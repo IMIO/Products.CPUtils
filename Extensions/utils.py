@@ -1022,7 +1022,7 @@ def install_plone_product(self, productName='', installMode='', dochange=''):
             if  obj.portal_quickinstaller.isProductInstalled(productName):                
                 out.append('<p>Re-install product %s for %s</p>'%(productName,objid))  
                 if execute_change:
-                    obj.portal_quickinstaller.installProducts(productName, reinstall=True) 
+                    obj.portal_quickinstaller.installProducts([productName], reinstall=True) 
             elif installMode == 'I':
                 out.append('<p>Install product %s for %s</p>'%(productName,objid))  
                 if execute_change: 
