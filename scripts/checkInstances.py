@@ -29,8 +29,8 @@ def main():
 
     # Finding the instance type (buildout or manual)
     if os.path.exists(os.path.join(instdir,'parts')):
-        buildout_inst_type = True
-        verbose("\tInstance is a buildout !")
+        buildout_inst_type = True 
+        #verbose("\tInstance is a buildout !")
     elif os.path.exists(os.path.join(instdir,'etc')):
         buildout_inst_type = False
         verbose("\tInstance is a manual installation !")
@@ -79,6 +79,6 @@ except ValueError:
     sys.exit(1)
 
 if __name__ == '__main__':
-    verbose("Begin of %s"%sys.argv[0])
+    #verbose("Begin of %s"%sys.argv[0])
     main()
-    verbose("End of %s"%sys.argv[0])
+    #verbose("End of %s"%sys.argv[0])
