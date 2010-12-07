@@ -44,7 +44,7 @@ def main():
     # Finding the instance type (buildout or manual)
     if os.path.exists(os.path.join(instdir,'parts')):
         buildout_inst_type = True
-        verbose("\tInstance is a buildout !")
+        #verbose("\tInstance is a buildout !")
     elif os.path.exists(os.path.join(instdir,'etc')):
         buildout_inst_type = False
         verbose("\tInstance is a manual installation !")
@@ -136,15 +136,15 @@ def _sub(master, errors):
 #------------------------------------------------------------------------------
 
 def check(app, errors=[]):
-    verbose("Begin of POSKey check")
+    #verbose("Begin of POSKey check")
     sys.setrecursionlimit(20000)
     _sub(app, errors)
-    verbose("End of POSKey check")
+    #verbose("End of POSKey check")
 
 #------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
-    verbose("Begin of %s"%sys.argv[0])
+    #verbose("Begin of %s"%sys.argv[0])
     main()
-    verbose("End of %s"%sys.argv[0])
+    #verbose("End of %s"%sys.argv[0])
