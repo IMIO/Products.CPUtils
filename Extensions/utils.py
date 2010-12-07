@@ -643,8 +643,8 @@ def checkPOSKey(self):
 
     errors = []
     checkPOSKeyErrors.check(self, errors)
-    if not errors:
-        errors.append('No POSKey errors found')
+#    if not errors:
+#        errors.append('No POSKey errors found')
     return lf.join(errors)
 
 ###############################################################################
@@ -1124,10 +1124,10 @@ def checkInstance(self, isProductInstance=''):
         is_Product_Instance=False
         if isProductInstance not in ('', '0', 'False', 'false'):
             is_Product_Instance=True
-        if is_Product_Instance:
-            out.append('>> ---Start checkInstance on "product instance" in threat---')
-        else:
-            out.append('>> ---Start checkInstance "test instance" in threat---')
+        #if is_Product_Instance:
+            #out.append('>> ---Start checkInstance on "product instance" in threat---')
+        #else:
+            #out.append('>> ---Start checkInstance "test instance" in threat---')
 
         allSiteObj = get_all_site_objects(self)  
         isProductInstance = self.getId()
@@ -1138,48 +1138,48 @@ def checkInstance(self, isProductInstance=''):
             objPath = ""
             for i in range(1,len(obj.getPhysicalPath())-1):
                 objPath = objPath + obj.getPhysicalPath()[i] + '/'            
-            out.append(">> Site in analyse : %s"%objPath+objid)     
+            #out.append(">> Site in analyse : %s"%objPath+objid)     
             #1. Check if we are in debugMode (only for product instance)
             if is_Product_Instance:
-                out.append(">> Check debugMode")
+                #out.append(">> Check debugMode")
                 if hasattr(obj,"portal_css"):                
                     if obj.portal_css.debugmode:
-                        out.append("!! Css : %s"%obj.portal_css.debugmode)
+                        out.append("!! %s (debugMode) >>> Css : %s"%(objPath+objid,obj.portal_css.debugmode))
                 if hasattr(obj,"portal_javascripts"): 
                     if obj.portal_javascripts.debugmode:
-                        out.append("!! Javascripts : %s"%obj.portal_javascripts.debugmode)
+                        out.append("!! %s (debugMode) >>> Javascripts : %s"%(objPath+objid,obj.portal_javascripts.debugmode))
                 if hasattr(obj,"portal_kss"): 
                     if obj.portal_kss.debugmode:
-                        out.append("!! Kss : %s"%obj.portal_kss.debugmode) 
+                        out.append("!! %s (debugMode) >>> Kss : %s"%(objPath+objid,obj.portal_kss.debugmode))
             #2. Check if robot.txt exist in test instance and not exist in product instance
-            out.append(">> Check robots.txt")   
+            #out.append(">> Check robots.txt")   
             if hasattr(obj,"portal_skins.custom"):            
                 if is_Product_Instance and hasattr(obj.portal_skins.custom,"robots.txt"):
-                    out.append("!! Have a file named 'robots.txt'")   
+                    out.append("!! %s >>> Have a file named 'robots.txt'"%(objPath+objid))   
                 elif not is_Product_Instance and not hasattr(obj.portal_skins.custom,"robots.txt"):
-                    out.append("!! Haven't a file named 'robots.txt'") 
+                    out.append("!! %s >>> Haven't a file named 'robots.txt'"%(objPath+objid)) 
             #3. Check if hidden product properties exist
-            out.append(">> Check hidden product properties")
+            #out.append(">> Check hidden product properties")
             portal = getToolByName(obj, 'portal_url').getPortalObject()
             if not hasattr(portal, 'hiddenProducts'):
-                out.append("!! No hidden product properties")            
+                out.append("!! %s >>> No hidden product properties"%(objPath+objid))            
             #4. Check if connexion plugins is activate
-            out.append(">> Check connexion plugins")
+            #out.append(">> Check connexion plugins")
             plugins = obj.acl_users.plugins
             auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
             if not auth_plugins['active']:
-                out.append('!! No connexion plugins is activate')           
+                out.append('!! %s >>> No connexion plugins is activate'%(objPath+objid))           
             #5. Check if Ids is correct (without space)
-            out.append(">> Check Ids")
+            #out.append(">> Check Ids")
             if objid.find(' ') >= 0:                
-                out.append("!! this site (%s) contain space characters in id"%objid)            
+                out.append("!! %s >>> this site (%s) contain space characters in id"%(objPath+objid,objid))            
             #6. Check if cache setup is installed (only for product instance)
             if is_Product_Instance:
-                out.append(">> Check CacheSetup")
+                #out.append(">> Check CacheSetup")
                 if hasattr(obj,"portal_quickinstaller"):
                     if  not obj.portal_quickinstaller.isProductInstalled("CacheSetup"):
-                        out.append("!! cache setup isn't installed")
-            out.append("")
+                        out.append("!! %s >>> cache setup isn't installed"%(objPath+objid))
+            #out.append("")
         return '\n'.join(out)
     except Exception, message:
         out.append("!! error in checkinstance %s"%str(message))
