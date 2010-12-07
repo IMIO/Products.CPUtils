@@ -172,14 +172,14 @@ def CreateAndCallExternalMethod(port, user_, pwd_, ext_method, ext_filename,func
     url_pv = "%s/%s%s" % (host, ext_method, param)
     current_url = url_pv
     try:
-        verbose("Running '%s'"%current_url)
+        #verbose("Running '%s'"%current_url)
         ret_html = urllib.urlopen(current_url).read()
         if 'the requested resource does not exist' in ret_html:
             verbose('external method %s not exist : we will create it'%ext_method)
             (module, extension) = os.path.splitext(ext_filename)
             module = 'CPUtils.' + module
             current_url = "%s/manage_addProduct/ExternalMethod/manage_addExternalMethod?id=%s&module=%s&function=%s&title="%(host, ext_method, module, function)
-            verbose("Running now '%s'"%current_url)
+            #verbose("Running now '%s'"%current_url)
             ret_html = urllib.urlopen(current_url).read()  
             if 'the requested resource does not exist' in ret_html or \
                 ('The specified module' in ret_html and "couldn't be found" in ret_html):
@@ -187,7 +187,7 @@ def CreateAndCallExternalMethod(port, user_, pwd_, ext_method, ext_filename,func
                 sys.exit(1)
             else:
                 current_url = "%s/%s/valid_roles" % (host, ext_method)
-                verbose("Running now '%s'"%current_url)
+                #verbose("Running now '%s'"%current_url)
                 ret_html = urllib.urlopen(current_url).read()
                 if not ret_html[0] == '(':
                     error("error with valid_roles return: '%s'"%ret_html)
@@ -195,7 +195,7 @@ def CreateAndCallExternalMethod(port, user_, pwd_, ext_method, ext_filename,func
                 valid_roles = list(eval(ret_html))
                 managerindex = valid_roles.index('Manager')
                 current_url = "%s/%s/permission_settings" % (host, ext_method)
-                verbose("Running now '%s'"%current_url)
+                #verbose("Running now '%s'"%current_url)
                 ret_html = urllib.urlopen(current_url).read()
                 if not ret_html[0] == '[':
                     error("error with permission_settings return: '%s'"%ret_html)
@@ -210,7 +210,7 @@ def CreateAndCallExternalMethod(port, user_, pwd_, ext_method, ext_filename,func
                         params['a%d'%count] = 'on'
                     count += 1
                 current_url = "%s/%s/manage_changePermissions" % (host, ext_method)
-                verbose("Running now '%s'"%current_url)
+                #verbose("Running now '%s'"%current_url)
 # params example                       params = {  'permission_to_manage':'View', 
 #                                    'roles':['Manager'], }
                 data = urllib.urlencode(params)
@@ -219,9 +219,11 @@ def CreateAndCallExternalMethod(port, user_, pwd_, ext_method, ext_filename,func
                     error("Error changing permissions with URL '%s', data '%s'" % (current_url,str(data)))
                     sys.exit(1)
                 current_url = url_pv
-                verbose("Running again '%s'"%current_url)
+                #verbose("Running again '%s'"%current_url)
                 ret_html = urllib.urlopen(current_url).read()
-        verbose("callAndCreateExternalMethod : \n%s"%ret_html)
+        #verbose("callAndCreateExternalMethod : \n%s"%ret_html)
+        if ret_html:
+            verbose('%s'%ret_html)
     except Exception, msg:
         error("Cannot open URL %s, aborting: '%s'" % (current_url,msg))
         sys.exit(1)
