@@ -48,7 +48,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -1184,3 +1184,17 @@ def checkInstance(self, isProductInstance=''):
     except Exception, message:
         out.append("!! error in checkinstance %s"%str(message))
         return '\n'.join(out) 
+
+###############################################################################
+
+def list_portlets(self):
+    if not check_zope_admin():
+        return 'checkInstance run with a non admin user: we go out'    
+
+    from zope.annotation.interfaces import IAnnotations
+    #import pdb; pdb.set_trace()
+    out = []
+    ann = IAnnotations(self)
+    out.append("left: "+str(dict(ann['plone.portlets.contextassignments']['plone.leftcolumn'])))
+    out.append("right: "+str(dict(ann['plone.portlets.contextassignments']['plone.rightcolumn'])))
+    return "\n".join(out)
