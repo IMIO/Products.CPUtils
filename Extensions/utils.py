@@ -477,7 +477,7 @@ def ploneboard_correct_modified(self, dochange=''):
 
 ###############################################################################
 
-def configure_fckeditor(self, default=1, allusers=1, custom=1):
+def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
     """
         configure fckeditor with default parameters.
         This method can be called as an external method, with the following parameters : ...?default=1&alluser=0&custom=0
@@ -509,6 +509,12 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1):
         if fckprops.getProperty('fck_toolbar') != 'Custom':
             fckprops.manage_changeProperties(fck_custom_toolbar="[\n ['Templates','rtSpellCheck'],\n ['Cut','Copy','Paste','PasteText','PasteWord'],\n ['Undo','Redo','-','Find','Replace','-','RemoveFormat'],\n ['Bold','Italic','Underline','StrikeThrough'],\n ['OrderedList','UnorderedList'],\n ['JustifyLeft','JustifyCenter','JustifyRight','JustifyFull'],\n ['Link','Unlink'],\n ['Image','imgmapPopup','Table','Rule','SpecialChar'],\n ['Style','FontFormat','TextColor'],\n ['FitWindow'],['Source']\n]")
             fckprops.manage_changeProperties(fck_toolbar='Custom')
+
+    #removing javascript merge option on fcksetting custom toolbar
+    if nomerge:
+        pjs = getToolByName(self, 'portal_javascripts')
+        pjs.updateScript('fckeditor.js', cookable=False)
+
 
 ###############################################################################
 
