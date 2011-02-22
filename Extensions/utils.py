@@ -759,6 +759,7 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
 
+    import Missing
     lf = '\n'
 #    lf = '<br />'
     separator = ','
@@ -812,33 +813,47 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
     out.append("<p>Number of retrieved objects (not filtered): %d</p>"%len(results))
     out.append("<table><thead><tr>")
     out.append("<th>Language</th>")
+    out.append("<th>Metadata</th>")
     out.append("<th>Path</th>")
     out.append("<th>New value</th>")
     out.append("</tr></thead><tbody>")
 
     #out.append("<tr><td>%s</td></tr>"%';'.join(filters))
-
+    #import pdb; pdb.set_trace()
     for brain in results:
         obj = brain.getObject()
+        #metadata can be missing !
+        if brain.Language == Missing.MV:
+            meta_lang = 'Missing.Value'
+        elif brain.Language == '':
+            meta_lang = 'neutral'
+        else:
+            meta_lang = brain.Language
+        #we use obj instead
+        if obj.getLanguage() == '':
+            current_lang = 'neutral'
+        else:
+            current_lang = obj.getLanguage()
+
         #we first search for translated objects: no change for those objects
         #condition= already language and canonical with translations
-        if brain.Language and obj.isCanonical() and obj.getDeletableLanguages():
+        if current_lang and obj.isCanonical() and obj.getDeletableLanguages():
             if 1 in filters:
-                out.append("""<tr><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="green">canonical</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+                out.append("""<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="green">canonical</td></tr>""" % (current_lang, meta_lang, brain.getURL(), brain.getPath()))
         #condition= already language and not canonical = translation
-        elif brain.Language and not obj.isCanonical():
+        elif current_lang and not obj.isCanonical():
             if 2 in filters:
-                out.append("""<tr><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="green">translation</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+                out.append("""<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="green">translation</td></tr>""" % (current_lang, meta_lang, brain.getURL(), brain.getPath()))
         #no translation and language must be changed
-        elif brain.Language != default:
+        elif current_lang != default:
             if 3 in filters:
-                out.append("""<tr><td class="red">%s</td><td><a href="%s" target="_blank">%s</a></td><td class="red">%s</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath(), default or "neutral"))
+                out.append("""<tr><td class='red'>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="red">%s</td></tr>""" % (current_lang, meta_lang, brain.getURL(), brain.getPath(), default or "neutral"))
                 if change_property:
                     obj.setLanguage(default)
                     obj.reindexObject()
         #no change
         elif 4 in filters:
-            out.append("""<tr><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td>unchanged</td></tr>""" % (brain.Language, brain.getURL(), brain.getPath()))
+            out.append("""<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td>unchanged</td></tr>""" % (current_lang, meta_lang, brain.getURL(), brain.getPath()))
 
     out.append('</tbody></table>')
 
