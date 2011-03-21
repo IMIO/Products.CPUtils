@@ -862,45 +862,45 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
  ###############################################################################
     
 def unregister_adapter(self, unregister=''):
-	    """
-	        unregister lost adapter (product removed from the file system)
-	        for error "AttributeError: type object 'IThemeSpecific' has no attribute 'isOrExtends' "
-	    """
-	    if not check_zope_admin():
-	        return "You must be a zope manager to run this script"
-	
-	    lf = '\n'
-	#    lf = '<br />'
-	    out = []
-	    out.append("<p>You can call the script with the following parameters:<br />")
-	    out.append("-> unregister=... => name of the adapter to unregister (default to empty => list all adapters)<br />")
-	
-	    from zope.component import getSiteManager
-	    from plone.browserlayer.interfaces import ILocalBrowserLayerType
-	    from Products.CMFCore.utils import getToolByName
-	    from five.customerize.interfaces import ITTWViewTemplate
-	    portal = getToolByName(self, "portal_url").getPortalObject()
-	    #import pdb; pdb.set_trace()
-	
-	    params = []
-	    components = getSiteManager(portal)
-	    for reg in components.registeredAdapters():
-	        if unregister:
-	            if reg.name == unregister:
-	                params = [reg.factory, reg.required, reg.provided]
+        """
+            unregister lost adapter (product removed from the file system)
+            for error "AttributeError: type object 'IThemeSpecific' has no attribute 'isOrExtends' "
+        """
+        if not check_zope_admin():
+            return "You must be a zope manager to run this script"
+    
+        lf = '\n'
+    #    lf = '<br />'
+        out = []
+        out.append("<p>You can call the script with the following parameters:<br />")
+        out.append("-> unregister=... => name of the adapter to unregister (default to empty => list all adapters)<br />")
+    
+        from zope.component import getSiteManager
+        from plone.browserlayer.interfaces import ILocalBrowserLayerType
+        from Products.CMFCore.utils import getToolByName
+        from five.customerize.interfaces import ITTWViewTemplate
+        portal = getToolByName(self, "portal_url").getPortalObject()
+        #import pdb; pdb.set_trace()
+    
+        params = []
+        components = getSiteManager(portal)
+        for reg in components.registeredAdapters():
+            if unregister:
+                if reg.name == unregister:
+                    params = [reg.factory, reg.required, reg.provided]
                     break
-	        else:
-	            out.append(reg.name)
-	    if unregister:
-	        try:
-	            if components.unregisterAdapter(params[0], params[1], params[2], unregister):
-	                out.append("Adapter '%s' unregistered"%unregister)
-	            else:
-	                out.append("Adapter '%s' not unregistered !"%unregister)
-	        except Exception, msg:
-	            out.append("Adapter '%s' not unregistered : %s"%(unregister, msg))
-	
-	    return lf.join(out)    
+            else:
+                out.append(reg.name)
+        if unregister:
+            try:
+                if components.unregisterAdapter(params[0], params[1], params[2], unregister):
+                    out.append("Adapter '%s' unregistered"%unregister)
+                else:
+                    out.append("Adapter '%s' not unregistered !"%unregister)
+            except Exception, msg:
+                out.append("Adapter '%s' not unregistered : %s"%(unregister, msg))
+    
+        return lf.join(out)    
 
 ###############################################################################
 
