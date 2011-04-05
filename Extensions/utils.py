@@ -864,6 +864,12 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
 def copy_image_attribute(self):
     """
         copy image from canonical document into translated document
+        method to add action in site :
+        1. add external method (copy_image_attribute)
+        2. in portal_action add new CMF action
+        3. edit this action 
+        >>> url (expression) is : string:${globals_view/getCurrentObjectUrl}/cputils_copy_image_attributes
+        >>> Condition (expression) is : python:checkPermission("Delete objects", globals_view.getParentObject()) and checkPermission("Copy or Move", object) and checkPermission("Add portal content", object) and not globals_view.isPortalOrPortalDefaultPage() and not object.isCanonical()
     """     
     from collective.contentleadimage.utils import hasContentLeadImage 
     from collective.contentleadimage.config import IMAGE_FIELD_NAME
