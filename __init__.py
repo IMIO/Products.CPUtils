@@ -60,6 +60,14 @@ DirectoryView.registerDirectory('skins/CPUtils',
 
 from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
 from Products.CMFCore.utils import getToolByName
+from Acquisition import aq_base
+from ZPublisher.HTTPRequest import FileUpload
+from Products.validation.interfaces.IValidator import IValidator
+from Products.validation.interfaces.IValidator import IValidator
+from Products.validation.i18n import PloneMessageFactory as _
+from Products.validation.i18n import recursiveTranslate
+from Products.validation.i18n import safe_unicode
+from Products.validation.validators.SupplValidators import MaxSizeValidator
 
 def getPloneVersion():
     pv = ''
@@ -230,7 +238,7 @@ def listInstalledProducts31(self, showHidden=False):
     res.sort(lambda x,y: cmp(x.get('title', x.get('id', None)),
                              y.get('title', y.get('id', None))))
     return res
-def Toto(self, value, *args, **kwargs):
+def CallMaxSizeValidator(self, value, *args, **kwargs):
         instance = kwargs.get('instance', None)
         field    = kwargs.get('field', None)
         site_prop = instance.portal_properties.site_properties
@@ -290,7 +298,7 @@ def initialize(context):
     elif plone_version.startswith('3.'):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts31
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
-        MaxSizeValidator.__call__ = Toto
+        MaxSizeValidator.__call__ = CallMaxSizeValidator
 
     logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%plone_version)
     
