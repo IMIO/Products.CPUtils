@@ -241,18 +241,16 @@ def listInstalledProducts31(self, showHidden=False):
 def CallMaxSizeValidator(self, value, *args, **kwargs):
         instance = kwargs.get('instance', None)
         field    = kwargs.get('field', None)
-        site_prop = instance.portal_properties.site_properties
-        
+        type_doc = instance.getPortalTypeName().replace(' ','').lower() +'_maxsize'
         # get max size
-#        import pdb; pdb.set_trace()
-        if site_prop.hasProperty('image_maxsize'):
-            maxsize = site_prop.image_maxsize
-        elif kwargs.has_key('maxsize'):
+        if kwargs.has_key('maxsize'):
             maxsize = kwargs.get('maxsize')
         elif hasattr(aq_base(instance), 'getMaxSizeFor'):
             maxsize = instance.getMaxSizeFor(field.getName())
         elif hasattr(field, 'maxsize'):
             maxsize = field.maxsize
+        elif hasattr(instance, type_doc):
+            maxsize = getattr(instance, type_doc)
         else:
             # set to given default value (default defaults to 0)
             maxsize = self.maxsize
@@ -301,4 +299,6 @@ def initialize(context):
         MaxSizeValidator.__call__ = CallMaxSizeValidator
 
     logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%plone_version)
-    
+    logger.info("MONKEY PATCHING MaxSizeValidator!")
+    MaxSizeValidator.__call__ = CallMaxSizeValidator
+    logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%plone_version)
