@@ -276,7 +276,7 @@ def CallMaxSizeValidator(self, value, *args, **kwargs):
             return True
 
 def initialize(context):
-    logger.info("MONKEY PATCHING QuickInstallerTool!")
+    logger.info("ADDING MONKEY PATCHS !")
     #import pdb; pdb.set_trace()
     plone_version = getPloneVersion()
     if not plone_version:
@@ -288,10 +288,7 @@ def initialize(context):
     elif plone_version.startswith('3.'):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts31
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
-        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%plone_version)
         MaxSizeValidator.__call__ = CallMaxSizeValidator
         logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%plone_version)
         
-    logger.info("MONKEY PATCHING MaxSizeValidator!")
-        
-    
+    logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%plone_version)    
