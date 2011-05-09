@@ -34,13 +34,17 @@ from Products.CMFCore import utils as cmfutils
 from Acquisition import aq_base
 from DateTime import DateTime
 from ZPublisher.HTTPRequest import FileUpload
-
-from Products.validation.interfaces.IValidator import IValidator
-from Products.validation.i18n import PloneMessageFactory as _
-from Products.validation.i18n import recursiveTranslate
-from Products.validation.i18n import safe_unicode
-from Products.validation.validators.SupplValidators import MaxSizeValidator
-
+from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
+from Products.CMFCore.utils import getToolByName
+try: 
+  from Products.validation.interfaces.IValidator import IValidator
+  from Products.validation.i18n import PloneMessageFactory as _
+  from Products.validation.i18n import recursiveTranslate
+  from Products.validation.i18n import safe_unicode
+  from Products.validation.validators.SupplValidators import MaxSizeValidator
+except:
+  pass
+  
 try: # New CMF
     from Products.CMFCore import permissions as CMFCorePermissions 
 except: # Old CMF
@@ -56,18 +60,6 @@ from config import *
 DirectoryView.registerDirectory('skins', product_globals)
 DirectoryView.registerDirectory('skins/CPUtils',
                                     product_globals)
-
-
-from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
-from Products.CMFCore.utils import getToolByName
-from Acquisition import aq_base
-from ZPublisher.HTTPRequest import FileUpload
-from Products.validation.interfaces.IValidator import IValidator
-from Products.validation.interfaces.IValidator import IValidator
-from Products.validation.i18n import PloneMessageFactory as _
-from Products.validation.i18n import recursiveTranslate
-from Products.validation.i18n import safe_unicode
-from Products.validation.validators.SupplValidators import MaxSizeValidator
 
 def getPloneVersion():
     pv = ''
