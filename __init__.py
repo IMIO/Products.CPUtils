@@ -36,14 +36,14 @@ from DateTime import DateTime
 from ZPublisher.HTTPRequest import FileUpload
 from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
 from Products.CMFCore.utils import getToolByName
-try: 
-  from Products.validation.interfaces.IValidator import IValidator
+from Products.validation.interfaces.IValidator import IValidator
+try:
   from Products.validation.i18n import PloneMessageFactory as _
   from Products.validation.i18n import recursiveTranslate
   from Products.validation.i18n import safe_unicode
-  from Products.validation.validators.SupplValidators import MaxSizeValidator
 except:
   pass
+from Products.validation.validators.SupplValidators import MaxSizeValidator
   
 try: # New CMF
     from Products.CMFCore import permissions as CMFCorePermissions 
@@ -288,9 +288,10 @@ def initialize(context):
     elif plone_version.startswith('3.'):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts31
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%plone_version)
         MaxSizeValidator.__call__ = CallMaxSizeValidator
-
-    logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%plone_version)
+        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%plone_version)
+        
     logger.info("MONKEY PATCHING MaxSizeValidator!")
-    MaxSizeValidator.__call__ = CallMaxSizeValidator
-    logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%plone_version)
+        
+    
