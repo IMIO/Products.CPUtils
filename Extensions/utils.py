@@ -48,7 +48,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute'):
+    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dome'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -882,6 +882,34 @@ def copy_image_attribute(self):
     self.plone_utils.addPortalMessage(u'Ajout du champ leadImage')   
     return self.REQUEST.RESPONSE.redirect(self.absolute_url())
 
+ ###############################################################################
+     
+def desactivate_base2dome(self):
+    """
+     desactivate base2-dom javascript to resolved problemn on fckeditor loading in firefox4
+    """
+    if not check_zope_admin():
+        return 'desactivate_base2dome run with a non admin user: we go out'    
+    try:
+        out = []
+
+        allSiteObj = get_all_site_objects(self)  
+        
+        from Products.CMFCore.utils import getToolByName
+        for obj in allSiteObj:
+            objid = obj.getId()  
+            objPath = ""
+            for i in range(1,len(obj.getPhysicalPath())-1):
+                objPath = objPath + obj.getPhysicalPath()[i] + '/'             
+            if hasattr(obj,"portal_javascripts"): 
+                js = obj.portal_javascripts.getResource('++resource++base2-dom-fp.js')
+                if js.getEnabled():
+                    js.setEnabled(False)   
+                    out.append("Disabled ++resource++base2-dom-fp.js for %s"%str(objPath + objid))
+            return '\n'.join(out)
+    except Exception, message:
+        out.append("!! error in desactivate_base2dome %s" %(objPath + objid))
+        return '\n'.join(out)  
     
  ###############################################################################
     
