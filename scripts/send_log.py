@@ -17,14 +17,13 @@ def error(*messages):
 #------------------------------------------------------------------------------
 
 MAIL = "/usr/sbin/sendmail"
-logfilenames = ('/var/log/cron_scripts.log','/var/log/cron_scripts_checkInstances.log')
+logfilenames = ('/var/log/cron_scripts.log', '/var/log/checkInstances.log', '/var/log/checkPoskey.log')
+#logfilenames = ('logs/cron_scripts.log','logs/checkInstances.log')
 hostname = 'mydomain.be'
 today = datetime.date.today().strftime("%Y-%m-%d")
 yesterday = (datetime.date.today()-datetime.timedelta(1)).strftime("%Y-%m-%d")
 header = (  'To: server@communesplone.be', 
-            'From: root@%s'%hostname,
-            'Subject: %s cron_scripts.log from %s'%(today,hostname) )
-bodylines = ['']
+            'From: root@%s'%hostname,)
 
 #------------------------------------------------------------------------------
 
@@ -60,24 +59,28 @@ def read_log_file(filename, lines):
 verbose("Searching in log between %s and %s"%(yesterday, today))
 
 for logfilename in logfilenames:
+    bodylines = ['']
     read_log_file(logfilename, bodylines)
-# when logrotate is run, the logfile is cleared and 
-# renamed in .1 (with 'delaycompress' option for logrotate)
-# we open the .1 file to get those lines
-if len(bodylines) < 10 and os.path.exists(logfilename+'.1'):
-    rotatedlines = ['']
-    read_log_file(logfilename+'.1', rotatedlines)
-    bodylines[0:0] = rotatedlines
+    # when logrotate is run, the logfile is cleared and 
+    # renamed in .1 (with 'delaycompress' option for logrotate)
+    # we open the .1 file to get those lines
+    if len(bodylines) < 10 and os.path.exists(logfilename+'.1'):
+        rotatedlines = ['']
+        read_log_file(logfilename+'.1', rotatedlines)
+        bodylines[0:0] = rotatedlines
 
-#print '\n'.join(bodylines)
-#sys.exit(0)
+    #print '\n'.join(bodylines)
+    #sys.exit(0)
 
-# open a pipe to the mail program and
-# write the data to the pipe
-p = os.popen("%s -t" % MAIL, 'w')
-p.write('\n'.join(header))
-p.write('\n'.join(bodylines))
-exitcode = p.close()
-if exitcode:
-    print "Exit code: %s" % exitcode
+    subject = '\nSubject: %s %s from %s'%(today, os.path.basename(logfilename), hostname)
 
+    # open a pipe to the mail program and
+    # write the data to the pipe
+    p = os.popen("%s -t" % MAIL, 'w')
+#    p = open("%s"%os.path.basename(logfilename), 'w')  #testing
+    p.write('\n'.join(header))
+    p.write(subject)
+    p.write('\n'.join(bodylines))
+    exitcode = p.close()
+    if exitcode:
+        print "Exit code: %s" % exitcode
