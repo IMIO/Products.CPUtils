@@ -1,10 +1,8 @@
 #!/bin/bash
-if [ -e zr_instances.log ]; then
-   rm zr_instances.log
-fi
+
 echo "## " `date +"%Y-%m-%d, %H:%M:%S"` " : Start of checkInstances">>zr_instances.log
 for i in `cat /root/cputils_scripts/INSTANCES.txt`
 do
-/srv/python246/bin/python checkInstances.py -i $i >>zr_instances.log 2>&1
+/srv/python244/bin/python /root/cputils_scripts/checkInstances.py -i $i
 done
 echo "## " `date +"%Y-%m-%d, %H:%M:%S"` " : End of checkInstances">>zr_instances.log
