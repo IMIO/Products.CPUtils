@@ -1,7 +1,5 @@
 #instance_path;transactions_days_number;admin_user;admin_password
-#/home/srv/zinstances/site334;0;admin;admin
-#/home/srv/zinstances/site255;0;admin;admin
+/home/srv/zinstances/site334;0;admin;admin
+/home/srv/zinstances/site255;0;admin;admin
 /home/srv/zinstances/app253;0;admin;admin
-#/home/srv/zinstances/mc255;0;admin;admin
-#/home/srv/zinstances/transmo335;7;admin;admin
-#/home/srv/zinstances/mc18;7;admin;admin
+/home/srv/zinstances/mc255;0;admin;admin
