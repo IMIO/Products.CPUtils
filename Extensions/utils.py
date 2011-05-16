@@ -48,7 +48,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom'):
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -77,6 +77,17 @@ def pack_db(self, days=0):
     out.append("Size %s => %s"%(fileSize(sz_bef),fileSize(sz_aft)))
     out.append("well packed")
     return ', '.join(out)
+
+###############################################################################
+
+def cpdb(self):
+    """
+        run pdb on current context
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    import pdb
+    pdb.set_trace()
 
 ###############################################################################
 
