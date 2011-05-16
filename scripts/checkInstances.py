@@ -25,7 +25,7 @@ def main():
     global instdir, tempdir, buildout_inst_type, user, pwd
 
     instdir = instdir.rstrip('/')
-    verbose("Working on instance %s" % instdir)
+    verbose("Working on instance %s" % instdir)    #must be commented when CPUtils updated in all instances
 
     # Finding the instance type (buildout or manual)
     if os.path.exists(os.path.join(instdir,'parts')):
@@ -33,9 +33,9 @@ def main():
         #verbose("\tInstance is a buildout !")
     elif os.path.exists(os.path.join(instdir,'etc')):
         buildout_inst_type = False
-        verbose("\tInstance is a manual installation !")
+        verbose("%s, manual installation !"%instdir)
     elif not os.path.exists(instdir) or True:
-        error("! Invalid instance path '%s' or instance type not detected"%instdir)
+        error("%s, Invalid instance path or instance type not detected"%instdir)
         sys.exit(1)
 
     if buildout_inst_type:
@@ -56,9 +56,9 @@ def main():
 
     trace("host='%s', inst='%s'"%(hostname, instance))
     
-    param=''
+    param='?instdir=%s'%instdir
     if instance.find('test') < 0:
-        param='?isProductInstance=1'
+        param+='&isProductInstance=1'
     CreateAndCallExternalMethod(port,user,pwd,'cputils_checkInstance','utils.py','checkInstance',param)
 
 #------------------------------------------------------------------------------
