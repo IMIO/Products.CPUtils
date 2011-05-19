@@ -61,22 +61,6 @@ DirectoryView.registerDirectory('skins', product_globals)
 DirectoryView.registerDirectory('skins/CPUtils',
                                     product_globals)
 
-def getPloneVersion():
-    pv = ''
-#    import pdb; pdb.set_trace()
-    import Products.CMFPlone as cmfp
-    plonedir = cmfp.__path__[0]
-    if os.path.exists(plonedir):
-        for name in ('version.txt', 'VERSION.txt', 'VERSION.TXT'):
-            versionfile = os.path.join(plonedir,name)
-            if os.path.exists(versionfile):
-                file=open(versionfile, 'r')
-                data=file.readline()
-                file.close()
-                pv = data.strip()
-                return pv
-    return pv
-
 def getQIFilteringInformation(self):
     from AccessControl.SecurityManagement import getSecurityManager
     doFiltering = True
@@ -278,17 +262,17 @@ def CallMaxSizeValidator(self, value, *args, **kwargs):
 def initialize(context):
     logger.info("ADDING MONKEY PATCHS !")
     #import pdb; pdb.set_trace()
-    plone_version = getPloneVersion()
-    if not plone_version:
+    if not PLONE_VERSION:
         logger.error('CMFPlone version NOT FOUND: MONKEY PATCH NOT APPLIED')
         return
-    elif plone_version.startswith('2.5'):
+    elif PLONE_VERSION.startswith('2.5'):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts25
         QuickInstallerTool.listInstalledProducts = listInstalledProducts25
-    elif plone_version.startswith('3.'):
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
+    elif PLONE_VERSION.startswith('3.'):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts31
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
         MaxSizeValidator.__call__ = CallMaxSizeValidator
-        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%plone_version)
-        
-    logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%plone_version)    
+        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
+

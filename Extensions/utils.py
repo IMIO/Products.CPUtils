@@ -33,11 +33,15 @@ def get_all_site_objects(self):
     return allSiteObj
     
 def sendmail(self, mailfrom, mailto, mailBody, subject = None):
-    """"""    
+    """"""
     from Products.CMFCore.utils import getToolByName
+    from Products.CPUtils.config import PLONE_VERSION
     portal = getToolByName(self, 'portal_url').getPortalObject()
-    mail_host = getattr(self, 'MailHost', None) 
-    mail_host.secureSend(mailBody, mailto, mailfrom, subject=subject)
+    mail_host = getattr(portal, 'MailHost', None) 
+    if PLONE_VERSION.startswith('4.'):
+        mail_host.send(mailBody, mto=mailto, mfrom=mailfrom, subject=subject)
+    else:
+        mail_host.secureSend(mailBody, mailto, mailfrom, subject=subject)
 
 ###############################################################################
 
@@ -1120,22 +1124,17 @@ def install_plone_product(self, productName='', installMode='', dochange=''):
     
 ###############################################################################
     
-def send_adminMail(self, dochange='', subject='Aux administrateurs du site plone', bodyText=''):
+def send_adminMail(self, dochange='', subject='Aux administrateurs du site plone', bodyText='', allsites='1'):
     """
         send mail to all admin user
     """
-
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     
     out=[]
-
     send_mail=False
     if dochange not in ('', '0', 'False', 'false'):
         send_mail=True
-
-    if not send_mail:
-        out.append("The following changes are not applied: you must run the script with the parameter '...?dochange=1'")
 
     from Products.CMFPlone.utils import base_hasattr, safe_unicode
     import email.Message
@@ -1143,54 +1142,48 @@ def send_adminMail(self, dochange='', subject='Aux administrateurs du site plone
     from email.Header import Header         
     
     #get all site on root or in first folder (by mountpoint)
-    allSiteObj = get_all_site_objects(self) 
+    allSiteObj = get_all_site_objects(self)
+    if allsites in ('', '0', 'False', 'false'):
+        allSiteObj = [self.portal_url.getPortalObject()]
+
     for obj in allSiteObj:
         objid = obj.getId()      
-        users_mail = []
         #get contact email
-        properties_names = dict(obj.propertyItems())
-        authorEmail = properties_names['email_from_address']
-        if authorEmail:            
-            users_mail.append(authorEmail)
-        #get admin email      
+        authorEmail = obj.email_from_address
+        users_mail = [authorEmail]
+        #get administrators email
         for userid in obj.acl_users.getUserIds():
             member = obj.portal_membership.getMemberById(userid)
             if member.has_role('Manager'):
                 user_mail = member.getProperty('email')
                 if user_mail != "" and user_mail not in users_mail:
                     users_mail.append(user_mail)
-        objPath = ""
-        for i in range(1,len(obj.getPhysicalPath())-1):
-            objPath = objPath + obj.getPhysicalPath()[i] + '/'     
-        out.append("EMAIL for site %s"%objPath+objid)     
-        To = ""
-        for user_mail in users_mail:
-            out.append(user_mail) 
-            if To != "":
-                To = To + ';'
-            To = To + user_mail
-        if send_mail:
-            mailMsg=email.Message.Message()
-            mailMsg["To"]=To            
-            mailMsg["From"]=authorEmail
-            mailMsg["Subject"]=str(Header(safe_unicode(subject), 'utf8'))
-            mailMsg["Date"]=email.Utils.formatdate(localtime=1)
-            mailMsg["Message-ID"]=email.Utils.make_msgid()
-            mailMsg["Mime-version"]="1.0"
-            mailMsg["Content-type"]="text/plain"
-            mailMsg.set_payload(safe_unicode(bodyText).encode('utf8'), 'utf8')
-            mailMsg.epilogue="\n" # To ensure that message ends with newline
-            out.append('From : %s, To : %s, Mail subject : %s, mail data : %s '%(authorEmail,To,mailMsg["Subject"],str(safe_unicode(bodyText).encode('utf8'))))
+        objPath = "/".join(obj.getPhysicalPath())
+        To = ";".join(users_mail)
 
+        out.append("EMAIL for site %s"%objPath)     
+        mailMsg=email.Message.Message()
+        mailMsg["To"]=To            
+        mailMsg["From"]=authorEmail
+        mailMsg["Subject"]=str(Header(safe_unicode(subject), 'utf8'))
+        mailMsg["Date"]=email.Utils.formatdate(localtime=1)
+        mailMsg["Message-ID"]=email.Utils.make_msgid()
+        mailMsg["Mime-version"]="1.0"
+        mailMsg["Content-type"]="text/plain"
+        mailMsg.set_payload(safe_unicode(bodyText).encode('utf8'), 'utf8')
+        mailMsg.epilogue="\n" # To ensure that message ends with newline
+        out.append('From : %s, To : %s, Mail subject : %s, mail data : %s '%(authorEmail,To,mailMsg["Subject"],str(safe_unicode(bodyText).encode('utf8'))))
+
+        if send_mail:
             try:
                 sendmail(obj,authorEmail, To, mailMsg, subject = mailMsg['subject'])
-            except Exception, e:
+            except Exception, msg:
                 # The email could not be sent, probably the specified address doesn't exist
-                out.append("error in send mail !!!")
+                out.append("error when sending mail : %s"%msg)
                 continue        
    
     return '\n'.join(out)
-    
+
 ###############################################################################
 
 def checkInstance(self, isProductInstance='', instdir=''):
