@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #utilities
 def check_role(self, role='Manager', context=None):
     from Products.CMFCore.utils import getToolByName
