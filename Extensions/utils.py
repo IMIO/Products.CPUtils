@@ -32,16 +32,37 @@ def get_all_site_objects(self):
             allSiteObj.append(obj)
     return allSiteObj
     
-def sendmail(self, mailfrom, mailto, mailBody, subject = None):
-    """"""
+def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
+    """
+        send a mail
+    """
     from Products.CMFCore.utils import getToolByName
     from Products.CPUtils.config import PLONE_VERSION
+    from Products.CMFPlone.utils import base_hasattr, safe_unicode
+    import email.Message
+    import email.Utils
+    from email.Header import Header
     portal = getToolByName(self, 'portal_url').getPortalObject()
-    mail_host = getattr(portal, 'MailHost', None) 
-    if PLONE_VERSION.startswith('4.'):
-        mail_host.send(mailBody, mto=mailto, mfrom=mailfrom, subject=subject)
-    else:
-        mail_host.secureSend(mailBody, mailto, mailfrom, subject=subject)
+    mailMsg=email.Message.Message()
+    mailMsg["To"]=to
+    mailMsg["From"]=mfrom
+    mailMsg["CC"]=cc
+    mailMsg["BCC"]=bcc
+    mailMsg["Subject"]=str(Header(safe_unicode(subject), 'utf8'))
+    mailMsg["Date"]=email.Utils.formatdate(localtime=1)
+    mailMsg["Message-ID"]=email.Utils.make_msgid()
+    mailMsg["Mime-version"]="1.0"
+    mailMsg["Content-type"]="text/plain"
+    mailMsg.set_payload(safe_unicode(body).encode('utf8'), 'utf8')
+    mailMsg.epilogue="\n" # To ensure that message ends with newline
+    mail_host = getattr(portal, 'MailHost', None)
+    try:
+        if PLONE_VERSION.startswith('4.'):
+            return mail_host.send(mailMsg, mto=to, mfrom=mfrom, subject=subject)
+        else:
+            return mail_host.secureSend(mailMsg, to, mfrom, subject=subject)
+    except Exception, msg:
+        return msg
 
 ###############################################################################
 
@@ -1130,24 +1151,19 @@ def send_adminMail(self, dochange='', subject='Aux administrateurs du site plone
     """
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    
+
     out=[]
     send_mail=False
     if dochange not in ('', '0', 'False', 'false'):
         send_mail=True
 
-    from Products.CMFPlone.utils import base_hasattr, safe_unicode
-    import email.Message
-    import email.Utils
-    from email.Header import Header         
-    
     #get all site on root or in first folder (by mountpoint)
     allSiteObj = get_all_site_objects(self)
     if allsites in ('', '0', 'False', 'false'):
         allSiteObj = [self.portal_url.getPortalObject()]
 
     for obj in allSiteObj:
-        objid = obj.getId()      
+        objid = obj.getId()
         #get contact email
         authorEmail = obj.email_from_address
         users_mail = [authorEmail]
@@ -1161,27 +1177,13 @@ def send_adminMail(self, dochange='', subject='Aux administrateurs du site plone
         objPath = "/".join(obj.getPhysicalPath())
         To = ";".join(users_mail)
 
-        out.append("EMAIL for site %s"%objPath)     
-        mailMsg=email.Message.Message()
-        mailMsg["To"]=To            
-        mailMsg["From"]=authorEmail
-        mailMsg["Subject"]=str(Header(safe_unicode(subject), 'utf8'))
-        mailMsg["Date"]=email.Utils.formatdate(localtime=1)
-        mailMsg["Message-ID"]=email.Utils.make_msgid()
-        mailMsg["Mime-version"]="1.0"
-        mailMsg["Content-type"]="text/plain"
-        mailMsg.set_payload(safe_unicode(bodyText).encode('utf8'), 'utf8')
-        mailMsg.epilogue="\n" # To ensure that message ends with newline
-        out.append('From : %s, To : %s, Mail subject : %s, mail data : %s '%(authorEmail,To,mailMsg["Subject"],str(safe_unicode(bodyText).encode('utf8'))))
+        out.append("EMAIL for site %s"%objPath)
+        out.append('From : %s, To : %s, Mail subject : %s, mail data : %s '%(authorEmail, To, subject, bodyText))
 
         if send_mail:
-            try:
-                sendmail(obj,authorEmail, To, mailMsg, subject = mailMsg['subject'])
-            except Exception, msg:
-                # The email could not be sent, probably the specified address doesn't exist
-                out.append("error when sending mail : %s"%msg)
-                continue        
-   
+            ret = sendmail(obj, authorEmail, To, bodyText, subject = subject)
+            ret and out.append('Return code:%s'%ret)
+
     return '\n'.join(out)
 
 ###############################################################################

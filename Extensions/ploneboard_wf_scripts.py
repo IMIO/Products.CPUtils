@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.permissions import ModifyPortalContent
+from Products.CPUtils.Extensions.utils import sendmail
 
 #def notifyManagerByMail(self, state_change, **kw):
     #""" WF script used for ploneboard_conversation_workflow """
@@ -99,6 +100,7 @@ def notifyConvMembersByMail(self, state_change, **kw):
         mbcc = ','.join(send_to_address_param)
         send_from_address = send_from_address_param
         subject = subject_param
+        #MUST BE REPLACED AS FOLLOWING METHOD
         result = host.secureSend(message, send_to_address,
                         send_from_address, mbcc=mbcc, subject=subject,
                         subtype='plain', charset=encoding,
@@ -130,7 +132,7 @@ def notifyConvMembersByMailRIC(self, state_change, **kw):
                 . type = "string"
                 . value = "test@x.be test2@x.be" all addresses separated by spaces
     """
-#    self.notifyConvMembersByMail(state_change, **kw)
+#    return  # WHEN REPLACING WORKFLOW
     object = state_change['object']
     portal = getToolByName(self, 'portal_url').getPortalObject()
 
@@ -163,7 +165,6 @@ def notifyConvMembersByMailRIC(self, state_change, **kw):
     email = user.getProperty('email')
     emails.remove(email)
 
-    send_from_address_param = portal.email_from_address
     send_to_address_param = emails
     if i == 1:
         #a new conversation has been started and contain only one comment
@@ -173,23 +174,8 @@ def notifyConvMembersByMailRIC(self, state_change, **kw):
         subject_param = "Nouveau commentaire pour la conversation '%s'" % container.Title()
         comment_param = "Un nouveau commentaire a été ajouté à la conversation '%s' à %s." % (container.Title(), container.absolute_url())
 
-    try:
-        host = plone_tool.getMailHost()
-        encoding = plone_tool.getSiteEncoding()
-        message = comment_param
-        send_to_address = ''
-        mbcc = ','.join(send_to_address_param)
-        send_from_address = send_from_address_param
-        subject = subject_param
-        result = host.secureSend(message, send_to_address,
-                        send_from_address, mbcc=mbcc, subject=subject,
-                        subtype='plain', charset=encoding,
-                        debug=False, From=send_from_address)
-        #print result
-    except Exception, message:
-        print "There was a problem during the send of an e-mail for object : %s." % object
-        print "The exception is : %s." % message
-    creator = object.Creator()
+    result = sendmail(self, mfrom=portal.email_from_address, to='', body=comment_param, bcc=','.join(emails), subject=subject_param)
+
     #object.manage_delLocalRoles(creator)
     object.manage_addLocalRoles(creator, ('Owner','Editor',))
     return
