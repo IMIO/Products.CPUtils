@@ -19,7 +19,7 @@ def fileSize(nb):
         if quot < 1024:
             break
     return "%.1f%s"%(float(nb)/1024**x,sizeletter[x])
-    
+
 def get_all_site_objects(self):
     allSiteObj = []
     for objid in self.objectIds(('Plone Site', 'Folder')):
@@ -31,7 +31,7 @@ def get_all_site_objects(self):
         elif obj.meta_type == 'Plone Site':
             allSiteObj.append(obj)
     return allSiteObj
-    
+
 def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
     """
         send a mail
@@ -229,7 +229,7 @@ def audit_catalog(self):
 
 def delete_subscribers(self, delete=False):
     """
-        delete inactive subscribers (maybe robots) of PloneGazette. 
+        delete inactive subscribers (maybe robots) of PloneGazette.
         script to be run on the subscriber's folder context
     """
     if not check_role(self):
@@ -248,7 +248,7 @@ def delete_subscribers(self, delete=False):
 
 def delete_users(self, delete=False):
     """
-        delete users added by robots. 
+        delete users added by robots.
     """
     if not check_role(self):
         return "You must have a manager role to run this script"
@@ -274,7 +274,7 @@ def delete_users(self, delete=False):
 
 def change_user_properties(self, kw='', dochange=''):
     """
-        change user properties with parameter like 
+        change user properties with parameter like
         kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097
     """
     if not check_role(self):
@@ -414,7 +414,7 @@ def load_user_properties(self, dochange=''):
     skipped_properties = ['error_log_update', 'ext_editor', 'last_login_time', 'listed', 'login_time', 'visible_ids', 'wysiwyg_editor', ]
 
     #import pdb; pdb.set_trace()
-    
+
     doc = portal.oldacl.users_properties
     lines = doc.raw.splitlines()
     if not len(lines) > 1:
@@ -462,8 +462,8 @@ def load_user_properties(self, dochange=''):
 
 def ploneboard_correct_modified(self, dochange=''):
     """
-        This script corrects the modified date of conversations after a migration. 
-        The modified date becomes last modified comment. 
+        This script corrects the modified date of conversations after a migration.
+        The modified date becomes last modified comment.
         The portal_catalog must be updated !!
     """
     from Products.CMFCore.utils import getToolByName
@@ -491,7 +491,7 @@ def ploneboard_correct_modified(self, dochange=''):
         #kw['sort_order'] = 'reverse'
 
     results = portal.portal_catalog.searchResults(kw)
-    
+
     out.append("%d conversations found\n"%len(results))
     for r in results :
         conv = r.getObject()
@@ -557,7 +557,7 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
 
 def list_users(self, output='csv', sort='users'):
     """
-        list users following parameters : 
+        list users following parameters :
             group = True, group information is included
             sort = 'users' or 'groups', sort key for output
     """
@@ -647,7 +647,7 @@ def recreate_users_groups(self):
     prg = portal.portal_registration
     pgr = portal.portal_groups
     messages = []
-    
+
     #import pdb; pdb.set_trace()
     for gd in old_acl.searchGroups():
         g = old_acl.source_groups.getGroupById(gd['groupid'])
@@ -777,7 +777,7 @@ def sync_properties(self, base='', update='', dochange=''):
             out.append("<tr><td>%s</td><td class='red'>del</td><td>%s</td><td>%s</td><td>%s</td></tr>"%(base_prop, base_dic[base_prop], '', base_dic[base_prop]))
     update_keys = update_dic.keys()
     update_keys.sort()
-    
+
     for new_prop in update_keys:
         out.append("<tr><td>%s</td><td class='red'>new</td><td>%s</td><td>%s</td><td>%s</td></tr>"%(new_prop, '', update_dic[new_prop], update_dic[new_prop]))
         if change_property:
@@ -831,7 +831,7 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
     if 'LinguaPlone' not in [p['id'] for p in pqi.listInstalledProducts()]:
         out.append("<p>LinguaPlone not installed ! Not necessary to do this operation</p>")
         return lf.join(out)
-    
+
     kw = {}
     #kw['portal_type'] = ('Document','Link','Image','File','Folder','Large Plone Folder','Wrapper','Topic')
     #kw['review_state'] = ('private',) #'published'
@@ -895,54 +895,54 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
     out.append('</tbody></table>')
 
     return lf.join(out)
-    
+
  ###############################################################################
- 
+
 def copy_image_attribute(self):
     """
         copy image from canonical document into translated document
         method to add action in site :
         1. add external method (copy_image_attribute)
         2. in portal_action add new CMF action
-        3. edit this action 
+        3. edit this action
         >>> url (expression) is : string:${globals_view/getCurrentObjectUrl}/cputils_copy_image_attributes
         >>> Condition (expression) is : python:checkPermission("Delete objects", globals_view.getParentObject()) and checkPermission("Copy or Move", object) and checkPermission("Add portal content", object) and not globals_view.isPortalOrPortalDefaultPage() and not object.isCanonical()
-    """     
-    from collective.contentleadimage.utils import hasContentLeadImage 
+    """
+    from collective.contentleadimage.utils import hasContentLeadImage
     from collective.contentleadimage.config import IMAGE_FIELD_NAME
-    canonical_obj = self.getCanonical() 
+    canonical_obj = self.getCanonical()
     if not canonical_obj or (self == self.getCanonical()):
-        return    
+        return
     if hasContentLeadImage(canonical_obj):
         if canonical_obj.getField(IMAGE_FIELD_NAME) and self.getField(IMAGE_FIELD_NAME):
-            self.getField(IMAGE_FIELD_NAME).getMutator(self)(canonical_obj.getField(IMAGE_FIELD_NAME).getAccessor(canonical_obj)())   
-    self.plone_utils.addPortalMessage(u'Ajout du champ leadImage')   
+            self.getField(IMAGE_FIELD_NAME).getMutator(self)(canonical_obj.getField(IMAGE_FIELD_NAME).getAccessor(canonical_obj)())
+    self.plone_utils.addPortalMessage(u'Ajout du champ leadImage')
     return self.REQUEST.RESPONSE.redirect(self.absolute_url())
 
  ###############################################################################
-     
+
 def desactivate_base2dom(self):
     """
      desactivate base2-dom javascript to resolve problem on fckeditor loading in firefox4
     """
     if not check_zope_admin():
-        return 'desactivate_base2dom run with a non admin user: we go out'    
+        return 'desactivate_base2dom run with a non admin user: we go out'
     out = []
     try:
         from Products.CMFCore.utils import getToolByName
         for site in get_all_site_objects(self) :
             sitePath = '/'.join(site.getPhysicalPath())
-            if hasattr(site,"portal_javascripts"): 
+            if hasattr(site,"portal_javascripts"):
                 js = site.portal_javascripts.getResource('++resource++base2-dom-fp.js')
                 if js.getEnabled():
-                    js.setEnabled(False)   
+                    js.setEnabled(False)
                     out.append("Disabled ++resource++base2-dom-fp.js for %s"%sitePath)
     except Exception, message:
         out.append("!! error when disabling base2dom: %s" %(message))
-    return '\n'.join(out)  
-    
+    return '\n'.join(out)
+
  ###############################################################################
-    
+
 def unregister_adapter(self, unregister=''):
         """
             unregister lost adapter (product removed from the file system)
@@ -950,20 +950,20 @@ def unregister_adapter(self, unregister=''):
         """
         if not check_zope_admin():
             return "You must be a zope manager to run this script"
-    
+
         lf = '\n'
     #    lf = '<br />'
         out = []
         out.append("<p>You can call the script with the following parameters:<br />")
         out.append("-> unregister=... => name of the adapter to unregister (default to empty => list all adapters)<br />")
-    
+
         from zope.component import getSiteManager
         from plone.browserlayer.interfaces import ILocalBrowserLayerType
         from Products.CMFCore.utils import getToolByName
         from five.customerize.interfaces import ITTWViewTemplate
         portal = getToolByName(self, "portal_url").getPortalObject()
         #import pdb; pdb.set_trace()
-    
+
         params = []
         components = getSiteManager(portal)
         for reg in components.registeredAdapters():
@@ -981,8 +981,8 @@ def unregister_adapter(self, unregister=''):
                     out.append("Adapter '%s' not unregistered !"%unregister)
             except Exception, msg:
                 out.append("Adapter '%s' not unregistered : %s"%(unregister, msg))
-    
-        return lf.join(out)    
+
+        return lf.join(out)
 
 ###############################################################################
 
@@ -993,29 +993,29 @@ def change_authentication_plugins(self, activate='', dochange=''):
 
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    
+
     out=[]
     txt=[]
-    
+
     change_activate=False
     if activate not in ('', '0', 'False', 'false'):
         change_activate=True
-    
+
     change_plugins=False
     if dochange not in ('', '0', 'False', 'false'):
         change_plugins=True
 
     if not change_plugins:
         out.append("The following changes are not applied: you must run the script with the parameter '...?dochange=1'")
-    
-    from Products.PluggableAuthService.interfaces.plugins import IAuthenticationPlugin    
+
+    from Products.PluggableAuthService.interfaces.plugins import IAuthenticationPlugin
     if change_activate:
         #read authentication_plugins_sites dtml doc
         if 'authentication_plugins_sites' not in self.objectIds():
             return out.append("No DTMLDocument named 'authentication_plugins_sites' found")
         doc = self.authentication_plugins_sites
         lines = doc.raw.splitlines()
-        out.append("Read all lines from DTMLDocument named 'authentication_plugins_sites'")        
+        out.append("Read all lines from DTMLDocument named 'authentication_plugins_sites'")
         for line in lines:
             out.append(str(line))
             infos = line.split('\t')
@@ -1027,7 +1027,7 @@ def change_authentication_plugins(self, activate='', dochange=''):
                 else:
                     continue
             else:
-                context = self                
+                context = self
             if hasattr(context,site):
                 out.append('site found %s'%site)
                 obj = getattr(context, site)
@@ -1036,18 +1036,18 @@ def change_authentication_plugins(self, activate='', dochange=''):
                 continue
             auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
             for i in range(1, len(infos)):
-                plugin = infos[i]         
+                plugin = infos[i]
                 if not plugin in auth_plugins['active']:
                     #activate authentication plugins
-                    out.append('Activate plugins %s for %s'%(plugin,site))     
-                    if change_plugins:        
-                        plugins.activatePlugin(IAuthenticationPlugin,plugin)                  
+                    out.append('Activate plugins %s for %s'%(plugin,site))
+                    if change_plugins:
+                        plugins.activatePlugin(IAuthenticationPlugin,plugin)
     else:
         #save authentication_plugins_sites in dtml doc plugin from all site
         if 'authentication_plugins_sites' not in self.objectIds():
             self.manage_addDTMLDocument(id='authentication_plugins_sites', title='All authentication plugins sites')
-            out.append("Document '%s/authentication_plugins_sites' added"%'/'.join(self.getPhysicalPath()))      
-        allSiteObj = get_all_site_objects(self)        
+            out.append("Document '%s/authentication_plugins_sites' added"%'/'.join(self.getPhysicalPath()))
+        allSiteObj = get_all_site_objects(self)
         for obj in allSiteObj:
             objPath = ""
             for i in range(1,len(obj.getPhysicalPath())-1):
@@ -1058,19 +1058,19 @@ def change_authentication_plugins(self, activate='', dochange=''):
             plugLine = objPath + objid
             for plug in list(auth_plugins['active']):
                 plugLine = plugLine + '\t' + str(plug)
-                out.append('Desactivate plugins %s for %s'%(str(plug),objPath + objid))   
+                out.append('Desactivate plugins %s for %s'%(str(plug),objPath + objid))
                 if change_plugins:
-                    #desactivate authentication plugins                                           
-                    plugins.deactivatePlugin(IAuthenticationPlugin,plug)                     
-            txt.append(plugLine)    
-                         
+                    #desactivate authentication plugins
+                    plugins.deactivatePlugin(IAuthenticationPlugin,plug)
+            txt.append(plugLine)
+
         doc = self.authentication_plugins_sites
         doc.raw = '\n'.join(txt)
-        out.append("Document '/authentication_plugins_sites' updated !") 
+        out.append("Document '/authentication_plugins_sites' updated !")
     return '\n'.join(out)
-    
+
 ###############################################################################
-    
+
 def install_plone_product(self, productName='', installMode='', dochange=''):
     """
         install/reinstall or uninstall a plone product
@@ -1078,9 +1078,9 @@ def install_plone_product(self, productName='', installMode='', dochange=''):
 
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    
+
     out=[]
-    
+
     out.append('<head><style type="text/css">')
     out.append("table { border: 1px solid black; border-collapse:collapse; }")
     out.append("table th { border: 1px solid black; background: #8297FD; }")
@@ -1094,57 +1094,57 @@ def install_plone_product(self, productName='', installMode='', dochange=''):
     out.append("-> installMode='I','U' or 'R' => Install (Re-Install if product exist), Uninstall or Re-install (not install if product doesn't exist)<br />")
     out.append("-> (Optional) dochange=1 => really do the change. By default, only prints changes<br />")
     out.append("<p>by example /install_plone_product?productName=Linguaplone&installMode=I&dochange=1</p>")
-    
+
     out.append("<table><thead><tr>")
-    out.append("</tr></thead><tbody>")    
+    out.append("</tr></thead><tbody>")
     if productName == "":
         out.append("""<tr><td class="red">please, choose a product to install</td><td class="red"></td></tr>""")
         return '\n'.join(out)
-   
+
     if installMode not in ('I', 'U', 'R'):
         out.append("""<tr><td class="red">please, installMode must be in 'I','U' or 'R'</td><td class="red"></td></tr>""")
         return '\n'.join(out)
     out.append('</tbody></table>')
-    
+
     execute_change=False
     if dochange not in ('', '0', 'False', 'false'):
         execute_change=True
 
     if not execute_change:
         out.append("The following changes are not applied: you must run the script with the parameter '...?dochange=1'")
-    
+
     #get all site on root or in first folder (by mountpoint)
-    allSiteObj = get_all_site_objects(self) 
+    allSiteObj = get_all_site_objects(self)
     if installMode in ('I','R'):
         #install or re-install product
         for obj in allSiteObj:
             objid = obj.getId()
             if not obj.portal_quickinstaller.isProductInstallable(productName):
-                out.append('<p>Bad Product name %s for %s</p>'%(productName,objid)) 
+                out.append('<p>Bad Product name %s for %s</p>'%(productName,objid))
                 continue
-            if  obj.portal_quickinstaller.isProductInstalled(productName):                
-                out.append('<p>Re-install product %s for %s</p>'%(productName,objid))  
-                if execute_change:                    
-                    obj.portal_quickinstaller.reinstallProducts([productName]) 
+            if  obj.portal_quickinstaller.isProductInstalled(productName):
+                out.append('<p>Re-install product %s for %s</p>'%(productName,objid))
+                if execute_change:
+                    obj.portal_quickinstaller.reinstallProducts([productName])
             elif installMode == 'I':
-                out.append('<p>Install product %s for %s</p>'%(productName,objid))  
-                if execute_change: 
-                    obj.portal_quickinstaller.installProducts([productName])                 
+                out.append('<p>Install product %s for %s</p>'%(productName,objid))
+                if execute_change:
+                    obj.portal_quickinstaller.installProducts([productName])
     else:
         #uninstall product
         for obj in allSiteObj:
             objid = obj.getId()
             if not obj.portal_quickinstaller.isProductInstallable(productName):
-                out.append('<p>Bad Product name %s for %s</p>'%(productName,objid))    
-                continue        
+                out.append('<p>Bad Product name %s for %s</p>'%(productName,objid))
+                continue
             if  obj.portal_quickinstaller.isProductInstalled(productName):
-                out.append('<p>Uninstall product %s for %s</p>'%(productName,objid))  
+                out.append('<p>Uninstall product %s for %s</p>'%(productName,objid))
                 if execute_change:
-                   obj.portal_quickinstaller.uninstallProducts([productName])  
+                   obj.portal_quickinstaller.uninstallProducts([productName])
     return '\n'.join(out)
-    
+
 ###############################################################################
-    
+
 def send_adminMail(self, dochange='', subject='Aux administrateurs du site plone', bodyText='', allsites='1'):
     """
         send mail to all admin user
@@ -1251,7 +1251,7 @@ def checkInstance(self, isProductInstance='', instdir=''):
 
 def list_portlets(self):
     if not check_zope_admin():
-        return 'checkInstance run with a non admin user: we go out'    
+        return 'checkInstance run with a non admin user: we go out'
 
     from zope.annotation.interfaces import IAnnotations
     #import pdb; pdb.set_trace()
