@@ -38,12 +38,17 @@ from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
 from Products.CMFCore.utils import getToolByName
 from Products.validation.interfaces.IValidator import IValidator
 try:
-  from Products.validation.i18n import PloneMessageFactory as _
-  from Products.validation.i18n import recursiveTranslate
-  from Products.validation.i18n import safe_unicode
+    from Products.validation.i18n import PloneMessageFactory as _
+    from Products.validation.i18n import recursiveTranslate
+    from Products.validation.i18n import safe_unicode
 except:
-  pass
+    pass
 from Products.validation.validators.SupplValidators import MaxSizeValidator
+
+try:
+    from Products.CMFQuickInstallerTool.utils import get_packages
+except:
+    pass
   
 try: # New CMF
     from Products.CMFCore import permissions as CMFCorePermissions 
@@ -182,6 +187,59 @@ def listInstallableProducts31(self, skipInstalled=True):
                              y.get('title', y.get('id', None))))
     return res
 
+def listInstallableProducts40(self, skipInstalled=True):
+    """List candidate CMF products for installation -> list of dicts
+       with keys:(id,title,hasError,status)
+    """
+    # reset the list of broken products
+    self.errors = {}
+
+    # Returns full names with Products. prefix for all packages / products
+    packages = get_packages()
+
+    pids = []
+    for p in packages:
+        if not self.isProductInstallable(p):
+            continue
+        if p.startswith('Products.'):
+            p = p[9:]
+        pids.append(p)
+
+    # Get product list from the extension profiles
+    profile_pids = self.listInstallableProfiles()
+
+    for p in profile_pids:
+        if p in pids or p in packages:
+            continue
+        if not self.isProductInstallable(p):
+            continue
+        pids.append(p)
+
+    if skipInstalled:
+        installed=[p['id'] for p in self.listInstalledProducts(showHidden=True)]
+        pids=[r for r in pids if r not in installed]
+
+    from Products.CPUtils.__init__ import getQIFilteringInformation
+    (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
+
+    res=[]
+    for r in pids:
+        if doFiltering and r in hiddenProducts and r not in shownProducts:
+            continue
+        p=self._getOb(r,None)
+        name = r
+        profile = self.getInstallProfile(r)
+        if profile:
+            name = profile['title']
+        if p:
+            res.append({'id':r, 'title':name, 'status':p.getStatus(),
+                        'hasError':p.hasError()})
+        else:
+            res.append({'id':r, 'title':name,'status':'new', 'hasError':False})
+    res.sort(lambda x,y: cmp(x.get('title', x.get('id', None)),
+                             y.get('title', y.get('id', None))))
+    return res
+
 def listInstalledProducts31(self, showHidden=False):
     """Returns a list of products that are installed -> list of
     dicts with keys:(id, title, hasError, status, isLocked, isHidden,
@@ -214,6 +272,7 @@ def listInstalledProducts31(self, showHidden=False):
     res.sort(lambda x,y: cmp(x.get('title', x.get('id', None)),
                              y.get('title', y.get('id', None))))
     return res
+
 def CallMaxSizeValidator(self, value, *args, **kwargs):
         instance = kwargs.get('instance', None)
         field    = kwargs.get('field', None)
@@ -275,4 +334,8 @@ def initialize(context):
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
         MaxSizeValidator.__call__ = CallMaxSizeValidator
         logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
+    elif PLONE_VERSION.startswith('4.'):
+        QuickInstallerTool.listInstallableProducts = listInstallableProducts40
+        QuickInstallerTool.listInstalledProducts = listInstalledProducts31
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
 
