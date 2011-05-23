@@ -338,4 +338,5 @@ def initialize(context):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts40
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
-
+        MaxSizeValidator.__call__ = CallMaxSizeValidator
+        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
