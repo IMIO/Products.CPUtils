@@ -163,7 +163,8 @@ def notifyConvMembersByMailRIC(self, state_change, **kw):
     creator = object.Creator()
     user = mt.getMemberById(creator)
     email = user.getProperty('email')
-    emails.remove(email)
+    if email in emails:
+        emails.remove(email)
 
     send_to_address_param = emails
     if i == 1:
