@@ -789,7 +789,7 @@ def sync_properties(self, base='', update='', dochange=''):
 
 ###############################################################################
 
-def correct_language(self, default='', search='all', dochange='', filter=0):
+def correct_language(self, default='', search='all', onlycurrentfolder=0, dochange='', filter=0):
     """
         correct language objects, set as neutral if no translation exists
     """
@@ -801,6 +801,7 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
 #    lf = '<br />'
     separator = ','
     change_property = False
+    only_current_folder = False
     filters = [1,2,3,4]
 
     from Products.CMFCore.utils import getToolByName
@@ -819,6 +820,7 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
     out.append("<p>You can call the script with the following parameters:<br />")
     out.append("-> default=code => language code for untranslated objects (default to neutral)<br />")
     out.append("-> search=fr => language code of searched objects (default to all languages)<br />")
+    out.append("-> onlycurrentfolder=0 => do correct language in all site (default) <br />")
     out.append("-> filter=1 or filter=123 => filter numbers (default to all objects)<br />")
     out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;1 => displays only canonical objects<br />")
     out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;2 => displays only translations<br />")
@@ -835,7 +837,8 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
     kw = {}
     #kw['portal_type'] = ('Document','Link','Image','File','Folder','Large Plone Folder','Wrapper','Topic')
     #kw['review_state'] = ('private',) #'published'
-    #kw['path'] = '/' # '/'.join(context.getPhysicalPath())
+    if onlycurrentfolder: 
+        kw['path'] =  '/'.join(self.getPhysicalPath())
     #kw['sort_on'] = 'created'
     #kw['sort_order'] = 'reverse'
     kw['Language'] = search
@@ -845,6 +848,9 @@ def correct_language(self, default='', search='all', dochange='', filter=0):
 
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
+
+    if onlycurrentfolder not in ('', '0', 'False', 'false'):
+        only_current_folder=True
 
     results = portal.portal_catalog.searchResults(kw)
     out.append("<p>Number of retrieved objects (not filtered): %d</p>"%len(results))
