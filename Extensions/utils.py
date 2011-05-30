@@ -43,17 +43,18 @@ def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
     import email.Utils
     from email.Header import Header
     portal = getToolByName(self, 'portal_url').getPortalObject()
+
     mailMsg=email.Message.Message()
     mailMsg["To"]=to
     mailMsg["From"]=mfrom
     mailMsg["CC"]=cc
     mailMsg["BCC"]=bcc
-    mailMsg["Subject"]=str(Header(safe_unicode(subject), 'utf8'))
+    mailMsg["Subject"]=str(Header(safe_unicode(subject), 'utf-8'))
     mailMsg["Date"]=email.Utils.formatdate(localtime=1)
     mailMsg["Message-ID"]=email.Utils.make_msgid()
     mailMsg["Mime-version"]="1.0"
     mailMsg["Content-type"]="text/plain"
-    mailMsg.set_payload(safe_unicode(body).encode('utf8'), 'utf8')
+    mailMsg.set_payload(safe_unicode(body).encode('utf-8'), 'utf-8')
     mailMsg.epilogue="\n" # To ensure that message ends with newline
     mail_host = getattr(portal, 'MailHost', None)
     try:
