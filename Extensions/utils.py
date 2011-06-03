@@ -1283,7 +1283,7 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
         return "You must have a manager role to run this script"
 
     out = []
-    out.append("You can call the script with following parameters:")
+    out.append("<p>You can call the script with following parameters:</p>")
     out.append("-> length=20 : maximum length of id")
     out.append("-> fromfile : rename from the generated file")
     out.append("-> dochange=1 : to do really the changes")
@@ -1348,6 +1348,7 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
             nto[npathid] = opathid
             if opathid != npathid:
                 txt.append("%s => %s"%(opathid, npathid))
+                out.append("%s => %s"%(opathid, npathid))
 
         if do_change:
             #reverse sort objects by path to change id, handling childs to parents
@@ -1355,7 +1356,8 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
                 if opathid == '/' or opathid == otn[opathid]['npathid']:
                     continue
                 obj = portal.restrictedTraverse(opathid[1:])
-                obj.setId(os.path.split(otn[opathid]['npathid'])[1])
+                nid = os.path.split(otn[opathid]['npathid'])[1]
+                obj.setId(nid)
                 obj.reindexObject('id')
             
         if 'rename_long_ids' not in portal.objectIds():
@@ -1366,7 +1368,21 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
             doc.raw = '\n'.join(txt)
             out.append("Document '%s/rename_long_ids' updated !"%'/'.join(portal.getPhysicalPath()))
     else:
-        pass
+        if 'rename_long_ids' not in portal.objectIds():
+            return "You must import at the root site the DTMLDocument named 'rename_long_ids'"
         #first we load the correspondences
-        #to be done
+        doc = portal.rename_long_ids
+        lines = doc.raw.splitlines()
+        #reverse sort objects by path to change id, handling childs to parents
+        for line in sorted(lines, reverse=True):
+            opathid, npathid = line.split(' => ')
+            opath, oid = os.path.split(opathid)
+            out.append("%s => %s"%(npathid, oid))
+            if do_change:
+                obj = portal.restrictedTraverse(npathid[1:])
+                obj.setId(oid)
+                obj.reindexObject('id')
+
+    if do_change:
+        out.append("<br />Renamed applied !")
     return '<br />'.join(out)
