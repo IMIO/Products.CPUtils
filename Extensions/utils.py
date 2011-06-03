@@ -75,7 +75,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom'):
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -1267,3 +1267,108 @@ def list_portlets(self):
     out.append("left: "+str(dict(ann['plone.portlets.contextassignments']['plone.leftcolumn'])))
     out.append("right: "+str(dict(ann['plone.portlets.contextassignments']['plone.rightcolumn'])))
     return "\n".join(out)
+
+###############################################################################
+
+def rename_long_ids(self, length='255', dochange='', fromfile=''):
+    """
+        Renames too long ids, not permitting transmogrifier export
+        1) run on orig site first, writing correspondences in output file
+        2) renames as orig filenames from correspondences file
+    """
+    from Products.CMFCore.utils import getToolByName
+    from Acquisition import aq_base
+    import os.path
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    out = []
+    out.append("You can call the script with following parameters:")
+    out.append("-> length=20 : maximum length of id")
+    out.append("-> fromfile : rename from the generated file")
+    out.append("-> dochange=1 : to do really the changes")
+    out.append("by example ...?length=20&dochange=1<br/>")
+
+    from_file = False
+    if fromfile not in ('', '0', 'False', 'false'):
+        from_file = True
+    do_change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        do_change = True
+    max_len = int(length)
+
+    portal_url = getToolByName(self, "portal_url")
+    portal = portal_url.getPortalObject()
+    #import pdb; pdb.set_trace()
+
+    header = """<h1>RESULTATS DE LA RECHERCHE</h1>"""
+    out.append(header)
+
+    otn = {}
+    nto = {}
+    plen = max_len - 3
+
+    def cut_oid(oid):
+        """ Cut oid following '-' """
+        i = lasti = 0
+        while i >= 0:
+            lasti = i
+            i = oid.find('-', i+1, plen)
+        if lasti:
+            return oid[0:lasti]
+        else:
+            return oid[0:plen]
+
+    if not from_file:
+        results = portal.portal_catalog.searchResults()
+        otn['/'] = {}
+        otn['/']['obj'] = portal
+        otn['/']['npathid'] = ''
+
+        #cannot get results sorted by path !
+        for r in results :
+            obj = r.getObject()
+            rpathid = "/%s" % '/'.join(portal_url.getRelativeContentPath(obj))
+            path = r.getPath()
+            otn[rpathid] = {}
+            otn[rpathid]['obj'] = obj
+
+        txt = []
+        #sort objects by path
+        for opathid in sorted(otn.keys()):
+            if opathid == '/': continue
+            (opath, oid) = os.path.split(opathid)
+            noid = oid
+            npath = otn[opath]['npathid']
+            if len(oid) > max_len:
+                cont = otn[opath]['obj']
+                baseoid = noid = cut_oid(oid)
+                i = 1
+                while hasattr(aq_base(cont), noid) or nto.has_key("%s/%s"%(npath, noid)):
+                    noid = "%s-%d"%(baseoid, i)
+                    i += 1
+            npathid = "%s/%s"%(npath, noid)
+            otn[opathid]['npathid'] = npathid
+            nto[npathid] = opathid
+            if opathid != npathid:
+                txt.append("%s => %s"%(opathid, npathid))
+
+        if do_change:
+            #reverse sort objects by path to change id
+            for opathid in sorted(otn.keys(), reverse=True):
+                if opathid == '/' or opathid == otn[opathid]['npathid']:
+                    continue
+                obj = portal.restrictedTraverse(opathid[1:])
+                obj.setId(os.path.split(otn[opathid]['npathid'])[1])
+                obj.reindexObject('id')
+            
+        if 'rename_long_ids' not in portal.objectIds():
+            portal.manage_addDTMLDocument(id='rename_long_ids', title='Correspondences for long ids rename')
+            out.append("Document '%s/rename_long_ids' added"%'/'.join(portal.getPhysicalPath()))
+        doc = self.rename_long_ids
+        if txt:
+            doc.raw = '\n'.join(txt)
+            out.append("Document '%s/rename_long_ids' updated !"%'/'.join(portal.getPhysicalPath()))
+
+    out.append("<br />FIN")
+    return '<br />'.join(out)
