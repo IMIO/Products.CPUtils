@@ -1299,17 +1299,13 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
 
     portal_url = getToolByName(self, "portal_url")
     portal = portal_url.getPortalObject()
-    #import pdb; pdb.set_trace()
-
-    header = """<h1>RESULTATS DE LA RECHERCHE</h1>"""
-    out.append(header)
 
     otn = {}
     nto = {}
     plen = max_len - 3
 
     def cut_oid(oid):
-        """ Cut oid following '-' """
+        """ Cut oid following '-', nicer """
         i = lasti = 0
         while i >= 0:
             lasti = i
@@ -1325,7 +1321,7 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
         otn['/']['obj'] = portal
         otn['/']['npathid'] = ''
 
-        #cannot get results sorted by path !
+        #cannot get results sorted by path index !
         for r in results :
             obj = r.getObject()
             rpathid = "/%s" % '/'.join(portal_url.getRelativeContentPath(obj))
@@ -1334,7 +1330,7 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
             otn[rpathid]['obj'] = obj
 
         txt = []
-        #sort objects by path
+        #sort objects by path, handling parents to childs
         for opathid in sorted(otn.keys()):
             if opathid == '/': continue
             (opath, oid) = os.path.split(opathid)
@@ -1354,7 +1350,7 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
                 txt.append("%s => %s"%(opathid, npathid))
 
         if do_change:
-            #reverse sort objects by path to change id
+            #reverse sort objects by path to change id, handling childs to parents
             for opathid in sorted(otn.keys(), reverse=True):
                 if opathid == '/' or opathid == otn[opathid]['npathid']:
                     continue
@@ -1369,6 +1365,8 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
         if txt:
             doc.raw = '\n'.join(txt)
             out.append("Document '%s/rename_long_ids' updated !"%'/'.join(portal.getPhysicalPath()))
-
-    out.append("<br />FIN")
+    else:
+        pass
+        #first we load the correspondences
+        #to be done
     return '<br />'.join(out)
