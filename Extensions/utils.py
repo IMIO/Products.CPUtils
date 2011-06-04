@@ -1362,7 +1362,7 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
             
         if 'rename_long_ids' not in portal.objectIds():
             portal.manage_addDTMLDocument(id='rename_long_ids', title='Correspondences for long ids rename')
-            out.append("Document '%s/rename_long_ids' added"%'/'.join(portal.getPhysicalPath()))
+            out.append("<br />Document '%s/rename_long_ids' added"%'/'.join(portal.getPhysicalPath()))
         doc = self.rename_long_ids
         if txt:
             doc.raw = '\n'.join(txt)
@@ -1384,5 +1384,5 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
                 obj.reindexObject('id')
 
     if do_change:
-        out.append("<br />Renamed applied !")
+        out.append("<br />Rename applied !")
     return '<br />'.join(out)
