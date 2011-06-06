@@ -879,9 +879,14 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
                 current_lang = 'neutral'
             else:
                 current_lang = obj.getLanguage()
+            obj.getDeletableLanguages()
         except AttributeError, msg:
             out.append("<div>Cannot get language on object '%s' at url '%s'</div>"%(obj.Title(), obj.absolute_url))
             current_lang = 'AttributeError'
+            continue
+        except KeyError, msg:
+            # es-es not found in deletable language
+            out.append("<div>Language not in deletable lang: '%s' at url '%s'</div>"%(obj.Title(), obj.absolute_url))
             continue
 
         #we first search for translated objects: no change for those objects
