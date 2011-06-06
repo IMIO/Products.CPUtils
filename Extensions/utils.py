@@ -831,6 +831,8 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
     out.append("by example /cputils_correct_language?default=fr&dochange=1</p>")
     out.append('<p>New value in <span class="red">red</span> will be changed</p>')
 
+    errors = []
+
     if 'LinguaPlone' not in [p['id'] for p in pqi.listInstalledProducts()]:
         out.append("<p>LinguaPlone not installed ! Not necessary to do this operation</p>")
         return lf.join(out)
@@ -881,12 +883,12 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
                 current_lang = obj.getLanguage()
             obj.getDeletableLanguages()
         except AttributeError, msg:
-            out.append("<div>Cannot get language on object '%s' at url '%s'</div>"%(obj.Title(), obj.absolute_url))
+            errors.append("<div>Cannot get language on object '%s' at url '<a href=\"%s\">%s</a>'</div>"%(brain.title, brain.getURL(), brain.getPath()))
             current_lang = 'AttributeError'
             continue
         except KeyError, msg:
             # es-es not found in deletable language
-            out.append("<div>Language not in deletable lang: '%s' at url '%s'</div>"%(obj.Title(), obj.absolute_url))
+            errors.append("<div>Language not in deletable lang: '%s' at url '<a href=\"%s\">%s</a>'</div>"%(brain.title, brain.getURL(), brain.getPath()))
             continue
 
         #we first search for translated objects: no change for those objects
@@ -907,9 +909,14 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
                     obj.reindexObject()
         #no change
         elif 4 in filters:
-            out.append("""<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td>unchanged</td></tr>""" % (current_lang, meta_lang, brain.getURL(), brain.getPath()))
+            out.append("""<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td>unchanged</td></tr>""" % (current_lang, meta_lang, c, brain.getPath()))
 
     out.append('</tbody></table>')
+
+    if errors:
+        i = out.index("<table><thead><tr>")
+        errors.append('<br />')
+        out[i:i] = errors
 
     return lf.join(out)
 
