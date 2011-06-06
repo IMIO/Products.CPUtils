@@ -883,12 +883,12 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
                 current_lang = obj.getLanguage()
             obj.getDeletableLanguages()
         except AttributeError, msg:
-            errors.append("<div>Cannot get language on object '%s' at url '<a href=\"%s\">%s</a>'</div>"%(brain.title, brain.getURL(), brain.getPath()))
+            errors.append("<div>Cannot get language on object '%s' at url '<a href=\"%s\">%s</a>'</div>"%(brain.Title, brain.getURL(), brain.getPath()))
             current_lang = 'AttributeError'
             continue
         except KeyError, msg:
             # es-es not found in deletable language
-            errors.append("<div>Language not in deletable lang: '%s' at url '<a href=\"%s\">%s</a>'</div>"%(brain.title, brain.getURL(), brain.getPath()))
+            errors.append("<div>Language '%s' not in deletable lang: '%s' at url '<a href=\"%s\">%s</a>'</div>"%(msg, brain.Title, brain.getURL(), brain.getPath()))
             continue
 
         #we first search for translated objects: no change for those objects
