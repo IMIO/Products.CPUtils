@@ -874,10 +874,14 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
         else:
             meta_lang = brain.Language
         #we use obj instead
-        if obj.getLanguage() == '':
-            current_lang = 'neutral'
-        else:
-            current_lang = obj.getLanguage()
+        try:
+            if obj.getLanguage() == '':
+                current_lang = 'neutral'
+            else:
+                current_lang = obj.getLanguage()
+        except AttributeError, msg:
+            out.append("Cannot get language on object '%s' at url '%s'"%(obj.Title(), obj.absolute_url))
+            current_lang = 'AttributeError'
 
         #we first search for translated objects: no change for those objects
         #condition= already language and canonical with translations
