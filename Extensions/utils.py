@@ -38,7 +38,7 @@ def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
     """
     from Products.CMFCore.utils import getToolByName
     from Products.CPUtils.config import PLONE_VERSION
-    from Products.CMFPlone.utils import base_hasattr, safe_unicode
+    from Products.CMFPlone.utils import safe_unicode
     import email.Message
     import email.Utils
     from email.Header import Header
@@ -90,7 +90,6 @@ def pack_db(self, days=0):
         pack a db of the zope instance
     """
     out = []
-    from Products.CMFCore.utils import getToolByName
 # The user running this via urllib is not manager !!!!
 #    if not check_role(self):
 #        return "You must have a manager role to run this script"
@@ -468,7 +467,6 @@ def ploneboard_correct_modified(self, dochange=''):
         The portal_catalog must be updated !!
     """
     from Products.CMFCore.utils import getToolByName
-    from DateTime.DateTime import DateTime
 
     if not check_role(self):
         return "You must have a manager role to run this script"
@@ -663,7 +661,7 @@ def recreate_users_groups(self):
     passwords=old_acl.source_users._user_passwords
     for user in users:
         if user.getUserId() not in [ud['userid'] for ud in acl.searchUsers()]:
-            newuser = prg.addMember(user.getUserId(), passwords[user.getUserId()], roles=user.getRoles(), domains=user.getDomains())
+            prg.addMember(user.getUserId(), passwords[user.getUserId()], roles=user.getRoles(), domains=user.getDomains())
             messages.append("User '%s' is added"%user.getUserId())
             for groupid in user.getGroupIds():
                 if groupid == 'AuthenticatedUsers':
@@ -702,7 +700,6 @@ def sync_properties(self, base='', update='', dochange=''):
 
     lf = '\n'
 #    lf = '<br />'
-    separator = ','
     base_path = base
     update_path = update
     base_obj = None
@@ -800,7 +797,6 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
     import Missing
     lf = '\n'
 #    lf = '<br />'
-    separator = ','
     change_property = False
     only_current_folder = False
     filters = [1,2,3,4]
@@ -837,10 +833,13 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
         out.append("<p>LinguaPlone not installed ! Not necessary to do this operation</p>")
         return lf.join(out)
 
+    if onlycurrentfolder not in ('', '0', 'False', 'false'):
+        only_current_folder=True
+
     kw = {}
     #kw['portal_type'] = ('Document','Link','Image','File','Folder','Large Plone Folder','Wrapper','Topic')
     #kw['review_state'] = ('private',) #'published'
-    if onlycurrentfolder: 
+    if only_current_folder: 
         kw['path'] =  '/'.join(self.getPhysicalPath())
     #kw['sort_on'] = 'created'
     #kw['sort_order'] = 'reverse'
@@ -851,9 +850,6 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
 
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
-
-    if onlycurrentfolder not in ('', '0', 'False', 'false'):
-        only_current_folder=True
 
     results = portal.portal_catalog.searchResults(kw)
     out.append("<p>Number of retrieved objects (not filtered): %d</p>"%len(results))
@@ -882,11 +878,11 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
             else:
                 current_lang = obj.getLanguage()
             obj.getDeletableLanguages()
-        except AttributeError, msg:
+        except AttributeError:
             errors.append("<div>Cannot get language on object '%s' at url '<a href=\"%s\">%s</a>'</div>"%(brain.Title, brain.getURL(), brain.getPath()))
             current_lang = 'AttributeError'
             continue
-        except KeyError, msg:
+        except KeyError:
             # es-es not found in deletable language
             errors.append("<div>Language '%s' not in deletable lang: '%s' at url '<a href=\"%s\">%s</a>'</div>"%(msg, brain.Title, brain.getURL(), brain.getPath()))
             continue
@@ -953,7 +949,6 @@ def desactivate_base2dom(self):
         return 'desactivate_base2dom run with a non admin user: we go out'
     out = []
     try:
-        from Products.CMFCore.utils import getToolByName
         for site in get_all_site_objects(self) :
             sitePath = '/'.join(site.getPhysicalPath())
             if hasattr(site,"portal_javascripts"):
@@ -982,9 +977,7 @@ def unregister_adapter(self, unregister=''):
         out.append("-> unregister=... => name of the adapter to unregister (default to empty => list all adapters)<br />")
 
         from zope.component import getSiteManager
-        from plone.browserlayer.interfaces import ILocalBrowserLayerType
         from Products.CMFCore.utils import getToolByName
-        from five.customerize.interfaces import ITTWViewTemplate
         portal = getToolByName(self, "portal_url").getPortalObject()
         #import pdb; pdb.set_trace()
 
@@ -1187,7 +1180,6 @@ def send_adminMail(self, dochange='', subject='Aux administrateurs du site plone
         allSiteObj = [self.portal_url.getPortalObject()]
 
     for obj in allSiteObj:
-        objid = obj.getId()
         #get contact email
         authorEmail = obj.email_from_address
         users_mail = [authorEmail]
@@ -1224,7 +1216,6 @@ def checkInstance(self, isProductInstance='', instdir=''):
         allSiteObj = get_all_site_objects(self)
         isProductInstance = self.getId()
 
-        from Products.CMFCore.utils import getToolByName
         for site in allSiteObj:
             siteid = site.getId()
             sitePath = '/'.join(site.getPhysicalPath())
@@ -1339,10 +1330,9 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
         otn['/']['npathid'] = ''
 
         #cannot get results sorted by path index !
-        for r in results :
+        for r in results:
             obj = r.getObject()
             rpathid = "/%s" % '/'.join(portal_url.getRelativeContentPath(obj))
-            path = r.getPath()
             otn[rpathid] = {}
             otn[rpathid]['obj'] = obj
 
