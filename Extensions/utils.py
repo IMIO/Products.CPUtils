@@ -75,7 +75,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids'):
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -1393,3 +1393,69 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
     if do_change:
         out.append("<br />Rename applied !")
     return '<br />'.join(out)
+    
+###############################################################################
+    
+def list_newsletter_users (self, activity='all', format ='all', display=''):
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    
+    out = []
+    
+    out.append("You can call the script with following parameters:\n")
+    out.append("-> activity=all : 'all' (default value).")
+    out.append("                :'active' selects active users")
+    out.append("                :'inactive' selects inactive users")
+    out.append("-> format=all : 'all' (default value).")
+    out.append("              :'HTML' selects users with the HTML format")
+    out.append("              :'Text' selects users with the text format")
+    out.append("-> display : the nth letter of this parameter defines the display of the nth column.") 
+    out.append("           : 'd' to display and 'h' to hide. Display all columns by default")
+    out.append("           (example display=hh hides both activity and format columns, display=dh hides the format column)")
+    out.append("\nexample:  .../cputils_list_newsletter_users?display=hd&format=Text\n")
+    out.append("##########################################################################################################")
+    
+        
+    options = {'activity':['all','active','inactive'] , 'format':['all','HTML','Text'] }
+    
+    if activity not in options['activity']:
+        activity = options['activity'][0]
+    if format not in options['format']:
+        format = options['format'][0]
+    if len(display) < len(options):
+        display = ''
+        for i in range(len(options)):
+            display += 'd'
+    
+    header = 'EMAIL'
+    if display[0] != 'h':
+        header += ',ACTIVE'
+    if display[1] !='h':
+        header += ',FORMAT'
+    
+    results = self.portal_catalog.searchResults(portal_type = "NewsletterBTree")
+    for brain in results:
+        obj = brain.getObject()
+        out.append("\nSucribers list of the folder '"+obj.Title()+"' from the newsletter '"+obj.aq_parent.Title()+"'\n")
+        out.append(header)
+        for sub in obj.objectValues():
+            line = [sub.email]
+            
+            if activity != 'all' and (activity == 'active') != sub.active:
+                continue
+            if display[0] != 'h':
+                if sub.active:
+                    act = '*'
+                else:
+                    act = ''
+                line.append(act)
+            
+            if format != 'all' and format != sub.format:
+                continue 
+            if display[1] != 'h':
+                line.append(sub.format)
+                
+            out.append(",".join(line))
+    
+    return "\n".join(out) 
+    
