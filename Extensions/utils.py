@@ -75,7 +75,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'checkPOSKey', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','checkInstance','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users'):
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
