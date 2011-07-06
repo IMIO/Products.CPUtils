@@ -256,7 +256,8 @@ def delete_users(self, delete=False):
     portal = getToolByName(self, "portal_url").getPortalObject()
     out = ['<h1>all Users</h1>']
     i=0
-    for u in portal.acl_users.getUserIds():
+    for userInfos in portal.acl_users.searchUsers():
+        u = userInfos['userid']
         i += 1
     #  if i >100:
     #    break
@@ -317,7 +318,8 @@ def change_user_properties(self, kw='', dochange=''):
     change_property=False
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
-    for u in portal.acl_users.getUserIds():
+    for userInfos in portal.acl_users.searchUsers():
+        u = userInfos['userid']
         member = portal.portal_membership.getMemberById(u)
         out.append("<br/>USER:'%s'"%(u))
         #out.append("->  old properties=%s"%portal.portal_membership.getMemberInfo(memberId=u))
@@ -587,7 +589,8 @@ def list_users(self, output='csv', sort='users'):
     #import pdb; pdb.set_trace()
     users = {}
     groups = {}
-    for userid in portal.acl_users.getUserIds():
+    for userInfos in portal.acl_users.searchUsers():
+        userid = userInfos['userid']
         member = portal.portal_membership.getMemberById(userid)
         if not users.has_key(userid):
             users[userid] = {}
@@ -1184,7 +1187,8 @@ def send_adminMail(self, dochange='', subject='Aux administrateurs du site plone
         authorEmail = obj.email_from_address
         users_mail = [authorEmail]
         #get administrators email
-        for userid in obj.acl_users.getUserIds():
+        for userInfos in obj.acl_users.searchUsers():
+            userid = userInfos['userid']
             member = obj.portal_membership.getMemberById(userid)
             if member.has_role('Manager'):
                 user_mail = member.getProperty('email')
@@ -1396,7 +1400,7 @@ def rename_long_ids(self, length='255', dochange='', fromfile=''):
     
 ###############################################################################
     
-def list_newsletter_users (self, activity='all', format ='all', display=''):
+def list_newsletter_users (self, activity='all', format ='all'):
     if not check_role(self):
         return "You must have a manager role to run this script"
     
@@ -1409,10 +1413,7 @@ def list_newsletter_users (self, activity='all', format ='all', display=''):
     out.append("-> format=all : 'all' (default value).")
     out.append("              :'HTML' selects users with the HTML format")
     out.append("              :'Text' selects users with the text format")
-    out.append("-> display : the nth letter of this parameter defines the display of the nth column.") 
-    out.append("           : 'd' to display and 'h' to hide. Display all columns by default")
-    out.append("           (example display=hh hides both activity and format columns, display=dh hides the format column)")
-    out.append("\nexample:  .../cputils_list_newsletter_users?display=hd&format=Text\n")
+    out.append("\nexample:  .../cputils_list_newsletter_users?activity=active&format=Text\n")
     out.append("##########################################################################################################")
     
         
@@ -1422,16 +1423,9 @@ def list_newsletter_users (self, activity='all', format ='all', display=''):
         activity = options['activity'][0]
     if format not in options['format']:
         format = options['format'][0]
-    if len(display) < len(options):
-        display = ''
-        for i in range(len(options)):
-            display += 'd'
     
-    header = 'EMAIL'
-    if display[0] != 'h':
-        header += ',ACTIVE'
-    if display[1] !='h':
-        header += ',FORMAT'
+    header = ['EMAIL', 'ACTIVE', 'FORMAT']
+    header = ','.join(header)
     
     results = self.portal_catalog.searchResults(portal_type = "NewsletterBTree")
     for brain in results:
@@ -1443,17 +1437,16 @@ def list_newsletter_users (self, activity='all', format ='all', display=''):
             
             if activity != 'all' and (activity == 'active') != sub.active:
                 continue
-            if display[0] != 'h':
-                if sub.active:
-                    act = '*'
-                else:
-                    act = ''
-                line.append(act)
+            
+            if sub.active:
+                act = '*'
+            else:
+                act = ''
+            line.append(act)
             
             if format != 'all' and format != sub.format:
                 continue 
-            if display[1] != 'h':
-                line.append(sub.format)
+            line.append(sub.format)
                 
             out.append(",".join(line))
     
