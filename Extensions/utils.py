@@ -1209,6 +1209,8 @@ def send_adminMail(self, dochange='', subject='Aux administrateurs du site plone
 ###############################################################################
 
 def checkInstance(self, isProductInstance='', instdir=''):
+    from Products.CPUtils.hiddenProductsList import dic_hpList
+    
     if not check_zope_admin():
         return 'checkInstance run with a non admin user: we go out'
     try:
@@ -1219,52 +1221,73 @@ def checkInstance(self, isProductInstance='', instdir=''):
             is_Production_Instance=True
         allSiteObj = get_all_site_objects(self)
         isProductInstance = self.getId()
-
-        for site in allSiteObj:
-            siteid = site.getId()
-            sitePath = '/'.join(site.getPhysicalPath())
-
-            #out.append(">> Site in analyse : %s"%sitePath)
+        
+        #0.Check if hiddenProducts properties exists, and if yes, check discrepancies
+        if not hasattr(self, 'hiddenProducts'):
+            out.append(" !! No hiddenProducts properties defined")
+        else:                   
+            #Search the "type" of application hosted by the zope instance (website, urban, teleservice,..)
+            type = ""
+            for productname in dic_hpList.keys():
+                #Determine it by checking if the product is installable
+                if productname in self.Control_Panel.Products.objectIds():
+                    type = productname
+                    break             
+            #Once the type is known, look for discrepancies in the "hidden products" list for this type of product
+            external_hp_list = set(dic_hpList[type])
+            internal_hp_list = set(self.hiddenProducts)
+            for hiddenProduct in external_hp_list.symmetric_difference(internal_hp_list):
+                if hiddenProduct not in internal_hp_list:
+                    out.append("!! the product '%s' is in the hidden products external list but not in the site list"%(hiddenProduct))
+                else:
+                    out.append("!! the product '%s' is in the hidden products site list but not in the external list"%(hiddenProduct))
+        
+        for obj in allSiteObj:
+            objid = obj.getId()  
+            objPath = ""
+            for i in range(1,len(obj.getPhysicalPath())-1):
+                objPath = objPath + obj.getPhysicalPath()[i] + '/'            
+            #out.append(">> Site in analyse : %s"%objPath+objid)     
             #1. Check if we are in debugMode (only for product instance)
             if is_Production_Instance:
                 #out.append(">> Check debugMode")
-                if hasattr(site,"portal_css") and site.portal_css.debugmode:
-                    out.append("%s, %s, !! portal_css debugmode is %s"%(instdir, sitePath, site.portal_css.debugmode))
-                if hasattr(site,"portal_javascripts") and site.portal_javascripts.debugmode:
-                    out.append("%s, %s, !! portal_javascripts debugmode is %s"%(instdir, sitePath, site.portal_css.debugmode))
-                if hasattr(site,"portal_kss") and site.portal_kss.debugmode:
-                    out.append("%s, %s, !! portal_css debugmode is %s"%(instdir, sitePath, site.portal_css.debugmode))
-            #2. Check if robots.txt exists in test instance and doesn't exist in production instance
-            #out.append(">> Check robots.txt")
-            if hasattr(site, "portal_skins") and hasattr(site.portal_skins, "custom"):
-                if is_Production_Instance and hasattr(site.portal_skins.custom,"robots.txt"):
-                    out.append("%s, %s, !! Production instance has a 'robots.txt'"%(instdir, sitePath))
-                elif not is_Production_Instance and not hasattr(site.portal_skins.custom,"robots.txt"):
-                    out.append("%s, %s, !! Production instance has no 'robots.txt'"%(instdir, sitePath))
-            #3. Check if hiddenProducts properties exists
-            #out.append(">> Check hiddenProducts properties")
-            if not hasattr(site, 'hiddenProducts'):
-                out.append("%s, %s, !! No hiddenProducts properties defined"%(instdir, sitePath))
-            #4. Check if connexion plugins is activate
+                if hasattr(obj,"portal_css"):                
+                    if obj.portal_css.debugmode:
+                        out.append("!! %s (debugMode) >>> Css : %s"%(objPath+objid,obj.portal_css.debugmode))
+                if hasattr(obj,"portal_javascripts"): 
+                    if obj.portal_javascripts.debugmode:
+                        out.append("!! %s (debugMode) >>> Javascripts : %s"%(objPath+objid,obj.portal_javascripts.debugmode))
+                if hasattr(obj,"portal_kss"): 
+                    if obj.portal_kss.debugmode:
+                        out.append("!! %s (debugMode) >>> Kss : %s"%(objPath+objid,obj.portal_kss.debugmode))
+            #2. Check if robot.txt exist in test instance and not exist in product instance
+            #out.append(">> Check robots.txt")   
+            if hasattr(obj,"portal_skins.custom"):            
+                if is_Production_Instance and hasattr(obj.portal_skins.custom,"robots.txt"):
+                    out.append("!! %s >>> Have a file named 'robots.txt'"%(objPath+objid))   
+                elif not is_Production_Instance and not hasattr(obj.portal_skins.custom,"robots.txt"):
+                    out.append("!! %s >>> Haven't a file named 'robots.txt'"%(objPath+objid))        
+            #3. Check if connexion plugins is activate
             #out.append(">> Check connexion plugins")
-            plugins = site.acl_users.plugins
+            plugins = obj.acl_users.plugins
             auth_plugins = plugins.getAllPlugins(plugin_type='IAuthenticationPlugin')
             if not auth_plugins['active']:
-                out.append("%s, %s, !! No connection plugin activated"%(instdir, sitePath))
-            #5. Check if Ids is correct (without space)
+                out.append('!! %s >>> No connexion plugins is activate'%(objPath+objid))           
+            #4. Check if Ids is correct (without space)
             #out.append(">> Check Ids")
-            if siteid.find(' ') >= 0:
-                out.append("%s, %s, !! The site id '%s' contains spaces"%(instdir, sitePath, siteid))
-            #6. Check if cache setup is installed (only for product instance)
+            if objid.find(' ') >= 0:                
+                out.append("!! %s >>> this site (%s) contain space characters in id"%(objPath+objid,objid))            
+            #5. Check if cache setup is installed (only for product instance)
             if is_Production_Instance:
                 #out.append(">> Check CacheSetup")
-                if hasattr(site,"portal_quickinstaller") and not site.portal_quickinstaller.isProductInstalled("CacheSetup"):
-                    out.append("%s, %s, !! Product CacheSetup isn't installed"%(instdir, sitePath))
+                if hasattr(obj,"portal_quickinstaller"):
+                    if  not obj.portal_quickinstaller.isProductInstalled("CacheSetup"):
+                        out.append("!! %s >>> cache setup isn't installed"%(objPath+objid))
             #out.append("")
         return '\n'.join(out)
     except Exception, message:
-        out.append("%s, !! error in checkinstance %s"%(instdir, message))
-        return '\n'.join(out)
+        out.append("!! error in checkinstance %s"%str(message))
+        return '\n'.join(out) 
 
 ###############################################################################
 
