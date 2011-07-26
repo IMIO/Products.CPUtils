@@ -340,3 +340,15 @@ def initialize(context):
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
         MaxSizeValidator.__call__ = CallMaxSizeValidator
         logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
+        try:
+            #Patching tinymce to load as html in Ploneboard
+            from Products.TinyMCE.utility import TinyMCE
+            old_getContentType = TinyMCE.getContentType
+            def getContentType(self, object=None, fieldname=None):
+                if object is not None and fieldname == 'text' and object.meta_type in ('PloneboardForum', 'PloneboardConversation'):
+                    return 'text/html'
+                return old_getContentType(self, object=object, fieldname=fieldname)
+            TinyMCE.getContentType = getContentType
+            logger.info("TinyMCE getContentType MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
+        except:
+            pass
