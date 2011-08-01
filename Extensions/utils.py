@@ -1253,13 +1253,16 @@ def checkInstance(self, isProductInstance='', instdir=''):
                 #out.append(">> Check debugMode")
                 if hasattr(obj,"portal_css"):                
                     if obj.portal_css.debugmode:
+			obj.portal_css.setDebugMode(False)
                         out.append("!! %s (debugMode) >>> Css : %s"%(objPath+objid,obj.portal_css.debugmode))
                 if hasattr(obj,"portal_javascripts"): 
                     if obj.portal_javascripts.debugmode:
+			obj.portal_javascripts.setDebugMode(False)
                         out.append("!! %s (debugMode) >>> Javascripts : %s"%(objPath+objid,obj.portal_javascripts.debugmode))
                 if hasattr(obj,"portal_kss"): 
                     if obj.portal_kss.debugmode:
-                        out.append("!! %s (debugMode) >>> Kss : %s"%(objPath+objid,obj.portal_kss.debugmode))
+			obj.portal_kss.setDebugMode(False)
+                        out.append("!! %s (debugMode) >>> kss %s"%(objPath+objid,obj.portal_kss.debugmode))
             #2. Check if robot.txt exist in test instance and not exist in product instance
             #out.append(">> Check robots.txt")   
             if hasattr(obj,"portal_skins.custom"):            
