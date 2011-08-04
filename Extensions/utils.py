@@ -1501,6 +1501,6 @@ def zmi(self):
         server = server.replace('0000', port)
         url = "http://%s/manage_main"%server
         out.append('<a href="%s">%s</a>'%(url,url))
-        
+        return self.REQUEST.RESPONSE.redirect(url)
     #out.append(infos[1])
     return '<br />\n'.join(out)
