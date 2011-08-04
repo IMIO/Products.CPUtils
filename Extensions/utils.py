@@ -75,7 +75,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users'):
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users', 'get_port'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -110,8 +110,8 @@ def cpdb(self):
     """
         run pdb on current context
     """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
+    if not check_zope_admin():
+        return "You must have a zope manager to run this script"
     import pdb
     pdb.set_trace()
 
@@ -1253,15 +1253,15 @@ def checkInstance(self, isProductInstance='', instdir=''):
                 #out.append(">> Check debugMode")
                 if hasattr(obj,"portal_css"):                
                     if obj.portal_css.debugmode:
-			obj.portal_css.setDebugMode(False)
+                        obj.portal_css.setDebugMode(False)
                         out.append("!! %s (debugMode) >>> Css : %s"%(objPath+objid,obj.portal_css.debugmode))
                 if hasattr(obj,"portal_javascripts"): 
                     if obj.portal_javascripts.debugmode:
-			obj.portal_javascripts.setDebugMode(False)
+                        obj.portal_javascripts.setDebugMode(False)
                         out.append("!! %s (debugMode) >>> Javascripts : %s"%(objPath+objid,obj.portal_javascripts.debugmode))
                 if hasattr(obj,"portal_kss"): 
                     if obj.portal_kss.debugmode:
-			obj.portal_kss.setDebugMode(False)
+                        obj.portal_kss.setDebugMode(False)
                         out.append("!! %s (debugMode) >>> kss %s"%(objPath+objid,obj.portal_kss.debugmode))
             #2. Check if robot.txt exist in test instance and not exist in product instance
             #out.append(">> Check robots.txt")   
@@ -1477,4 +1477,30 @@ def list_newsletter_users (self, activity='all', format ='all'):
             out.append(",".join(line))
     
     return "\n".join(out) 
-    
+
+###############################################################################
+
+def get_port(self):
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    servers = { 'plonegov' : 'plonegov-0000.proxy.pilotsystems.net',
+                'villesetcommunes' : 'villesetcommunes.all2all.org:0000',
+                'villesetcommunes3' : 'villesetcommunes3.all2all.org:0000',}
+    import socket
+    infos = self.Control_Panel.getServers()
+    hostname = socket.gethostname()
+    out = []
+    server = 'localhost:0000'
+    if infos and len(infos[0]) > 1:
+        port = infos[0][1]
+        out.append(port)
+        port = port.replace('Port: ', '')
+        if servers.has_key(hostname):
+            server = servers[hostname]
+        server = server.replace('0000', port)
+        url = "http://%s/manage_main"%server
+        out.append('<a href="%s">%s</a>'%(url,url))
+        
+    #out.append(infos[1])
+    return '<br />\n'.join(out)
