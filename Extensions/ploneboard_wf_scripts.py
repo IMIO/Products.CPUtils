@@ -181,3 +181,26 @@ def notifyConvMembersByMailRIC(self, state_change, **kw):
     object.manage_addLocalRoles(creator, ('Owner','Editor',))
     return
 
+
+def setCommentLocalRoles(self, state_change, **kw):
+    """
+        This script is used to set local roles on a comment, permitting only a comment owner to modify his comment.
+        To activate the functionality :
+            1) go in the ZMI to "portal_workflow/ploneboard_comment_workflow/scripts"
+            2) add an "External Method"
+            3) complete the following information :
+                . id = "notifyConvMembersByMail" or whatever you want
+                . title = "notifyConvMembersByMail" or whatever you want
+                . module name = "CPUtils.ploneboard_wf_scripts"
+                . function name = "notifyConvMembersByMailRIC"
+            4) go in the ZMI to the appropriate transition (by example autopublish)
+            5) select for an empty field "Script (before)" or "Script (after)" your External Method id
+            6) add a property in portal_ploneboard with the following information
+                . name = "auto_send_to_addresses"
+                . type = "string"
+                . value = "test@x.be test2@x.be" all addresses separated by spaces
+    """
+    object = state_change['object']
+    #object.manage_delLocalRoles(creator)
+    object.manage_addLocalRoles(creator, ('Owner','Editor',))
+    return
