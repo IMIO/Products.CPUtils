@@ -189,16 +189,12 @@ def setCommentLocalRoles(self, state_change, **kw):
             1) go in the ZMI to "portal_workflow/ploneboard_comment_workflow/scripts"
             2) add an "External Method"
             3) complete the following information :
-                . id = "notifyConvMembersByMail" or whatever you want
-                . title = "notifyConvMembersByMail" or whatever you want
+                . id = "setCommentLocalRoles" or whatever you want
+                . title = "setCommentLocalRoles" or whatever you want
                 . module name = "CPUtils.ploneboard_wf_scripts"
-                . function name = "notifyConvMembersByMailRIC"
+                . function name = "setCommentLocalRoles"
             4) go in the ZMI to the appropriate transition (by example autopublish)
             5) select for an empty field "Script (before)" or "Script (after)" your External Method id
-            6) add a property in portal_ploneboard with the following information
-                . name = "auto_send_to_addresses"
-                . type = "string"
-                . value = "test@x.be test2@x.be" all addresses separated by spaces
     """
     object = state_change['object']
     #object.manage_delLocalRoles(creator)
