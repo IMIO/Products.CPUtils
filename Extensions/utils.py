@@ -2,9 +2,10 @@
 #utilities
 
 def search_users(self):
+    from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject() 
     user_ids = []
-    for user in portal.searchUsers():
+    for user in portal.acl_users.searchUsers():
         if user['pluginid'] == 'source_users':
             user_ids.append(user['userid'])
     return user_ids
