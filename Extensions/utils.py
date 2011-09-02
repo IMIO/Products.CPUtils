@@ -256,7 +256,7 @@ def delete_users(self, delete=False):
     portal = getToolByName(self, "portal_url").getPortalObject()
     out = ['<h1>all Users</h1>']
     i=0
-    for userInfos in portal.acl_users.searchUsers():
+    for userInfos in search_users(self):
         u = userInfos['userid']
         i += 1
     #  if i >100:
@@ -318,7 +318,7 @@ def change_user_properties(self, kw='', dochange=''):
     change_property=False
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
-    for userInfos in portal.acl_users.searchUsers():
+    for userInfos in search_users(self):
         u = userInfos['userid']
         member = portal.portal_membership.getMemberById(u)
         out.append("<br/>USER:'%s'"%(u))
@@ -358,9 +358,9 @@ def store_user_properties(self):
 #    skipped_properties = ['description', ]
 #    properties_names = [name for name in properties_names if name not in skipped_properties]
     txt.append('Count\tUser\t'+'\t'.join(properties_names))
-#    userids = [ud['userid'] for ud in portal.acl_users.searchUsers()]
+#    userids = [ud['userid'] for ud in search_users(self)]
     count = 1
-    for dic in portal.acl_users.searchUsers():
+    for dic in search_users(self):
         user = dic['userid']
         out.append("Current member '%s'"%(user))
         if dic['pluginid'] != 'source_users':
@@ -589,7 +589,7 @@ def list_users(self, output='csv', sort='users'):
     #import pdb; pdb.set_trace()
     users = {}
     groups = {}
-    for userInfos in portal.acl_users.searchUsers():
+    for userInfos in search_users(self):
         userid = userInfos['userid']
         member = portal.portal_membership.getMemberById(userid)
         if not users.has_key(userid):
