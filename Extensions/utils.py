@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
 #utilities
+
+def search_users(self):
+    portal = getToolByName(self, "portal_url").getPortalObject() 
+    user_ids = []
+    for user in portal.searchUsers():
+        if user['pluginid'] == 'source_users':
+            user_ids.append(user['userid'])
+    return user_ids
+
 def check_role(self, role='Manager', context=None):
     from Products.CMFCore.utils import getToolByName
     pms = getToolByName(self, 'portal_membership')
@@ -256,8 +265,7 @@ def delete_users(self, delete=False):
     portal = getToolByName(self, "portal_url").getPortalObject()
     out = ['<h1>all Users</h1>']
     i=0
-    for userInfos in search_users(self):
-        u = userInfos['userid']
+    for u in search_users(self):
         i += 1
     #  if i >100:
     #    break
@@ -318,8 +326,7 @@ def change_user_properties(self, kw='', dochange=''):
     change_property=False
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
-    for userInfos in search_users(self):
-        u = userInfos['userid']
+    for u in search_users(self):
         member = portal.portal_membership.getMemberById(u)
         out.append("<br/>USER:'%s'"%(u))
         #out.append("->  old properties=%s"%portal.portal_membership.getMemberInfo(memberId=u))
@@ -360,8 +367,7 @@ def store_user_properties(self):
     txt.append('Count\tUser\t'+'\t'.join(properties_names))
 #    userids = [ud['userid'] for ud in search_users(self)]
     count = 1
-    for dic in search_users(self):
-        user = dic['userid']
+    for user in search_users(self):
         out.append("Current member '%s'"%(user))
         if dic['pluginid'] != 'source_users':
             #out.append("! Not a user type '%s'"%(dic['principal_type']))
@@ -589,8 +595,7 @@ def list_users(self, output='csv', sort='users'):
     #import pdb; pdb.set_trace()
     users = {}
     groups = {}
-    for userInfos in search_users(self):
-        userid = userInfos['userid']
+    for userid in search_users(self):
         member = portal.portal_membership.getMemberById(userid)
         if not users.has_key(userid):
             users[userid] = {}
