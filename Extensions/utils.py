@@ -1510,3 +1510,27 @@ def zmi(self):
         return self.REQUEST.RESPONSE.redirect(url)
     #out.append(infos[1])
     return '<br />\n'.join(out)
+
+###############################################################################
+def removeSteps(self,step):
+    """
+        Remove some import steps
+    """
+    from Products.CMFCore.utils import getToolByName
+    out = []
+    setup = getToolByName(self, 'portal_setup')
+
+    ir = setup.getImportStepRegistry()
+
+    out.append(ir.listSteps())  # for debugging and seeing what steps are available
+    print 'before delete'
+    print ir.listSteps()
+
+    # delete the offending step
+    try:
+        del ir._registered[step]
+    except KeyError:
+        pass
+
+    print 'after delete'
+    print ir.listSteps()  # for debugging and seeing what steps are available
