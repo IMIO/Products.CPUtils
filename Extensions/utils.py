@@ -1542,3 +1542,35 @@ def removeStep(self,step=''):
     out.append('after delete')
     out.append(str(ir.listSteps()))  # for debugging and seeing what steps are available
     return '<br />\n'.join(out)
+
+###############################################################################
+def removeRegisteredTool(self,tool=''):
+    """
+        Remove a tool
+    """
+    from Products.CMFCore.utils import getToolByName
+    out = []
+
+    out.append("You can call the script with following parameters:\n")
+    out.append("-> tool=name of tool to delete")
+    out.append("##########################################################################################################")
+    
+    setup = getToolByName(self, 'portal_setup')
+
+    toolset = setup.getToolsetRegistry()
+
+    out.append('before delete')
+    out.append(str(toolset.listRequiredTools()))  
+
+    # delete the offending step
+    try:
+        del toolset._required[tool]
+    except KeyError:
+        pass
+
+    import transaction
+    transaction.commit()        
+
+    out.append('after delete')
+    out.append(str(toolset.listRequiredTools()))
+    return '<br />\n'.join(out)
