@@ -1518,13 +1518,17 @@ def removeSteps(self,step):
     """
     from Products.CMFCore.utils import getToolByName
     out = []
+
+    out.append("You can call the script with following parameters:\n")
+    out.append("-> step=name of step to delete")
+    out.append("##########################################################################################################")
+    
     setup = getToolByName(self, 'portal_setup')
 
     ir = setup.getImportStepRegistry()
 
+    out.append('before delete')
     out.append(ir.listSteps())  # for debugging and seeing what steps are available
-    print 'before delete'
-    print ir.listSteps()
 
     # delete the offending step
     try:
@@ -1532,5 +1536,6 @@ def removeSteps(self,step):
     except KeyError:
         pass
 
-    print 'after delete'
-    print ir.listSteps()  # for debugging and seeing what steps are available
+    out.append('after delete')
+    out.append(ir.listSteps())  # for debugging and seeing what steps are available
+    return '<br />\n'.join(out)
