@@ -1512,9 +1512,9 @@ def zmi(self):
     return '<br />\n'.join(out)
 
 ###############################################################################
-def removeSteps(self,step):
+def removeStep(self,step=''):
     """
-        Remove some import steps
+        Remove an import step
     """
     from Products.CMFCore.utils import getToolByName
     out = []
@@ -1528,7 +1528,7 @@ def removeSteps(self,step):
     ir = setup.getImportStepRegistry()
 
     out.append('before delete')
-    out.append(ir.listSteps())  # for debugging and seeing what steps are available
+    out.append(str(ir.listSteps()))  # for debugging and seeing what steps are available
 
     # delete the offending step
     try:
@@ -1537,5 +1537,5 @@ def removeSteps(self,step):
         pass
 
     out.append('after delete')
-    out.append(ir.listSteps())  # for debugging and seeing what steps are available
+    out.append(str(ir.listSteps()))  # for debugging and seeing what steps are available
     return '<br />\n'.join(out)
