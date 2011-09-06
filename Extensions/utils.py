@@ -1536,6 +1536,9 @@ def removeStep(self,step=''):
     except KeyError:
         pass
 
+    import transaction
+    transaction.commit()        
+
     out.append('after delete')
     out.append(str(ir.listSteps()))  # for debugging and seeing what steps are available
     return '<br />\n'.join(out)
