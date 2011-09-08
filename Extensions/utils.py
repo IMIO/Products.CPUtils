@@ -1445,9 +1445,7 @@ def list_newsletter_users (self, activity='all', format ='all'):
     out.append("-> format=all : 'all' (default value).")
     out.append("              :'HTML' selects users with the HTML format")
     out.append("              :'Text' selects users with the text format")
-    out.append("\nexample:  .../cputils_list_newsletter_users?activity=active&format=Text\n")
-    out.append("##########################################################################################################")
-    
+    out.append("\nexample:  .../cputils_list_newsletter_users?activity=active&format=Text\n")    
         
     options = {'activity':['all','active','inactive'] , 'format':['all','HTML','Text'] }
     
@@ -1512,6 +1510,7 @@ def zmi(self):
     return '<br />\n'.join(out)
 
 ###############################################################################
+
 def removeStep(self,step=''):
     """
         Remove an import step
@@ -1520,8 +1519,7 @@ def removeStep(self,step=''):
     out = []
 
     out.append("You can call the script with following parameters:\n")
-    out.append("-> step=name of step to delete")
-    out.append("##########################################################################################################")
+    out.append("-> step=name of step to delete\n")
     
     setup = getToolByName(self, 'portal_setup')
 
@@ -1544,6 +1542,7 @@ def removeStep(self,step=''):
     return '<br />\n'.join(out)
 
 ###############################################################################
+
 def removeRegisteredTool(self,tool=''):
     """
         Remove a tool
@@ -1552,8 +1551,7 @@ def removeRegisteredTool(self,tool=''):
     out = []
 
     out.append("You can call the script with following parameters:\n")
-    out.append("-> tool=name of tool to delete")
-    out.append("##########################################################################################################")
+    out.append("-> tool=name of tool to delete\n")
     
     setup = getToolByName(self, 'portal_setup')
 
@@ -1573,4 +1571,48 @@ def removeRegisteredTool(self,tool=''):
 
     out.append('after delete')
     out.append(str(toolset.listRequiredTools()))
+    return '<br />\n'.join(out)
+
+###############################################################################
+
+def subscribe_forums(self, userids='', dochange=''):
+    """
+        Subscribe user to all forums (Products.PloneboardSubscription)
+    """
+    out = []
+    out.append("<p>You can call the script with following parameters:</p>")
+    out.append("-> userids=robert,ursule : list of users separated by ,")
+    out.append("-> dochange=1 : to do really the changes")
+    out.append("by example ...?users=user1,user2&dochange=1<br/>")
+
+    do_change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        do_change = True
+    if not userids:
+        return '<br />\n'.join(out)
+
+    from Products.CMFCore.utils import getToolByName
+    portal_url = getToolByName(self, "portal_url")
+    portal = portal_url.getPortalObject()
+    pb_tool = getToolByName(portal, 'portal_pbnotification')
+    mtool = getToolByName(portal, 'portal_membership')
+
+    users = userids.split(',')
+    users = [user.strip(' ') for user in users]
+    error = False
+    for user in users:
+        mem = mtool.getMemberById(user)
+        if mem is None:
+            out.append("!! user not exist: %s"%user)
+            error = True
+    if not error:
+        i=0
+        results = portal.portal_catalog.searchResults(portal_type=('PloneboardForum'))
+        for brain in results:
+            i+=1
+            out.append("%d,forum:%s"%(i,brain.id))
+            for user in users:
+                out.append("....user:%s"%user)
+                if do_change:
+                    pb_tool.addSubscriber(brain.getObject(), user)
     return '<br />\n'.join(out)
