@@ -198,5 +198,5 @@ def setCommentLocalRoles(self, state_change, **kw):
     """
     object = state_change['object']
     #object.manage_delLocalRoles(creator)
-    object.manage_addLocalRoles(creator, ('Owner','Editor',))
+    object.manage_addLocalRoles(object.Creator(), ('Owner','Editor',))
     return
