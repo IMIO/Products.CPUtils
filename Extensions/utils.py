@@ -914,7 +914,7 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
                     obj.reindexObject()
         #no change
         elif 4 in filters:
-            out.append("""<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td>unchanged</td></tr>""" % (current_lang, meta_lang, c, brain.getPath()))
+            out.append("""<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td>unchanged</td></tr>""" % (current_lang, meta_lang, brain.getURL(), brain.getPath()))
 
     out.append('</tbody></table>')
 
