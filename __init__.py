@@ -28,15 +28,10 @@ import logging
 logger = logging.getLogger('CPUtils')
 logger.info('Installing Product')
 
-import os, os.path
-from Globals import package_home
-from Products.CMFCore import utils as cmfutils
 from Acquisition import aq_base
-from DateTime import DateTime
 from ZPublisher.HTTPRequest import FileUpload
 from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
 from Products.CMFCore.utils import getToolByName
-from Products.validation.interfaces.IValidator import IValidator
 try:
     from Products.validation.i18n import PloneMessageFactory as _
     from Products.validation.i18n import recursiveTranslate

@@ -71,7 +71,7 @@
                                  y.get('title', y.get('id', None))))
         return res
 
-# QuickInstallerTool plone 4
+# QuickInstallerTool plone 4.0.5 -> 4.1.2
     def listInstallableProducts(self, skipInstalled=True):
         """List candidate CMF products for installation -> list of dicts
            with keys:(id,title,hasError,status)
