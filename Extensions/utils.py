@@ -1488,20 +1488,24 @@ def zmi(self):
     if not check_role(self):
         return "You must have a manager role to run this script"
 
+    """ no more necessary
     servers = { 'plonegov' : 'plonegov-0000.proxy.pilotsystems.net',
                 'villesetcommunes' : 'villesetcommunes.all2all.org:0000',
                 'villesetcommunes3' : 'villesetcommunes3.all2all.org:0000',}
+    """
     import socket
     infos = self.Control_Panel.getServers()
     hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
     out = []
     server = 'localhost:0000'
     if infos and len(infos[0]) > 1:
         port = infos[0][1]
         out.append(port)
         port = port.replace('Port: ', '')
-        if servers.has_key(hostname):
-            server = servers[hostname]
+#        if servers.has_key(hostname):
+#            server = servers[hostname]
+        server = server.replace('localhost', ip_address)
         server = server.replace('0000', port)
         url = "http://%s/manage_main"%server
         out.append('<a href="%s">%s</a>'%(url,url))
