@@ -1,11 +1,9 @@
-from Products.CMFCore.exceptions import BadRequest
 from Products.CMFCore.utils import getToolByName
 
 from zope.i18nmessageid import MessageFactory
 _ = MessageFactory('CPUtils')
 
-from Products.CMFPlone.utils import safe_hasattr
-from Acquisition import aq_base
+from Products.CMFPlone.utils import base_hasattr
 from Products.CPUtils.config import *
 
 def setRobots(context):
@@ -27,9 +25,14 @@ def setRobots(context):
     fd = open(path, 'r')
     data = fd.read()
     fd.close()
-#        if not hasattr(obj, name): This doesn't work because hasattr() uses acquisition !!!!
-#        getattr(obj, name): This doesn't work because getattr() uses acquisition !!!!
-    if name not in zopeFolder.objectIds():
+
+    # if the file exists and title starts with Remove ..., we replace the file
+    if base_hasattr(zopeFolder, name):
+        rf = getattr(zopeFolder, name)
+        if rf.title.startswith('Remove this file in production mode!'):
+            zopeFolder.manage_delObjects([name])
+
+    if not base_hasattr(zopeFolder, name):
         output.append("Creating file '%s' in '%s'"%(name, 'portal_skins/custom'))
         zopeFolder.manage_addProduct['OFSP'].manage_addFile(id=name, file=data, title='Remove this file in production mode! A effacer une fois le site en production!')
         if name in zopeFolder.objectIds():
