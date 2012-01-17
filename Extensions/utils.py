@@ -85,7 +85,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users', 'zmi'):
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -1621,3 +1621,30 @@ def subscribe_forums(self, userids='', dochange=''):
                 if do_change:
                     pb_tool.addSubscriber(brain.getObject(), user)
     return '<br />\n'.join(out)
+
+###############################################################################
+
+def list_used_views(self):
+    """
+        List used views of the plone site
+    """
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    catalog = portal.portal_catalog
+    types = portal.portal_types.objectIds()
+    views = {}
+
+    for t in types:
+        brains = catalog(portal_type=t)
+        for brain in brains:
+            ob = brain.getObject()
+            layout = ob.getLayout()
+            if t not in views:
+                views[t] = []
+            if layout not in views[t]:
+                views[t].append(layout)
+    out = ["Used views on objects\n---------------------\n"]
+    for typ in views.keys():
+        out.append("%s : %s"%(typ, ', '.join(views[typ])))
+    return '\n'.join(out)
