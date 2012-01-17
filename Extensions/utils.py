@@ -85,7 +85,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views'):
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -1628,6 +1628,8 @@ def list_used_views(self):
     """
         List used views of the plone site
     """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
 
     from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject()
@@ -1648,3 +1650,36 @@ def list_used_views(self):
     for typ in views.keys():
         out.append("%s : %s"%(typ, ', '.join(views[typ])))
     return '\n'.join(out)
+
+###############################################################################
+
+def list_local_roles(self):
+    """
+        List defined local roles on the site
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    out = ["<h1>List of defined local roles</h1>"]
+    avoided_roles = ['Owner',]
+    from Products.CMFCore.utils import getToolByName
+    purl = getToolByName(self, "portal_url")
+    portal = purl.getPortalObject()
+    acl = portal.acl_users
+    putils = portal.plone_utils
+    catalog = portal.portal_catalog
+    brains = catalog(sort_on='path')
+    objects = [brain.getObject() for brain in brains]
+    objects.insert(0, portal)
+    for ob in objects:
+        olr = []
+        for username, roles, userType, userid in acl._getLocalRolesForDisplay(ob):
+            roles = [role for role in roles if role not in avoided_roles]
+            if roles:
+                olr.append(".. %s '%s' => %s"%(userType, userid, ', '.join(roles)))
+        lra = putils.isLocalRoleAcquired(ob)
+        # we log too if acquisition is disabled
+        if olr or not lra:
+            out.append('<a href="%s/@@sharing">%s</a> : %s'%(ob.absolute_url(), '/'+'/'.join(purl.getRelativeContentPath(ob)), (lra and ' ' or '<span style="color:red">acquisition disabled !</span>')))
+            out += olr
+    return '<br />\n'.join(out)
