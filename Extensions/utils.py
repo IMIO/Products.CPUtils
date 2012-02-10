@@ -394,9 +394,6 @@ def store_user_properties(self):
     count = 1
     for user in search_users(self):
         out.append("Current member '%s'"%(user))
-        if dic['pluginid'] != 'source_users':
-            #out.append("! Not a user type '%s'"%(dic['principal_type']))
-            continue
         member = portal.portal_membership.getMemberById(user)
         if member is None:
             out.append("! Member not found ")
@@ -915,7 +912,7 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
             errors.append("<div>Cannot get language on object '%s' at url '<a href=\"%s\">%s</a>'</div>"%(brain.Title, brain.getURL(), brain.getPath()))
             current_lang = 'AttributeError'
             continue
-        except KeyError:
+        except KeyError, msg:
             # es-es not found in deletable language
             errors.append("<div>Language '%s' not in deletable lang: '%s' at url '<a href=\"%s\">%s</a>'</div>"%(msg, brain.Title, brain.getURL(), brain.getPath()))
             continue
