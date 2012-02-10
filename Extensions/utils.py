@@ -301,13 +301,13 @@ def change_user_properties(self, kw='', dochange='', filter=''):
     from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject()
     out = []
-    if not kw:
+#    if not kw:
         #out.append("available properties:%s"%portal.portal_memberdata.propertyItems())
-        out.append("call the script followed by needed parameters:")
-        out.append("-> kw=propertyname1:value1|propertyname2:value2")
-        out.append("-> filter=propertyname1:value1")
-        out.append("-> dochange=1")
-        out.append("by example ...?kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097&userid:sgeulette&dochange=1<br/>")
+    out.append("call the script followed by needed parameters:")
+    out.append("-> kw=propertyname1:value1|propertyname2:value2")
+    out.append("-> filter=propertyname1:value1  or  filter=userid:xxx  or  filter=userid:xxx|propertyname1:value1")
+    out.append("-> dochange=1")
+    out.append("by example ...?kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097&userid:sgeulette&dochange=1<br/>")
 
     out.append("given keyword parameters:%s"%kw)
     def returnKeywordParamsAsDic(dico, param):
@@ -343,8 +343,9 @@ def change_user_properties(self, kw='', dochange='', filter=''):
         if userscreen and u != userscreen:
             continue
         for propname in screen:
+            #if user doesn't have the property or his property is different from the filtering value, we continue with next user
             if not member.hasProperty(propname) or member.getProperty(propname) != screen[propname]:
-                break
+                break #do not continue in else clause
         else:
             filtered += 1
             out.append("<br/>USER:'%s'"%(u))
