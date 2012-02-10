@@ -282,7 +282,7 @@ def delete_users(self, delete=False):
 
 ###############################################################################
 
-def change_user_properties(self, kw='', dochange=''):
+def change_user_properties(self, kw='', dochange='', filter=''):
     """
         change user properties with parameter like
         kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097
@@ -305,39 +305,63 @@ def change_user_properties(self, kw='', dochange=''):
         #out.append("available properties:%s"%portal.portal_memberdata.propertyItems())
         out.append("call the script followed by needed parameters:")
         out.append("-> kw=propertyname1:value1|propertyname2:value2")
+        out.append("-> filter=propertyname1:value1")
         out.append("-> dochange=1")
-        out.append("by example ...?kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097&dochange=1<br/>")
+        out.append("by example ...?kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097&userid:sgeulette&dochange=1<br/>")
 
     out.append("given keyword parameters:%s"%kw)
+    def returnKeywordParamsAsDic(dico, param):
+        for tup in param.split('|'):
+            keyvalue = tup.split(':')
+            if len(keyvalue)==2:
+                (key, value) = keyvalue
+                if value == 'True':
+                    value = True
+                elif value == 'False':
+                    value = False
+                dico[key] = value
+            elif tup:
+                out.append("problem in param '%s'"%tup)
     dic = {}
-    for tup in kw.split('|'):
-        keyvalue = tup.split(':')
-        if len(keyvalue)==2:
-            (key, value) = keyvalue
-            if value == 'True':
-                value = True
-            elif value == 'False':
-                value = False
-            dic[key] = value
-        elif tup:
-            out.append("problem in param '%s'"%tup)
-    out.append("build dictionary=%s<br/>"%dic)
+    returnKeywordParamsAsDic(dic, kw)
+    out.append("New properties dictionary=%s<br/>"%dic)
 
-    out.append('<h2>all Users</h2>')
+    screen = {}
+    returnKeywordParamsAsDic(screen, filter)
+    out.append("Filtering properties dictionary=%s<br/>"%screen)
+    userscreen = screen.pop('userid', '')
+
+    out.append('<h2>Users</h2>')
     change_property=False
     if dochange not in ('', '0', 'False', 'false'):
         change_property=True
+    newvaluestring = ','.join(["%s='%s'"%(key,dic[key]) for key in dic.keys()])
+    total = filtered = 0
     for u in search_users(self):
+        total += 1
         member = portal.portal_membership.getMemberById(u)
-        out.append("<br/>USER:'%s'"%(u))
-        #out.append("->  old properties=%s"%portal.portal_membership.getMemberInfo(memberId=u))
-        #display not all properties
-        out.append("=>  all properties: %s"%return_properties(dict(portal.portal_memberdata.propertyItems()), member))
-        if len(dic):
-            out.append("->  old properties: %s"%return_properties(dic, member))
-            if change_property:
-                member.setMemberProperties(dic)
-                out.append("->  new properties: %s"%return_properties(dic, member))
+        if userscreen and u != userscreen:
+            continue
+        for propname in screen:
+            if not member.hasProperty(propname) or member.getProperty(propname) != screen[propname]:
+                break
+        else:
+            filtered += 1
+            out.append("<br/>USER:'%s'"%(u))
+            #out.append("->  old properties=%s"%portal.portal_membership.getMemberInfo(memberId=u))
+            #display not all properties
+            out.append("=>  all properties: %s"%return_properties(dict(portal.portal_memberdata.propertyItems()), member))
+            if len(dic):
+                out.append("->  old properties: %s"%return_properties(dic, member))
+                if change_property:
+                    member.setMemberProperties(dic)
+                    out.append("->  new properties: %s"%return_properties(dic, member))
+                else:
+                    out.append("->  new values after change: %s"%newvaluestring)
+    try:
+        out[out.index('<h2>Users</h2>')] = '<h2>Users : total=%d, filtered=%d</h2>'%(total, filtered)
+    except:
+        pass
     return '<br/>'.join(out)
 
 ###############################################################################
