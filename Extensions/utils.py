@@ -85,7 +85,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles'):
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles', 'unlock_webdav_objects'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -1704,4 +1704,37 @@ def list_local_roles(self):
         if olr or not lra:
             out.append('<a href="%s/@@sharing">%s</a> : %s'%(ob.absolute_url(), '/'+'/'.join(purl.getRelativeContentPath(ob)), (lra and ' ' or '<span style="color:red">acquisition disabled !</span>')))
             out += olr
+    return '<br />\n'.join(out)
+
+###############################################################################
+
+def unlock_webdav_objects(self, dochange=''):
+    """
+        unlock webdav locked objects
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    from Products.CMFCore.utils import getToolByName
+    purl = getToolByName(self, "portal_url")
+    portal = purl.getPortalObject()
+
+    out = []
+    out.append("<p>You can call the script with following parameters:</p>")
+    out.append("-> dochange=1 : to unlock objects")
+    out.append("by example ...?dochange=1<br/>")
+    out.append("<h1>Locked objects</h1>")
+
+    do_change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        do_change = True
+
+    for obj in portal.objectValues():
+      if obj.wl_isLocked():
+        out.append('%s is locked' % obj.absolute_url())
+        if do_change:
+            obj.wl_clearLocks()
+            if obj.wl_isLocked():
+                out.append("  ERROR: object is always locked")
+
     return '<br />\n'.join(out)
