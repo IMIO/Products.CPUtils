@@ -1729,12 +1729,15 @@ def unlock_webdav_objects(self, dochange=''):
     if dochange not in ('', '0', 'False', 'false'):
         do_change = True
 
-    for obj in portal.objectValues():
-      if obj.wl_isLocked():
-        out.append('%s is locked' % obj.absolute_url())
-        if do_change:
-            obj.wl_clearLocks()
+    def walk_dir(folder):
+        for obj in folder.objectValues():
             if obj.wl_isLocked():
-                out.append("  ERROR: object is always locked")
-
+                out.append('%s is locked' % obj.absolute_url())
+                if do_change:
+                    obj.wl_clearLocks()
+                    if obj.wl_isLocked():
+                        out.append("  ERROR: object is always locked")
+            if obj.isPrincipiaFolderish:
+                walk_dir(obj)
+    walk_dir(portal)
     return '<br />\n'.join(out)
