@@ -256,6 +256,31 @@ def delete_subscribers(self, delete=False):
 
 ###############################################################################
 
+def export_subscribers_csv(self):
+    """
+        Export in csv all subscribers for a NewsLetter Theme
+        script to be run on the subscriber's folder context
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    
+    out = ['"title";"active";"format"']
+    
+    for obj in self.objectValues():
+        if obj.meta_type != 'Subscriber':
+            continue
+        try:
+          ligne = obj.Title().encode('iso-8859-15')+'";' 
+          ligne = ligne + '"'+str(obj.active)+'";'
+          ligne = ligne + '"'+obj.format.encode('iso-8859-15')+'"'
+          out.append(ligne)
+        except:
+            continue
+    return '\n'.join(out)
+        
+
+###############################################################################
+
 def delete_users(self, delete=False):
     """
         delete users added by robots.
