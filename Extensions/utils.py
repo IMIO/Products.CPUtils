@@ -332,7 +332,7 @@ def change_user_properties(self, kw='', dochange='', filter=''):
     out.append("-> kw=propertyname1:value1|propertyname2:value2")
     out.append("-> filter=propertyname1:value1  or  filter=userid:xxx  or  filter=userid:xxx|propertyname1:value1")
     out.append("-> dochange=1")
-    out.append("by example ...?kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097&userid:sgeulette&dochange=1<br/>")
+    out.append("by example ...?kw=wysiwyg_editor:FCKeditor|nationalregister=00000000097&filter=userid:quidam&dochange=1<br/>")
 
     out.append("given keyword parameters:%s"%kw)
     def returnKeywordParamsAsDic(dico, param):
