@@ -30,6 +30,22 @@ def fileSize(nb):
             break
     return "%.1f%s"%(float(nb)/1024**x,sizeletter[x])
 
+def tobytes(objsize):
+    """ Transform getObjSize metadata to bytes value """
+    parts = objsize.split()
+    if len(parts) != 2:
+        return "Problem when splitting '%s' obj size in 2 parts" % objsize
+    try:
+        lfsize = float(parts[0])
+    except Exception:
+        return "First part '%s' of objsize '%s' isn't float" % (parts[0], objsize)
+    if parts[1] == 'kB':
+        return lfsize * 1024
+    elif parts[1] == 'MB':
+        return lfsize * 1024**2
+    else:
+        return parts
+
 def get_all_site_objects(self):
     allSiteObj = []
     for objid in self.objectIds(('Plone Site', 'Folder')):
@@ -217,20 +233,22 @@ def audit_catalog(self):
     out =[header]
 
     res = []
-    out.append("""%s : %s : %s""" % ('portal_type', 'getObjSize', 'url'))
+    out.append("""counter : %s : %s : %s""" % ('portal_type', 'getObjSize', 'url'))
     for r in results :
-        res.append("%s;%s;%s;%s" % (r.portal_type, r.getObjSize, r.getURL()+'/view', r.getURL()+'/view'))
+        res.append((r.portal_type, r.getObjSize, r.getURL()+'/view', tobytes(r.getObjSize)))
 
     def sortBySize(row1, row2):
-        size1 = float(row1.split(';')[1][:-3])
-        size2 = float(row2.split(';')[1][:-3])
+        size1 = row1[-1]
+        size2 = row2[-1]
         #reverse order
         return cmp(size1, size2)
     res.sort(sortBySize, reverse=True)
 
+    count = 0
     for row in res :
-        (part1,part2,part3,part4) = row.split(';')
-        out.append("""%s : %s : <a href="%s">%s</a>""" % (part1, part2, part3, part4))
+        (ptype, size, url, bytes) = row
+        count += 1
+        out.append("""%d : %s : %s : <a href="%s">%s</a>""" % (count, ptype, size, url, url))
 
     out.append("<br />FIN")
     return '<br />'.join(out)
