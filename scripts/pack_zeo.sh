@@ -23,7 +23,6 @@ do
             # Now we have all we need so we can call the python script
             if [ $storage != "Data" ]
             then
-                echo "la ligne de Commande sera: ${directory}bin/python /srv/scripts/pack_zeo.py -c $cache -i $directory -s $storage -d 7 -p $port"
                 eval ${directory}bin/python /srv/scripts/pack_zeo.py -c ${cache} -i ${directory} -s ${storage} -d ${days} -p ${port}
             fi
         done    
