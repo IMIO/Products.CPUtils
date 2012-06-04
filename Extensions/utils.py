@@ -101,7 +101,11 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', 'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', 'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins','list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles', 'unlock_webdav_objects'):
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', \
+                   'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', \
+                   'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins', \
+                   'list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', \
+                   'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles', 'unlock_webdav_objects', 'reftooltoobjects'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -1783,4 +1787,87 @@ def unlock_webdav_objects(self, dochange=''):
             if obj.isPrincipiaFolderish:
                 walk_dir(obj)
     walk_dir(portal)
+    return '<br />\n'.join(out)
+
+###############################################################################
+
+def reftooltoobjects(self, dochange=''):
+    """
+        This is usefull with quintagroup.transmogrifier because references
+        are not migrated on object (at_references).  But they are
+        still in the old imported reference_catalog.zexp.
+        Update every objects.at_references depending on the found references
+        in the reference_catalog.
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    import logging
+    logger = logging.getLogger('CPUtils')
+    from Acquisition import aq_base
+    from Products.CMFCore.utils import getToolByName
+
+    purl = getToolByName(self, "portal_url")
+    portal = purl.getPortalObject()
+
+    out = []
+    out.append("<p>You can call the script with following parameters:</p>")
+    out.append("-> dochange=1 : to update at_references on objects")
+    out.append("by example ...?dochange=1<br/>")
+    out.append("<h1>Updated objects</h1>")
+
+    do_change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        do_change = True
+
+    logger.info('Updating \'at_references\' on every objects...')
+    brains = portal.portal_catalog()
+    brains = range(1,525564)
+    totalBrains = len(brains)
+    
+    if totalBrains < 100:
+        numberOfSteps = 1
+    elif totalBrains < 1000:
+        numberOfSteps = 10
+    else:
+        numberOfSteps = 100
+
+    i = 1
+    stepTreshold = round(int(totalBrains/numberOfSteps))
+    step = 1
+    logger.info('Updating \'%d\' objects...' % totalBrains)
+    refTool = portal.reference_catalog
+    changed=False
+    for brain in brains:
+        if i > stepTreshold:
+            i = 1
+            logger.info('Step \'%d / %d\'...' % (step, numberOfSteps))
+            step = step + 1
+        i = i + 1
+        continue
+        obj = brain.getObject()
+        #some elements like Newsletters are not referenceable...
+        uobj = aq_base(obj)
+        if not refTool.isReferenceable(uobj):
+            continue
+        at_references = obj._getReferenceAnnotations()
+        if at_references.objectValues():
+            # at_references already contains references, it seems OK...
+            continue
+        # Look in the reference_catalog for existing references about obj
+        # for every relationships
+        for relationship in refTool.getRelationships(obj):
+            if not relationship:
+                continue
+            references = obj.getReferences(relationship)
+            for reference in references:
+                if not reference:
+                    continue
+                out.append("References for relationship '%s' of object at %s' where updated" % (relationship, '/'.join(obj.getPhysicalPath())))
+                if do_change:
+                    changed = True
+                    refTool.addReference(obj, reference, relationship, updateReferences=False)
+    if changed:
+        refTool.refreshCatalog(clear=1)
+    logger.info('Done !')
     return '<br />\n'.join(out)
