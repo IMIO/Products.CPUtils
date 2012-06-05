@@ -1822,7 +1822,6 @@ def reftooltoobjects(self, dochange=''):
 
     logger.info('Updating \'at_references\' on every objects...')
     brains = portal.portal_catalog()
-    brains = range(1,525564)
     totalBrains = len(brains)
     
     if totalBrains < 100:
@@ -1844,7 +1843,6 @@ def reftooltoobjects(self, dochange=''):
             logger.info('Step \'%d / %d\'...' % (step, numberOfSteps))
             step = step + 1
         i = i + 1
-        continue
         obj = brain.getObject()
         #some elements like Newsletters are not referenceable...
         uobj = aq_base(obj)
