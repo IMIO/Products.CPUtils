@@ -106,7 +106,7 @@ def install(self):
                    'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins', \
                    'list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', \
                    'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles', 'unlock_webdav_objects', \
-                   'reftooltoobjects', 'del_bad_portlet'):
+                   'reftooltoobjects', 'del_bad_portlet', 'add_subject'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -1924,4 +1924,66 @@ def del_bad_portlet(self, dochange='', column='left', portlet=''):
             out.append("portlet '%s' of %s column is deleted"%(portlet, column))
         else:
             out.append("portlet '%s' of %s column will be really deleted with dochange parameter"%(portlet, column))
+    logger.info('\n'.join(out))
+    return '<br />\n'.join(out)
+
+###############################################################################
+
+def add_subject(self, dochange='', path='', type='', subject=''):
+    """
+        Search for objects regarding type, path, ... and add the subject.
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    import logging
+    logger = logging.getLogger('CPUtils')
+    from Products.CMFCore.utils import getToolByName
+    import os
+    purl = getToolByName(self, "portal_url")
+    portal = purl.getPortalObject()
+    sitePath = '/'.join(portal.getPhysicalPath())
+
+    out = ['<h1>Adding a subject to objects</h1>']
+    out.append("You can/must call the script with following parameters:")
+    out.append("-> path='' : path to search in (do not begin with '/'). By default nothing: all site is considered.")
+    out.append("-> type='' : portal type to search.")
+    out.append("-> subject='' : subject to add.")
+    out.append("-> dochange=1 : to apply change")
+    out.append("by example ...?subject=Motclé&path=/theme1&type=News")
+    out.append('')
+
+    do_change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        do_change = True
+    if not subject:
+        out.append("!! You must give the subject name with 'subject' parameter")
+        return '<br />\n'.join(out)
+
+    kw = {}
+    #kw['sort_on'] = 'path'
+    if type:
+        kw['portal_type'] = type
+    if path:
+        kw['path'] = os.path.join(sitePath, path)
+
+    #kw['review_state'] = ('private',) #'published'
+    #kw['sort_order'] = 'reverse'
+    results = portal.portal_catalog.searchResults(kw)
+    results = sorted(results, key=lambda obj: obj.getPath())
+    out.append("Count of objects:%d"%len(results))
+    for brain in results:
+        obj = brain.getObject()
+        subjects = list(obj.Subject())
+        if subject not in subjects:
+            subjects.append(subject)
+            if do_change:
+                obj.setSubject(subjects)
+                obj.reindexObject()
+                out.append("%s -> added subject to subjects:'%s'"%(brain.getPath(), '|'.join(subjects)))
+            else:
+                out.append("%s -> will add subject to subjects:'%s'"%(brain.getPath(), '|'.join(subjects)))
+        else:
+            out.append("%s -> subject already in subjects:'%s'"%(brain.getPath(), '|'.join(subjects)))
+    logger.info('\n'.join(out))
     return '<br />\n'.join(out)
