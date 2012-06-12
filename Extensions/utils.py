@@ -105,7 +105,8 @@ def install(self):
                    'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', \
                    'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins', \
                    'list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', \
-                   'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles', 'unlock_webdav_objects', 'reftooltoobjects'):
+                   'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles', 'unlock_webdav_objects', \
+                   'reftooltoobjects', 'del_bad_portlet'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -1868,4 +1869,59 @@ def reftooltoobjects(self, dochange=''):
     if changed:
         refTool.refreshCatalog(clear=1)
     logger.info('Done !')
+    return '<br />\n'.join(out)
+
+###############################################################################
+
+def del_bad_portlet(self, dochange='', column='left', portlet=''):
+    """
+        Delete a Plone3 portlet that cannot more be edited.
+        Print the content of the text portlet.
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    import logging
+    logger = logging.getLogger('CPUtils')
+    from zope.annotation.interfaces import IAnnotations
+    from Products.CMFCore.utils import getToolByName
+    import cgi
+
+    purl = getToolByName(self, "portal_url")
+    portal = purl.getPortalObject()
+
+    out = ['<h1>Deleting a portlet and displaying some attributes</h1>']
+    out.append("You can/must call the script with following parameters:")
+    out.append("-> column='right' : to search left (default) or right portlets")
+    out.append("-> portlet='xxx' : the id of the portlet to search (can be seen in url when editing it)")
+    out.append("-> dochange=1 : to apply change (really delete portlet)")
+    out.append("by example ...?portlet=mon portlet&column=right")
+    out.append('')
+
+    do_change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        do_change = True
+    if not portlet:
+        out.append("!! You must give the portlet name with 'portlet' parameter")
+        return '\n'.join(out)
+
+    ann = IAnnotations(self)
+    columnkey = 'plone.%scolumn'%column
+    if not ann.has_key('plone.portlets.contextassignments'):
+        out.append("No portlets defined in this context")
+    elif not ann['plone.portlets.contextassignments'].has_key(columnkey):
+        out.append("Column '%s' not found in portlets definition"%columnkey)
+    elif not ann['plone.portlets.contextassignments'][columnkey].has_key(portlet):
+        out.append("Portlet '%s' in column '%s' not found in portlets definition"%(portlet, column))
+    else:
+        asg = ann['plone.portlets.contextassignments'][columnkey][portlet]
+        if hasattr(asg, 'header'):
+            out.append("header attribute='%s'\n<br />"%asg.header)
+        if hasattr(asg, 'text'):
+            out.append("text attribute='%s'\n<br />"%cgi.escape(asg.text))
+        if do_change:
+            del ann['plone.portlets.contextassignments'][columnkey][portlet]
+            out.append("portlet '%s' of %s column is deleted"%(portlet, column))
+        else:
+            out.append("portlet '%s' of %s column will be really deleted with dochange parameter"%(portlet, column))
     return '<br />\n'.join(out)
