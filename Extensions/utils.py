@@ -1650,15 +1650,16 @@ def removeRegisteredTool(self,tool=''):
 
 ###############################################################################
 
-def subscribe_forums(self, userids='', dochange=''):
+def subscribe_forums(self, userids='', dochange='', action='add'):
     """
         Subscribe user to all forums (Products.PloneboardSubscription)
     """
     out = []
     out.append("<p>You can call the script with following parameters:</p>")
     out.append("-> userids=robert,ursule : list of users separated by ,")
+    out.append("-> action=remove : 'add' (default) or 'remove' the users for all found forums")
     out.append("-> dochange=1 : to do really the changes")
-    out.append("by example ...?users=user1,user2&dochange=1<br/>")
+    out.append("by example ...?userids=user1,user2&dochange=1<br/>")
 
     do_change = False
     if dochange not in ('', '0', 'False', 'false'):
@@ -1673,7 +1674,7 @@ def subscribe_forums(self, userids='', dochange=''):
     mtool = getToolByName(portal, 'portal_membership')
 
     users = userids.split(',')
-    users = [user.strip(' ') for user in users]
+    users = [user.strip(' ').decode() for user in users]
     error = False
     for user in users:
         mem = mtool.getMemberById(user)
@@ -1682,14 +1683,29 @@ def subscribe_forums(self, userids='', dochange=''):
             error = True
     if not error:
         i=0
-        results = portal.portal_catalog.searchResults(portal_type=('PloneboardForum'))
+        kw = {'sort_on':'path', 'portal_type':['PloneboardForum']}
+        results = portal.portal_catalog.searchResults(kw)
         for brain in results:
             i+=1
-            out.append("%d,forum:%s"%(i,brain.id))
+            forum_path = brain.getPath()
+            out.append("%d,forum:%s (%s)"%(i,brain.id,forum_path))
             for user in users:
-                out.append("....user:%s"%user)
-                if do_change:
-                    pb_tool.addSubscriber(brain.getObject(), user)
+                if not pb_tool.subscribers.has_key(forum_path) or user not in pb_tool.subscribers[forum_path]:
+                    out.append(" -> user '%s' is NOT in"%user)
+                    if action == 'add':
+                        if do_change:
+                            pb_tool.addSubscriber(brain.getObject(), user)
+                            out.append(" ---> added")
+                        else:
+                            out.append(" ---> will be added")
+                else:
+                    out.append(" -> user '%s' is in"%user)
+                    if action == 'remove':
+                        if do_change:
+                            pb_tool.subscribers[forum_path].remove(user)
+                            out.append(" ---> removed")
+                        else:
+                            out.append(" ---> will be removed")
     return '<br />\n'.join(out)
 
 ###############################################################################
