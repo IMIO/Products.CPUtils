@@ -1657,7 +1657,7 @@ def subscribe_forums(self, userids='', dochange='', action='add'):
     out = []
     out.append("<p>You can call the script with following parameters:</p>")
     out.append("-> userids=robert,ursule : list of users separated by ,")
-    out.append("-> action=remove : 'add' (default) or 'remove' the users for all found forums")
+    out.append("-> action=add|remove|replace : 'add' (default) or 'remove' the users for all forums. 'replace' user1 bu user2 for all forums and conversations.")
     out.append("-> dochange=1 : to do really the changes")
     out.append("by example ...?userids=user1,user2&dochange=1<br/>")
 
@@ -1675,6 +1675,8 @@ def subscribe_forums(self, userids='', dochange='', action='add'):
 
     users = userids.split(',')
     users = [user.strip(' ').decode() for user in users]
+    if action == 'replace' and len(users) != 2:
+        out.append("With replace action, you have to give 2 users: ?userids=oldname,newname")
     error = False
     for user in users:
         mem = mtool.getMemberById(user)
@@ -1684,28 +1686,43 @@ def subscribe_forums(self, userids='', dochange='', action='add'):
     if not error:
         i=0
         kw = {'sort_on':'path', 'portal_type':['PloneboardForum']}
+        if action == 'replace':
+            kw['portal_type'].append('PloneboardConversation')
         results = portal.portal_catalog.searchResults(kw)
         for brain in results:
             i+=1
-            forum_path = brain.getPath()
-            out.append("%d,forum:%s (%s)"%(i,brain.id,forum_path))
-            for user in users:
-                if not pb_tool.subscribers.has_key(forum_path) or user not in pb_tool.subscribers[forum_path]:
-                    out.append(" -> user '%s' is NOT in"%user)
-                    if action == 'add':
-                        if do_change:
-                            pb_tool.addSubscriber(brain.getObject(), user)
-                            out.append(" ---> added")
-                        else:
-                            out.append(" ---> will be added")
-                else:
-                    out.append(" -> user '%s' is in"%user)
-                    if action == 'remove':
-                        if do_change:
-                            pb_tool.subscribers[forum_path].remove(user)
-                            out.append(" ---> removed")
-                        else:
-                            out.append(" ---> will be removed")
+            obj_path = brain.getPath()
+            type = brain.getObject().getPortalTypeName().replace('Ploneboard', '')
+            if action in ('add', 'remove'):
+                out.append("%d %s: %s (%s)"%(i, type, brain.id, obj_path))
+                for user in users:
+                    if not pb_tool.subscribers.has_key(obj_path) or user not in pb_tool.subscribers[obj_path]:
+                        out.append(" -> user '%s' is NOT in"%user)
+                        if action == 'add':
+                            if do_change:
+                                pb_tool.addSubscriber(brain.getObject(), user)
+                                out.append(" ---> added")
+                            else:
+                                out.append(" ---> will be added")
+                    else:
+                        out.append(" -> user '%s' is in"%user)
+                        if action == 'remove':
+                            if do_change:
+                                pb_tool.subscribers[obj_path].remove(user)
+                                out.append(" ---> removed")
+                            else:
+                                out.append(" ---> will be removed")
+            elif action == 'replace':
+                oldname, newname = users
+                if pb_tool.subscribers.has_key(obj_path) and oldname in pb_tool.subscribers[obj_path]:
+                    out.append("%d %s: %s (%s)"%(i, type, brain.id, obj_path))
+                    idx = pb_tool.subscribers[obj_path].index(oldname)
+                    if do_change:
+                        pb_tool.subscribers[obj_path][idx] = newname
+                        out.append(" ---> %s replaced by %s"%(oldname, newname))
+                    else:
+                        out.append(" ---> %s will be replaced by %s"%(oldname, newname))
+                
     return '<br />\n'.join(out)
 
 ###############################################################################
