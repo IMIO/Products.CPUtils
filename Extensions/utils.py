@@ -1650,14 +1650,16 @@ def removeRegisteredTool(self,tool=''):
 
 ###############################################################################
 
-def subscribe_forums(self, userids='', dochange='', action='add'):
+def subscribe_forums(self, userids='', dochange='', action='add', target='forum', details=''):
     """
-        Subscribe user to all forums (Products.PloneboardSubscription)
+        Manage subscription to forum or conversation (Products.PloneboardSubscription)
     """
     out = []
     out.append("<p>You can call the script with following parameters:</p>")
-    out.append("-> userids=robert,ursule : list of users separated by ,")
-    out.append("-> action=add|remove|replace : 'add' (default) or 'remove' the users for all forums. 'replace' user1 bu user2 for all forums and conversations.")
+    out.append("-> userids=user1,user2 : list of users separated by ,")
+    out.append("-> action=add|remove|replace : 'add' (default) or 'remove' the users for all forums. 'replace' user1 by user2 for all forums and conversations.")
+    out.append("-> target=forum,conversation : list of changes target")
+    out.append("-> details=1 : display all subscribers")
     out.append("-> dochange=1 : to do really the changes")
     out.append("by example ...?userids=user1,user2&dochange=1<br/>")
 
@@ -1666,6 +1668,17 @@ def subscribe_forums(self, userids='', dochange='', action='add'):
         do_change = True
     if not userids:
         return '<br />\n'.join(out)
+
+    kw = {'sort_on':'path', 'portal_type':[]}
+    targets = target.strip().split(',')
+    for starget in targets:
+        if starget == 'forum':
+            kw['portal_type'].append('PloneboardForum')
+        elif starget == 'conversation':
+            kw['portal_type'].append('PloneboardConversation')
+        else:
+            out.append("Target option '%s' must be a list of forum and/or conversation '%s'"%(starget,target))
+            return '<br />\n'.join(out)
 
     from Products.CMFCore.utils import getToolByName
     portal_url = getToolByName(self, "portal_url")
@@ -1685,43 +1698,51 @@ def subscribe_forums(self, userids='', dochange='', action='add'):
             error = True
     if not error:
         i=0
-        kw = {'sort_on':'path', 'portal_type':['PloneboardForum']}
-        if action == 'replace':
-            kw['portal_type'].append('PloneboardConversation')
         results = portal.portal_catalog.searchResults(kw)
         for brain in results:
             i+=1
             obj_path = brain.getPath()
             type = brain.getObject().getPortalTypeName().replace('Ploneboard', '')
             if action in ('add', 'remove'):
-                out.append("%d %s: %s (%s)"%(i, type, brain.id, obj_path))
                 for user in users:
                     if not pb_tool.subscribers.has_key(obj_path) or user not in pb_tool.subscribers[obj_path]:
-                        out.append(" -> user '%s' is NOT in"%user)
                         if action == 'add':
+                            out.append("%d %s: %s (%s)"%(i, type, brain.id, obj_path))
+                            if details and pb_tool.subscribers.has_key(obj_path):
+                                out.append("&emsp;... %s"%','.join(pb_tool.subscribers[obj_path]))
                             if do_change:
                                 pb_tool.addSubscriber(brain.getObject(), user)
-                                out.append(" ---> added")
+                                out.append("&emsp;===> added")
                             else:
-                                out.append(" ---> will be added")
+                                out.append("&emsp;===> will be added")
                     else:
-                        out.append(" -> user '%s' is in"%user)
                         if action == 'remove':
+                            out.append("%d %s: %s (%s)"%(i, type, brain.id, obj_path))
+                            if details:
+                                out.append("&emsp;... %s"%','.join(pb_tool.subscribers[obj_path]))
                             if do_change:
                                 pb_tool.subscribers[obj_path].remove(user)
-                                out.append(" ---> removed")
+                                out.append("&emsp;===> removed")
                             else:
-                                out.append(" ---> will be removed")
+                                out.append("&emsp;===> will be removed")
             elif action == 'replace':
                 oldname, newname = users
                 if pb_tool.subscribers.has_key(obj_path) and oldname in pb_tool.subscribers[obj_path]:
                     out.append("%d %s: %s (%s)"%(i, type, brain.id, obj_path))
+                    if details and pb_tool.subscribers.has_key(obj_path):
+                        out.append("&emsp;... %s"%','.join(pb_tool.subscribers[obj_path]))
                     idx = pb_tool.subscribers[obj_path].index(oldname)
                     if do_change:
-                        pb_tool.subscribers[obj_path][idx] = newname
-                        out.append(" ---> %s replaced by %s"%(oldname, newname))
+                        if newname in pb_tool.subscribers[obj_path]:
+                            pb_tool.subscribers[obj_path].pop(idx)
+                            out.append("&emsp;===> %s removed"%oldname)
+                        else:
+                            pb_tool.subscribers[obj_path][idx] = newname
+                            out.append("&emsp;===> %s replaced by %s"%(oldname, newname))
+                    elif newname in pb_tool.subscribers[obj_path]:
+                        out.append("&emsp;===> %s will be removed"%oldname)
                     else:
-                        out.append(" ---> %s will be replaced by %s"%(oldname, newname))
+                        out.append("&emsp;===> %s will be replaced by %s"%(oldname, newname))
                 
     return '<br />\n'.join(out)
 
