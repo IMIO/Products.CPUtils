@@ -7,9 +7,9 @@
 #
 
 import os, sys
-import urllib
-from datetime import datetime, timedelta
-from zope.component import getSiteManager, queryUtility, getUtilitiesFor
+from datetime import datetime
+from zope.component import getSiteManager, getUtilitiesFor
+from OFS.Application import Application
 import socket
 from utils import *
 
@@ -82,8 +82,8 @@ def _checkAttributes(obj, errors, context=None):
     for k,v in obj.__dict__.items():
         if hasattr(v, 'values') and hasattr(v, 'keys'):
             try:
-                datav = [repr(val) for val in v.values()]
-                datak = [repr(val) for val in v.keys()]
+                data = [repr(val) for val in v.values()]
+                data = [repr(val) for val in v.keys()]
             except POSKeyError, ex:
                 if hasattr(obj, 'getPhysicalPath'):
                     path= '/'.join(obj.getPhysicalPath())
@@ -110,10 +110,8 @@ def _checkAttributes(obj, errors, context=None):
 
 def _sub(master, errors):
     from ZODB.POSException import POSKeyError
-    # check site utilities
-    if master.meta_type == 'Plone Site':
-        from Products.CMFCore.PortalObject import PortalObjectBase
-        sm = PortalObjectBase.getSiteManager(master)
+
+    def check_utilities(sm, master, errors):
         for one in sm.utilities._subscribers:
             for interface in one.keys():
                 try:
@@ -122,6 +120,17 @@ def _sub(master, errors):
                         _checkAttributes(utility, errors, context=master)
                 except TypeError, msg:
                     error("Cannot get utilities for interface '%s' : %s"%(str(interface), msg))
+        
+
+    # check site utilities
+    if master.meta_type == 'Plone Site':
+        from Products.CMFCore.PortalObject import PortalObjectBase
+        sm = PortalObjectBase.getSiteManager(master)
+        check_utilities(sm, master, errors)
+
+    if master.__class__ == Application:
+        sm = getSiteManager()
+        check_utilities(sm, master, errors)
 
     for oid in master.objectIds():
         try:
