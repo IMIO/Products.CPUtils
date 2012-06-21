@@ -9,6 +9,7 @@
 import os, sys
 import urllib
 from datetime import datetime, timedelta
+from zope.component import getSiteManager, queryUtility, getUtilitiesFor
 import socket
 from utils import *
 
@@ -74,64 +75,84 @@ def main():
 
 #------------------------------------------------------------------------------
 
-def _checkAttributes(obj, errors):
+def _checkAttributes(obj, errors, context=None):
     from ZODB.POSException import POSKeyError
     # very dumb checks for list and dict (like) attributes
     # is very slow but ensures that all attributes are checked
     for k,v in obj.__dict__.items():
-       if hasattr(v, 'values') and hasattr(v, 'keys'):
-           try:
-               data = [val for val in v.values()]
-               data = [val for val in v.keys()]
-           except POSKeyError, ex:
-               error('Error %s on DICT-LIKE attribute %s (%s)' \
-                     % (str(ex), k, '/'.join(obj.getPhysicalPath())))
-               errors.append('Error %s on DICT-LIKE attribute %s (%s)' \
-                     % (str(ex), k, '/'.join(obj.getPhysicalPath())))
+        if hasattr(v, 'values') and hasattr(v, 'keys'):
+            try:
+                datav = [repr(val) for val in v.values()]
+                datak = [repr(val) for val in v.keys()]
+            except POSKeyError, ex:
+                if hasattr(obj, 'getPhysicalPath'):
+                    path= '/'.join(obj.getPhysicalPath())
+                elif context:
+                    path = "Utility: %s in %s"%(repr(obj), '/'.join(context.getPhysicalPath()))
+                else:
+                    path = "Utility: %s"%(repr(obj))
+                    
+                error('Error %s on DICT-LIKE attribute %s (%s)' \
+                     % (str(ex), k, path))
+                errors.append('Error %s on DICT-LIKE attribute %s (%s)' \
+                     % (str(ex), k, path))
 
-       if hasattr(v, 'append'):
-           try:
-               data = [val for val in v]
-           except POSKeyError, ex:
-               error('Error %s on LIST-LIKE attribute %s (%s)' \
+        if hasattr(v, 'append'):
+            try:
+                data = [val for val in v]
+            except POSKeyError, ex:
+                error('Error %s on LIST-LIKE attribute %s (%s)' \
                      % (str(ex), k, '/'.join(obj.getPhysicalPath())))
-               errors.append('Error %s on LIST-LIKE attribute %s (%s)' \
+                errors.append('Error %s on LIST-LIKE attribute %s (%s)' \
                      % (str(ex), k, '/'.join(obj.getPhysicalPath())))
 
 #------------------------------------------------------------------------------
 
 def _sub(master, errors):
     from ZODB.POSException import POSKeyError
+    # check site utilities
+    if master.meta_type == 'Plone Site':
+        from Products.CMFCore.PortalObject import PortalObjectBase
+        sm = PortalObjectBase.getSiteManager(master)
+        for one in sm.utilities._subscribers:
+            for interface in one.keys():
+                try:
+                    for util_tup in getUtilitiesFor(interface, context=master):
+                        utility = util_tup[1]
+                        _checkAttributes(utility, errors, context=master)
+                except TypeError, msg:
+                    error("Cannot get utilities for interface '%s' : %s"%(str(interface), msg))
+
     for oid in master.objectIds():
-       try:
-           obj = getattr(master, oid)
-           trace('%s->%s' % ('/'.join(master.getPhysicalPath()), obj.getId()))
-           #output.append('%s->%s' % ('/'.join(master.getPhysicalPath()), obj.getId()))
-           if hasattr(obj, 'objectIds') and obj.getId() != 'Control_Panel':
-               _sub(obj, errors)
+        try:
+            obj = getattr(master, oid)
+            trace('%s->%s' % ('/'.join(master.getPhysicalPath()), obj.getId()))
+            #output.append('%s->%s' % ('/'.join(master.getPhysicalPath()), obj.getId()))
+            if hasattr(obj, 'objectIds') and obj.getId() != 'Control_Panel':
+                _sub(obj, errors)
 
            # check catalog explicitly
-           if obj.meta_type in ['ZCatalog', 'Catalog', 'Plone Catalog Tool'] \
-               or hasattr(obj, '_catalog'):
-                   for idxid in obj._catalog.indexes.keys():
-                       try:
-                           index = obj._catalog.indexes.get(idxid)
-                           trace('%s->INDEX: %s' % ('/'.join(obj.getPhysicalPath()), idxid))
-                           #output.append('%s->INDEX: %s' % ('/'.join(obj.getPhysicalPath()), idxid))
+            if obj.meta_type in ['ZCatalog', 'Catalog', 'Plone Catalog Tool'] \
+                or hasattr(obj, '_catalog'):
+                    for idxid in obj._catalog.indexes.keys():
+                        try:
+                            index = obj._catalog.indexes.get(idxid)
+                            trace('%s->INDEX: %s' % ('/'.join(obj.getPhysicalPath()), idxid))
+                            #output.append('%s->INDEX: %s' % ('/'.join(obj.getPhysicalPath()), idxid))
 
-                           _checkAttributes(index, errors)
+                            _checkAttributes(index, errors)
 
-                       except POSKeyError, ex:
-                           error('Error %s on INDEX %s (%s)' % (str(ex), idxid, '/'.join(obj.getPhysicalPath())))
-                           errors.append('Error %s on INDEX %s (%s)' % (str(ex), idxid, '/'.join(obj.getPhysicalPath())))
+                        except POSKeyError, ex:
+                            error('Error %s on INDEX %s (%s)' % (str(ex), idxid, '/'.join(obj.getPhysicalPath())))
+                            errors.append('Error %s on INDEX %s (%s)' % (str(ex), idxid, '/'.join(obj.getPhysicalPath())))
 
-                   # support for lexicon
-                   for lexid in obj.objectIds():
-                       _checkAttributes(getattr(obj, lexid), errors)
-                      
-       except POSKeyError, ex:
-           error('Error %s on %s (%s)' % (str(ex), oid, '/'.join(master.getPhysicalPath())))
-           errors.append('Error %s on %s (%s)' % (str(ex), oid, '/'.join(master.getPhysicalPath())))
+                    # support for lexicon
+                    for lexid in obj.objectIds():
+                        _checkAttributes(getattr(obj, lexid), errors)
+
+        except POSKeyError, ex:
+            error('Error %s on %s (%s)' % (str(ex), oid, '/'.join(master.getPhysicalPath())))
+            errors.append('Error %s on %s (%s)' % (str(ex), oid, '/'.join(master.getPhysicalPath())))
 
 #------------------------------------------------------------------------------
 

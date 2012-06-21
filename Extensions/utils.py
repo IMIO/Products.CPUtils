@@ -757,7 +757,7 @@ def checkPOSKey(self):
     """
         Call a method from the script checks to check the dbs
     """
-    lf = '<br />'
+    lf = '<br />\n'
     from Products.CPUtils.scripts import checkPOSKeyErrors
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
