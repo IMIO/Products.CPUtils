@@ -1650,15 +1650,17 @@ def removeRegisteredTool(self,tool=''):
 
 ###############################################################################
 
-def subscribe_forums(self, userids='', dochange='', action='add', target='forum', details=''):
+def subscribe_forums(self, userids='', dochange='', action='add', target='forum', details='', path=''):
     """
         Manage subscription to forum or conversation (Products.PloneboardSubscription)
     """
+    import os
     out = []
     out.append("<p>You can call the script with following parameters:</p>")
     out.append("-> userids=user1,user2 : list of users separated by ,")
     out.append("-> action=add|remove|replace : 'add' (default) or 'remove' the users for all forums. 'replace' user1 by user2 for all forums and conversations.")
     out.append("-> target=forum,conversation : list of changes target")
+    out.append("-> path=/folder : relative site path to search in")
     out.append("-> details=1 : display all subscribers")
     out.append("-> dochange=1 : to do really the changes")
     out.append("by example ...?userids=user1,user2&dochange=1<br/>")
@@ -1685,6 +1687,9 @@ def subscribe_forums(self, userids='', dochange='', action='add', target='forum'
     portal = portal_url.getPortalObject()
     pb_tool = getToolByName(portal, 'portal_pbnotification')
     mtool = getToolByName(portal, 'portal_membership')
+    if path:
+        kw['path'] = os.path.join(portal_url.getPortalPath(), path)
+    out.append("Catalog search parameters: %s<br/>"%repr(kw))
 
     users = userids.split(',')
     users = [user.strip(' ').decode() for user in users]
