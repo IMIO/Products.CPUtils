@@ -770,6 +770,55 @@ def checkPOSKey(self):
 
 ###############################################################################
 
+def correctPOSKey(self, dochange=''):
+    """
+        Correct a DICT like attribute.
+        Must be called on site context
+    """
+    from ZODB.POSException import POSKeyError
+    from Products.CMFCore.utils import getToolByName
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    lf = '<br />\n'
+    out = ['<h1>Cleaning POSKey errors</h1>']
+    out.append("You can/must call the script with following parameters:")
+    out.append("-> dochange=1 : to apply change")
+    out.append("by example ...?dochange=1")
+    out.append('')
+
+    do_change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        do_change = True
+
+    portal_url = getToolByName(self, "portal_url")
+    portal = portal_url.getPortalObject()
+
+    def correctDicValues(dic, out):
+        out.append("Len of dic: %d keys<br />"%len(dic))
+        for key in dic.keys():
+            try:
+                value = repr(dic[key])
+            except POSKeyError, msg:
+                out.append("Value of key '%s' corrupted."%key)
+                if do_change:
+                    del dic[key]
+                    out.append("&emsp;Value deleted !")
+                else:
+                    out.append("&emsp;Value will be deleted")
+
+    if portal_url.getPortalPath() == '/daverdisse/daverdisse' and portal_url.getPortalObject() == self:
+        from plone.app.redirector.interfaces import IRedirectionStorage
+        from zope.component import queryUtility
+        utility = queryUtility(IRedirectionStorage, context=self)
+        dic = utility._rpaths
+        out.append("Correcting values for dic _rpaths in utility RedirectionStorage")
+        correctDicValues(dic, out)
+
+    return lf.join(out)
+
+###############################################################################
+
 def sync_properties(self, base='', update='', dochange=''):
     """
         Synchronize properties between objects
