@@ -1699,10 +1699,30 @@ def removeRegisteredTool(self,tool=''):
 
 ###############################################################################
 
+def subscribers(self):
+    """
+        Display subscribers on context (Products.PloneboardSubscription)
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    from Products.CMFCore.utils import getToolByName
+    portal_url = getToolByName(self, "portal_url")
+    portal = portal_url.getPortalObject()
+    pb_tool = getToolByName(portal, 'portal_pbnotification')
+    path = pb_tool.getObjId(self)
+    if pb_tool.subscribers.has_key(path):
+        return "Subscribers on '%s':\n%s"%(path, '\n'.join(sorted(pb_tool.subscribers[path])))
+    return 'No subscriber on %s'%path
+
+###############################################################################
+
 def subscribe_forums(self, userids='', dochange='', action='add', target='forum', details='', path=''):
     """
         Manage subscription to forum or conversation (Products.PloneboardSubscription)
     """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
     import os
     out = []
     out.append("<p>You can call the script with following parameters:</p>")
