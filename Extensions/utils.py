@@ -1709,7 +1709,7 @@ def subscribe_forums(self, userids='', dochange='', action='add', target='forum'
     out.append("-> userids=user1,user2 : list of users separated by ,")
     out.append("-> action=add|remove|replace : 'add' (default) or 'remove' the users for all forums. 'replace' user1 by user2 for all forums and conversations.")
     out.append("-> target=forum,conversation : list of changes target")
-    out.append("-> path=/folder : relative site path to search in")
+    out.append("-> path=folder : relative site path to search in")
     out.append("-> details=1 : display all subscribers")
     out.append("-> dochange=1 : to do really the changes")
     out.append("by example ...?userids=user1,user2&dochange=1<br/>")
@@ -1797,6 +1797,11 @@ def subscribe_forums(self, userids='', dochange='', action='add', target='forum'
                         out.append("&emsp;===> %s will be removed"%oldname)
                     else:
                         out.append("&emsp;===> %s will be replaced by %s"%(oldname, newname))
+    if do_change:
+        # We must indicate that the PersistentMapping has been modified. Otherwise nothing is commited
+        pb_tool.subscribers._p_changed = 1
+        import transaction
+        transaction.commit()
                 
     return '<br />\n'.join(out)
 
