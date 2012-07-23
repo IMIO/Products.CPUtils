@@ -104,7 +104,7 @@ def install(self):
     for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', \
                    'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', \
                    'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins', \
-                   'list_portlets','copy_image_attribute','desactivate_base2dom', 'rename_long_ids', \
+                   'list_portlets','list_context_portlets_by_name', 'copy_image_attribute','desactivate_base2dom', 'rename_long_ids', \
                    'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles', 'unlock_webdav_objects', \
                    'reftooltoobjects', 'del_bad_portlet', 'add_subject'):
         method_name = 'cputils_'+method
@@ -792,14 +792,13 @@ def correctPOSKey(self, dochange=''):
         do_change = True
 
     portal_url = getToolByName(self, "portal_url")
-    portal = portal_url.getPortalObject()
 
     def correctDicValues(dic, out):
         out.append("Len of dic: %d keys<br />"%len(dic))
         for key in dic.keys():
             try:
-                value = repr(dic[key])
-            except POSKeyError, msg:
+                repr(dic[key])
+            except POSKeyError:
                 out.append("Value of key '%s' corrupted."%key)
                 if do_change:
                     del dic[key]
@@ -1419,6 +1418,61 @@ def checkInstance(self, isProductInstance='', instdir=''):
 
 ###############################################################################
 
+def list_context_portlets_by_name(self, portlet_name=''):
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    if not portlet_name:
+        return "You MUST provide a portlet_name to quey for.  Add '?portlet_name=myportletname' at the end of the url calling this script." \
+               "If you want to see every portlets of this site, use '*' as portlet_name"
+
+    from zope.component import getUtility, getMultiAdapter
+    from plone.portlets.interfaces import IPortletManager
+    from plone.portlets.interfaces import IPortletAssignmentMapping
+    from plone.portlets.interfaces import ILocalPortletAssignable
+    from Products.CMFCore.utils import getToolByName
+
+    out = ['<table><tr style="nth-child(odd): background-color: #000000;">']
+    left_column = getUtility(IPortletManager, name=u"plone.leftcolumn")
+    right_column = getUtility(IPortletManager, name=u"plone.rightcolumn")
+
+    brains = self.portal_catalog()
+    # Add the portal as it is portlet assignable
+    portal_url = getToolByName(self, "portal_url")
+    portal = portal_url.getPortalObject()
+
+    for brain in [portal,] + list(brains):
+        if not brain.portal_type == 'Plone Site':
+            obj = brain.getObject()
+        else:
+            obj = brain
+        #check if the obj is portlet assignable
+        if not ILocalPortletAssignable.providedBy(obj):
+            continue
+
+        left_mappings = getMultiAdapter((obj, left_column), IPortletAssignmentMapping)
+        if not portlet_name == '*' and portlet_name in left_mappings:
+            out.append('<td width=50%%>left_column</td><td width=50%%>%s</td></tr>' % obj.absolute_url())
+        elif portlet_name == '*':
+            for k in left_mappings.keys():
+                out.append('<td width=20%%>left_column</td><td width=60%%>%s</td><td width=20%%>%s</td></tr>' % (obj.absolute_url(), k))
+        right_mappings = getMultiAdapter((obj, right_column), IPortletAssignmentMapping)
+        if not portlet_name == '*' and portlet_name in right_mappings:
+            out.append('<td width=50%%>right_column</td><td width=50%%>%s</td>' % obj.absolute_url())
+        elif portlet_name == '*':
+            for k in right_mappings.keys():
+                out.append('<td width=20%%>right_column</td><td width=60%%>%s</td><td width=20%%>%s</td></tr>' % (obj.absolute_url(), k))
+
+    if out == ['<table><tr>']:
+        out = ['Nothing found with search parameter "%s"' % portlet_name,]
+    else:
+        out.append('</table>')
+        out.extend(("<style type='text/css'>tr:nth-child(even) {background-color: #EDEDED;}</style>",))
+
+    return "\n".join(out)
+
+###############################################################################
+
 def list_portlets(self):
     if not check_zope_admin():
         return 'checkInstance run with a non admin user: we go out'
@@ -1615,7 +1669,7 @@ def zmi(self):
     import socket
     infos = self.Control_Panel.getServers()
     hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
+    #ip_address = socket.gethostbyname(hostname)
     out = []
     server = 'localhost:0000'
     if infos and len(infos[0]) > 1:
@@ -2017,11 +2071,7 @@ def del_bad_portlet(self, dochange='', column='left', portlet=''):
     import logging
     logger = logging.getLogger('CPUtils')
     from zope.annotation.interfaces import IAnnotations
-    from Products.CMFCore.utils import getToolByName
     import cgi
-
-    purl = getToolByName(self, "portal_url")
-    portal = purl.getPortalObject()
 
     out = ['<h1>Deleting a portlet and displaying some attributes</h1>']
     out.append("You can/must call the script with following parameters:")
