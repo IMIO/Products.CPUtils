@@ -106,7 +106,7 @@ def install(self):
                    'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins', \
                    'list_portlets','list_context_portlets_by_name', 'copy_image_attribute','desactivate_base2dom', 'rename_long_ids', \
                    'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles', 'unlock_webdav_objects', \
-                   'reftooltoobjects', 'del_bad_portlet', 'add_subject'):
+                   'reftooltoobjects', 'del_bad_portlet', 'clean_utilities_for', 'add_subject'):
         method_name = 'cputils_'+method
         if not hasattr(self.aq_inner.aq_explicit, method_name):
             #without aq_explicit, if the id exists at a higher level, it is found !
@@ -2122,6 +2122,53 @@ def del_bad_portlet(self, dochange='', column='left', portlet=''):
             out.append("portlet '%s' of %s column will be really deleted with dochange parameter"%(portlet, column))
     logger.info('\n'.join(out))
     return '<br />\n'.join(out)
+
+###############################################################################
+
+def clean_utilities_for(self, interface_name=None):
+    """
+        Wipe out Zope for bad leftovers (not completely removed products)
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    if not interface_name:
+        return "You must provide an interface_name argument with the complete interface dotted name (like 'collective.zipfiletransport.utilities.interfaces.IZipFileTransportUtility' for example)"
+
+    from zope.component import getSiteManager
+    sm = getSiteManager()
+    out = []
+
+    #correct adapters
+    foundAdapter = False
+    correctedAdapters = {}
+    for adapter in sm.utilities._adapters[0]:
+        if not interface_name in str(adapter):
+            correctedAdapters[adapter] = sm.utilities._adapters[0][adapter]
+        else:
+            foundAdapter = True
+    if foundAdapter:
+        sm.utilities._adapters[0] = correctedAdapters
+        out.append("Corrected adapters")
+    else:
+        out.append("Interface not found in adapters")
+
+    #correct subscribers
+    foundSubscriber = False
+    correctedSubscribers = {}
+    for subscriber in sm.utilities._subscribers[0]:
+        if not interface_name in str(subscriber):
+            correctedSubscribers[subscriber] = sm.utilities._subscribers[0][subscriber]
+        else:
+            foundSubscriber = True
+    if foundSubscriber:
+        sm.utilities._subscribers[0] = correctedSubscribers
+        out.append("Corrected subscribers")
+    else:
+        out.append("Interface not found in subscribers")
+
+
+    return '\n'.join(out)
 
 ###############################################################################
 
