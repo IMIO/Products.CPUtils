@@ -1448,22 +1448,23 @@ def list_context_portlets_by_name(self, portlet_name=''):
             obj = brain
         #check if the obj is portlet assignable
         if not ILocalPortletAssignable.providedBy(obj):
-            continue
+            continue        
 
+        abs_url = obj.absolute_url()
         left_mappings = getMultiAdapter((obj, left_column), IPortletAssignmentMapping)
         if not portlet_name == '*' and portlet_name in left_mappings:
-            out.append('<td width=50%%>left_column</td><td width=50%%>%s</td></tr>' % obj.absolute_url())
+            out.append('<td width=50%%>left_column</td><td width=50%%><a href="%s">%s</a></td></tr>' % (abs_url, abs_url))
         elif portlet_name == '*':
             for k in left_mappings.keys():
-                out.append('<td width=20%%>left_column</td><td width=60%%>%s</td><td width=20%%>%s</td></tr>' % (obj.absolute_url(), k))
+                out.append('<td width=20%%>left_column</td><td width=60%%><a href="%s">%s</a></td><td width=20%%>%s</td></tr>' % (abs_url, abs_url, k))
         right_mappings = getMultiAdapter((obj, right_column), IPortletAssignmentMapping)
         if not portlet_name == '*' and portlet_name in right_mappings:
-            out.append('<td width=50%%>right_column</td><td width=50%%>%s</td>' % obj.absolute_url())
+            out.append('<td width=50%%>right_column</td><td width=50%%><a href="%s">%s</a></td></tr>' % (abs_url, abs_url))
         elif portlet_name == '*':
             for k in right_mappings.keys():
-                out.append('<td width=20%%>right_column</td><td width=60%%>%s</td><td width=20%%>%s</td></tr>' % (obj.absolute_url(), k))
+                out.append('<td width=20%%>right_column</td><td width=60%%><a href="%s">%s</a></td><td width=20%%>%s</td></tr>' % (abs_url, abs_url, k))
 
-    if out == ['<table><tr>']:
+    if out == ['<table><tr style="nth-child(odd): background-color: #000000;">']:
         out = ['Nothing found with search parameter "%s"' % portlet_name,]
     else:
         out.append('</table>')
