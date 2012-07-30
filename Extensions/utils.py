@@ -1881,9 +1881,11 @@ def subscribe_forums(self, userids='', dochange='', action='add', target='forum'
 
 ###############################################################################
 
-def list_used_views(self):
+def list_used_views(self, specific_view=None):
     """
         List used views of the plone site
+        If a specific_view is given, return only elements using this particular view, either
+        returns every used views
     """
     if not check_role(self):
         return "You must have a manager role to run this script"
@@ -1901,11 +1903,21 @@ def list_used_views(self):
             layout = ob.getLayout()
             if t not in views:
                 views[t] = []
-            if layout not in views[t]:
+            if not specific_view and layout not in views[t]:
                 views[t].append(layout)
-    out = ["Used views on objects\n---------------------\n"]
-    for typ in views.keys():
-        out.append("%s : %s"%(typ, ', '.join(views[typ])))
+            elif specific_view and specific_view == layout:
+                views[t].append(ob.absolute_url())
+    if not specific_view:
+        out = ["Used views on objects\n---------------------\n"]
+        for typ in views.keys():
+            out.append("%s : %s"%(typ, ', '.join(views[typ])))
+    else:
+        out = ["<b>Objects using the '%s' layout</b><br /><br /><html>" % specific_view]
+        for typ in views.keys():
+            if views[typ]:
+                out.append("%s : %s"%(typ, '<br />'.join(["<a href='%s'>%s</a>" % (view, view) for view in views[typ]])))
+                out.append('<br />')
+        out.append('</html>')
     return '\n'.join(out)
 
 ###############################################################################
