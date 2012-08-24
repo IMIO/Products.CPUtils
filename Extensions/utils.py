@@ -2261,3 +2261,11 @@ def add_subject(self, dochange='', path='', type='', subject=''):
             out.append("%s -> subject already in subjects:'%s'"%(brain.getPath(), '|'.join(subjects)))
     logger.info('\n'.join(out))
     return '<br />\n'.join(out)
+
+###############################################################################
+
+def list_for_generator(self, tree):
+    # Avoiding "Unauthorized: The container has no security assertions." in ZMI Python scripts
+    # on LOBTreeItems
+    return [elem for elem in tree]
+
