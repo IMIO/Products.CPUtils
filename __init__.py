@@ -339,10 +339,10 @@ def initialize(context):
             #Patching tinymce to load as html in Ploneboard
             from Products.TinyMCE.utility import TinyMCE
             old_getContentType = TinyMCE.getContentType
-            def getContentType(self, object=None, fieldname=None):
+            def getContentType(self, object=None, field=None, fieldname=None):
                 if object is not None and fieldname == 'text' and object.meta_type in ('PloneboardForum', 'PloneboardConversation'):
                     return 'text/html'
-                return old_getContentType(self, object=object, fieldname=fieldname)
+                return old_getContentType(self, object=object, field=field, fieldname=fieldname)
             TinyMCE.getContentType = getContentType
             logger.info("TinyMCE getContentType MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
         except:
