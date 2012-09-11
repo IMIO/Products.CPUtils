@@ -726,8 +726,10 @@ def recreate_users_groups(self):
     pgr = portal.portal_groups
     messages = []
 
-    #import pdb; pdb.set_trace()
     for gd in old_acl.searchGroups():
+        if gd['pluginid'] == 'auto_group':
+            continue
+
         g = old_acl.source_groups.getGroupById(gd['groupid'])
         if g.getId() not in acl.getGroupIds():
             pgr.addGroup(g.getId(), roles = g.getRoles(), groups = g.getGroups())
