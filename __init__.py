@@ -343,7 +343,7 @@ def initialize(context):
                 if object is not None and fieldname == 'text' and object.meta_type in ('PloneboardForum', 'PloneboardConversation'):
                     return 'text/html'
                 return old_getContentType(self, object=object, field=field, fieldname=fieldname)
-            TinyMCE.getContentType = getContentType
+            #TinyMCE.getContentType = getContentType
             logger.info("TinyMCE getContentType MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
         except:
             pass
