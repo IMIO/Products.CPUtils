@@ -630,6 +630,67 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
         pjs = getToolByName(self, 'portal_javascripts')
         pjs.updateScript('fckeditor.js', cookable=False)
 
+###############################################################################
+
+def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1):
+    """
+        configure collective.ckeditor with default parameters.
+        This method can be called as an external method, with the following parameters : ...?default=1&alluser=0&custom=0
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    customs = { 'urban': u"[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n['Undo','Redo','-','Find','Replace','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n['Link','Unlink'],\n['Image','Table','SpecialChar'],\n'/',\n['Styles','Format'],\n['Maximize', 'ShowBlocks', 'Source']\n]"
+}
+
+    out = []
+    out.append("Call the script followed by possible parameters:")
+    out.append("-> default=... : set as default editor")
+    out.append("-> allusers=... : set ckeditor for all users")
+    out.append("-> rmTiny=... : remove Tiny from available editors")
+    out.append("-> custom=%s : set custom toolbar\n"%'|'.join(customs.keys()))
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+
+    try:
+        pqi = getToolByName(self, 'portal_quickinstaller')
+        if not pqi.isProductInstalled('collective.ckeditor'):
+            pqi.installProduct('collective.ckeditor')
+    except Exception, msg:
+        return "collective.ckeditor cannot be installed: '%s'"%msg
+
+    sp = portal.portal_properties.site_properties
+
+    #setting default editor to ckeditor
+    if default:
+        portal.portal_memberdata.manage_changeProperties(wysiwyg_editor='CKeditor')
+        sp.manage_changeProperties(default_editor='CKeditor')
+        out.append("Set ckeditor as default editor")
+
+    #remove Tiny from available editor
+    if rmTiny:
+        availables = list(sp.available_editors)
+        if 'TinyMCE' in availables:
+            availables.remove('TinyMCE')
+        sp.manage_changeProperties(available_editors=availables)
+        out.append("Removed Tiny from available editors")
+
+    #changing editor for all users
+    if allusers:
+        change_user_properties(portal, kw='wysiwyg_editor:CKeditor', dochange=1)
+        out.append("Set ckeditor as editor for all users")
+
+    #setting custom toolbar
+    if custom:
+        if not customs.has_key(custom):
+            return "custom parameter '%s' not defined in available custom toolbars"%custom
+        ckprops = portal.portal_properties.ckeditor_properties
+        if ckprops.getProperty('toolbar') != 'Custom':
+            ckprops.manage_changeProperties(toolbar='Custom')
+            ckprops.manage_changeProperties(toolbar_Custom=customs[custom])
+        out.append("Set '%s' toolbar"%custom)
+    return '\n'.join(out)
 
 ###############################################################################
 
