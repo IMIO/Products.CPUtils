@@ -101,7 +101,7 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_fckeditor', \
+    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_ckeditor', \
                    'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups', \
                    'sync_properties','send_adminMail','install_plone_product','change_authentication_plugins', \
                    'list_portlets','list_context_portlets_by_name', 'copy_image_attribute','desactivate_base2dom', 'rename_long_ids', \
@@ -640,7 +640,8 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1):
     if not check_role(self):
         return "You must have a manager role to run this script"
 
-    customs = { 'urban': u"[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n['Undo','Redo','-','Find','Replace','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n['Link','Unlink'],\n['Image','Table','SpecialChar'],\n'/',\n['Styles','Format'],\n['Maximize', 'ShowBlocks', 'Source']\n]"
+    customs = { 'urban': u"[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n['Undo','Redo','-','Find','Replace','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n['Link','Unlink'],\n['Image','Table','SpecialChar'],\n'/',\n['Styles','Format'],\n['Maximize', 'ShowBlocks', 'Source']\n]",
+               'site': u"[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n['Undo','Redo','-','Find','Replace','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],\n['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n['Link','Unlink','Anchor'],\n'/',['Image','Flash','Table','HorizontalRule','Smiley','SpecialChar','PageBreak'],\n['Styles','Format'],\n['Maximize', 'ShowBlocks', 'Source']\n]"
 }
 
     out = []
