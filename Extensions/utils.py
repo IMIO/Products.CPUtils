@@ -669,6 +669,13 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1):
         sp.manage_changeProperties(default_editor='CKeditor')
         out.append("Set ckeditor as default editor")
 
+    #remove FCKeditor from available editor
+    availables = list(sp.available_editors)
+    if 'FCKeditor' in availables:
+        availables.remove('FCKeditor')
+    sp.manage_changeProperties(available_editors=availables)
+    out.append("Removed FCKeditor from available editors")
+
     #remove Tiny from available editor
     if rmTiny:
         availables = list(sp.available_editors)
@@ -2215,6 +2222,9 @@ def clean_provides_for(self, interface_name=None):
         noLongerProvides(obj, interface)
         obj.reindexObject()
 
+    import transaction
+    transaction.commit() 
+
     return '\n'.join(out)
 
 
@@ -2261,6 +2271,9 @@ def clean_utilities_for(self, interface_name=None):
         out.append("Corrected subscribers")
     else:
         out.append("Interface not found in subscribers")
+
+    import transaction
+    transaction.commit() 
 
 
     return '\n'.join(out)
@@ -2332,4 +2345,39 @@ def list_for_generator(self, tree):
     # Avoiding "Unauthorized: The container has no security assertions." in ZMI Python scripts
     # on LOBTreeItems
     return [elem for elem in tree]
+
+def removeZFT(self):
+    from zope.app.component.hooks import setSite
+    from zope.component import getSiteManager
+    from collective.zipfiletransport.utilities.interfaces import IZipFileTransportUtility
+    from collective.zipfiletransport.utilities.utils import ZipFileTransportUtility
+    setSite(self)
+    sm = getSiteManager()
+    sm.unregisterUtility(component=None, provided=IZipFileTransportUtility)
+    
+    #Even though unregister happened, it probably said it worked but left crap around.
+    #Let's clean it up
+    
+    #This intclass variable might not be right.  It's going to be the key present below,
+    #so you can always find the right InterfaceClass manually and set it accordingly.
+    intclass = IZipFileTransportUtility
+
+    try:
+        del sm.utilities._adapters[0][intclass]
+    except:
+        pass
+    try:
+        del sm.utilities._subscribers[0][intclass]
+    except:
+        pass
+
+    
+    #From here, search for 'Zip' to see if it's gone
+    #Each should return -1.  If not, you've done something wrong!
+    str(sm.utilities._adapters[0]).find('Zip')
+    str(sm.utilities._subscribers[0]).find('Zip')
+    str(sm.utilities.__bases__[0].__dict__).find('Zip')
+    
+    import transaction
+    transaction.commit()
 
