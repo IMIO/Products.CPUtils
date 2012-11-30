@@ -1842,7 +1842,7 @@ def subscribers(self):
 
 ###############################################################################
 
-def subscribe_forums(self, userids='', dochange='', action='add', target='forum', details='', path=''):
+def subscribe_forums(self, userids='', dochange='', action='add', target='forum,conversation', details='', path=''):
     """
         Manage subscription to forum or conversation (Products.PloneboardSubscription)
     """
@@ -1854,7 +1854,7 @@ def subscribe_forums(self, userids='', dochange='', action='add', target='forum'
     out.append("<p>You can call the script with following parameters:</p>")
     out.append("-> userids=user1,user2 : list of users separated by ,")
     out.append("-> action=add|remove|replace : 'add' (default) or 'remove' the users for all forums. 'replace' user1 by user2 for all forums and conversations.")
-    out.append("-> target=forum,conversation : list of changes target")
+    out.append("-> target=forum,conversation : list of changes target (default twice)")
     out.append("-> path=folder : relative site path to search in")
     out.append("-> details=1 : display all subscribers")
     out.append("-> dochange=1 : to do really the changes")
