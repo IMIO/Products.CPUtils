@@ -632,7 +632,7 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
 
 ###############################################################################
 
-def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1):
+def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTextPaste=1):
     """
         configure collective.ckeditor with default parameters.
         This method can be called as an external method, with the following parameters : ...?default=1&alluser=0&custom=0
@@ -647,10 +647,11 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1):
 
     out = []
     out.append("Call the script followed by possible parameters:")
-    out.append("-> default=... : set as default editor")
-    out.append("-> allusers=... : set ckeditor for all users")
-    out.append("-> rmTiny=... : remove Tiny from available editors")
-    out.append("-> custom=%s : set custom toolbar\n"%'|'.join(customs.keys()))
+    out.append("-> default=... : set as default editor (default 1)")
+    out.append("-> allusers=... : set ckeditor for all users (default 1)")
+    out.append("-> rmTiny=... : remove Tiny from available editors (default 1)")
+    out.append("-> forceTextPaste=... : set force paste as plain text (default 1)")
+    out.append("-> custom=%s : set custom toolbar (default None)'\n"%'|'.join(customs.keys()))
 
     from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject()
@@ -663,6 +664,7 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1):
         return "collective.ckeditor cannot be installed: '%s'"%msg
 
     sp = portal.portal_properties.site_properties
+    ckp = portal.portal_properties.ckeditor_properties
 
     #setting default editor to ckeditor
     if default:
@@ -694,11 +696,17 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1):
     if custom:
         if not customs.has_key(custom):
             return "custom parameter '%s' not defined in available custom toolbars"%custom
-        ckprops = portal.portal_properties.ckeditor_properties
-        if ckprops.getProperty('toolbar') != 'Custom':
-            ckprops.manage_changeProperties(toolbar='Custom')
-            ckprops.manage_changeProperties(toolbar_Custom=customs[custom])
+        ckp = portal.portal_properties.ckeditor_properties
+        if ckp.getProperty('toolbar') != 'Custom':
+            ckp.manage_changeProperties(toolbar='Custom')
+            ckp.manage_changeProperties(toolbar_Custom=customs[custom])
         out.append("Set '%s' toolbar"%custom)
+
+    #force text paste
+    if forceTextPaste:
+        ckp.manage_changeProperties(forcePasteAsPlainText=True)
+        out.append("Set forcePasteAsPlainText to True")
+
     return '\n'.join(out)
 
 ###############################################################################
