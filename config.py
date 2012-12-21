@@ -86,7 +86,6 @@ FILES_FOLDER = os.path.join(PRODUCT_FOLDER, 'data')
 
 def getPloneVersion():
     pv = ''
-#    import pdb; pdb.set_trace()
     import Products.CMFPlone as cmfp
     plonedir = cmfp.__path__[0]
     if os.path.exists(plonedir):

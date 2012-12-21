@@ -124,7 +124,6 @@ def pack_db(self, days=0):
 # The user running this via urllib is not manager !!!!
 #    if not check_role(self):
 #        return "You must have a manager role to run this script"
-#    import pdb; pdb.set_trace()
     import time
     t=time.time()-days*86400
     db=self._p_jar.db()
@@ -168,7 +167,6 @@ def object_info(self):
         out.append("is folderish='%s'" % self.isPrincipiaFolderish)
         out.append("creator='%s'" % self.Creator())
         workflow = False
-#        import pdb; pdb.set_trace()
         try:
             workflows = [wfw.getId() for wfw in wtool.getWorkflowsFor(self)]
             state = wtool.getInfoFor(self, 'review_state')
@@ -429,7 +427,6 @@ def store_user_properties(self):
     portal = getToolByName(self, "portal_url").getPortalObject()
     target_dir = portal
 
-    #import pdb; pdb.set_trace()
     if 'users_properties' not in target_dir.objectIds():
         self.manage_addDTMLDocument(id='users_properties', title='All users properties')
         out.append("Document '%s/users_properties' added"%'/'.join(target_dir.getPhysicalPath()))
@@ -491,8 +488,6 @@ def load_user_properties(self, dochange=''):
 
     properties_names = dict(portal.portal_memberdata.propertyItems())
     skipped_properties = ['error_log_update', 'ext_editor', 'last_login_time', 'listed', 'login_time', 'visible_ids', 'wysiwyg_editor', ]
-
-    #import pdb; pdb.set_trace()
 
     doc = portal.oldacl.users_properties
     lines = doc.raw.splitlines()
@@ -741,7 +736,6 @@ def list_users(self, output='csv', sort='users'):
         out.append("invalid parameter output, value must be 'csv' or 'screen'")
         return
 
-    #import pdb; pdb.set_trace()
     users = {}
     groups = {}
     for userid in search_users(self):
@@ -965,7 +959,6 @@ def sync_properties(self, base='', update='', dochange=''):
     out.append("<th>Kept</th>")
     out.append("</tr></thead><tbody>")
 
-    #import pdb; pdb.set_trace()
     base_dic = dict(base_obj.propertyItems())
     base_keys = base_dic.keys()
     base_keys.sort()
@@ -1068,7 +1061,6 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
     out.append("</tr></thead><tbody>")
 
     #out.append("<tr><td>%s</td></tr>"%';'.join(filters))
-    #import pdb; pdb.set_trace()
     for brain in results:
         obj = brain.getObject()
         #metadata can be missing !
@@ -1186,7 +1178,6 @@ def unregister_adapter(self, unregister=''):
         from zope.component import getSiteManager
         from Products.CMFCore.utils import getToolByName
         portal = getToolByName(self, "portal_url").getPortalObject()
-        #import pdb; pdb.set_trace()
 
         params = []
         components = getSiteManager(portal)
@@ -1559,7 +1550,6 @@ def list_portlets(self):
         return 'checkInstance run with a non admin user: we go out'
 
     from zope.annotation.interfaces import IAnnotations
-    #import pdb; pdb.set_trace()
     out = []
     ann = IAnnotations(self)
     out.append("left: "+str(dict(ann['plone.portlets.contextassignments']['plone.leftcolumn'])))

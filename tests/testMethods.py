@@ -70,7 +70,6 @@ class testMethods(CPUtilsTestCase):
         method_name = 'cputils_'+method
         manage_addExternalMethod(self.app, method_name, '', 'CPUtils.utils', method)
         self.app.cputils_install()
-        #import pdb; pdb.set_trace()
         
     # Manually created methods
     
@@ -82,7 +81,6 @@ class testMethods(CPUtilsTestCase):
         self.failUnless(ok)        
         
     def test_change_authentication_plugins_param_doChange (self):
-        #import pdb; pdb.set_trace()
         result = self.app.cputils_change_authentication_plugins(self.app,'','')
         ok = result.startswith("The following changes are not applied: you must run the script with the parameter '...?dochange=1'")
         result = self.app.cputils_change_authentication_plugins(self.app,1,'')

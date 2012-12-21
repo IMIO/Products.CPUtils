@@ -113,7 +113,6 @@ def main():
         conffile = os.path.basename(conffilepath)
         verbose("Reading %s"%conffile)
         lines = []
-#        import pdb; pdb.set_trace()
         readFile(conffilepath, lines)
         for line in lines:
             line = line.strip('\n\t ')

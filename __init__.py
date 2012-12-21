@@ -315,7 +315,6 @@ def CallMaxSizeValidator(self, value, *args, **kwargs):
 
 def initialize(context):
     logger.info("ADDING MONKEY PATCHS !")
-    #import pdb; pdb.set_trace()
     if not PLONE_VERSION:
         logger.error('CMFPlone version NOT FOUND: MONKEY PATCH NOT APPLIED')
         return

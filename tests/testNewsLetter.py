@@ -99,7 +99,6 @@ class testNewsLetter(CPUtilsTestCase):
         qi = self.portal.portal_quickinstaller
         #print(productName+" installed : ")
         #print(qi.isProductInstalled(productName))
-        #import pdb; pdb.set_trace()
         
     # Manually created methods
     
@@ -108,7 +107,7 @@ class testNewsLetter(CPUtilsTestCase):
         
         print("problème pour créer une newsletter et ses abonnés: invokeFactory() ne fonctionne pas ")
         print("(probablement car plonegazette ne s'installe pas correctement)")
-        """import pdb; pdb.set_trace()
+        """
         self.portal.invokeFactory('NewsletterTheme', id)
         nlf = self.portal.newsletter
 
