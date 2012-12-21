@@ -1,0 +1,15 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:monkey="http://namespaces.plone.org/monkey"
+           i18n_domain="cputils">
+
+  <monkey:patch
+    description="Avoid parsing inline data in URI"
+    class="Products.FCKeditor.transforms.fck_ruid_to_url.fck_ruid_to_url"
+    replacement=".fckpatch.convert"
+    original="convert"
+    docstringWarning="false"
+    ignoreOriginal="true"
+    />
+
+</configure>
+
