@@ -1115,7 +1115,134 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
 
     return lf.join(out)
 
- ###############################################################################
+###############################################################################
+
+def correct_pam_language(self, default='', search='all', onlycurrentfolder=0, dochange='', filter=0, avoidedlangfolders=''):
+    """
+        correct language objects, set as neutral if no translation exists
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    import Missing
+    lf = '\n'
+#    lf = '<br />'
+    change_property = False
+    only_current_folder = False
+    filters = [1,2,3,4]
+    avoided_folders = ['shared']
+    for lang in avoidedlangfolders.split('|'):
+        avoided_folders.append(lang.strip())
+
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    pqi = portal.portal_quickinstaller
+    all_langs = []
+    for tup in portal.availableLanguages():
+        all_langs.append(tup[0])
+    lang_level_index = len(portal.getPhysicalPath())
+
+    out = []
+    out.append('<head><style type="text/css">')
+    out.append("table { border: 1px solid black; border-collapse:collapse; }")
+    out.append("table th { border: 1px solid black; background: #8297FD; }")
+    out.append("table td { border: 1px solid black; padding: 2px }")
+    out.append(".red { color: red; } ")
+    out.append(".green { color: green; } ")
+    out.append(".discreet, .discreet a { color: #666666; font-weight: normal;}")
+    out.append("</style></head>")
+    out.append('<h2>Corrects language of untranslated objects</h2>')
+    out.append("<p>You can call the script with the following parameters:<br />")
+    out.append("-> default=code => language code for untranslated objects (default to neutral)<br />")
+    out.append("-> search=fr => language code of searched objects (default to all languages)<br />")
+    out.append("-> onlycurrentfolder=0 => do correct language in all site (default) <br />")
+    out.append("-> avoidedlangfolders=fr|en => avoid objects in languages folders (default not) <br />")
+    out.append("-> filter=1 or filter=123 => filter numbers (default to all objects)<br />")
+#    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;1 => displays only canonical objects<br />")
+#    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;2 => displays only translations<br />")
+    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;3 => displays if object language is different from default<br />")
+#    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;4 => displays unchanged objects<br />")
+    out.append("-> dochange=1 => really do the change. By default, only prints changes<br />")
+    out.append("by example /cputils_correct_language?default=fr&dochange=1</p>")
+    out.append('<p>New value in <span class="red">red</span> will be changed</p>')
+
+    errors = []
+
+#    if 'LinguaPlone' not in [p['id'] for p in pqi.listInstalledProducts()]:
+#        out.append("<p>LinguaPlone not installed ! Not necessary to do this operation</p>")
+#        return lf.join(out)
+
+    if onlycurrentfolder not in ('', '0', 'False', 'false'):
+        only_current_folder=True
+
+    kw = {}
+    #kw['portal_type'] = ('Document','Link','Image','File','Folder','Large Plone Folder','Wrapper','Topic')
+    #kw['review_state'] = ('private',) #'published'
+    if only_current_folder: 
+        kw['path'] =  '/'.join(self.getPhysicalPath())
+    #kw['sort_on'] = 'created'
+    #kw['sort_order'] = 'reverse'
+    kw['Language'] = search
+
+    if filter:
+        filters = [int(i) for i in list(filter.strip())]
+
+    if dochange not in ('', '0', 'False', 'false'):
+        change_property=True
+
+    results = portal.portal_catalog.searchResults(kw)
+    out.append("<p>Number of retrieved objects (not filtered): %d</p>"%len(results))
+    out.append("<table><thead><tr>")
+    out.append("<th>Language</th>")
+    out.append("<th>Metadata</th>")
+    out.append("<th>Path</th>")
+    out.append("<th>New value</th>")
+    out.append("</tr></thead><tbody>")
+
+    #out.append("<tr><td>%s</td></tr>"%';'.join(filters))
+    for brain in results:
+        obj = brain.getObject()
+        #metadata can be missing !
+        if brain.Language == Missing.MV:
+            meta_lang = 'Missing.Value'
+        elif brain.Language == '':
+            meta_lang = 'neutral'
+        else:
+            meta_lang = brain.Language
+        #we use obj instead
+        try:
+            if obj.Language() == '':
+                current_lang = ''
+            else:
+                current_lang = obj.Language()
+        except AttributeError:
+            errors.append("<div>Cannot get language on object '%s' at url '<a href=\"%s\">%s</a>'</div>"%(brain.Title, brain.getURL(), brain.getPath()))
+            current_lang = 'AttributeError'
+            continue
+
+        # avoided folders
+        if len(obj.getPhysicalPath()) > lang_level_index and obj.getPhysicalPath()[lang_level_index] in avoided_folders:
+            out.append("""<tr class="discreet"><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td></td></tr>""" % (current_lang or 'neutral', meta_lang, brain.getURL(), brain.getPath()))
+        #no translation and language must be changed
+        elif current_lang != default:
+            if 3 in filters:
+                out.append("""<tr><td class='red'>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="red">%s</td></tr>""" % (current_lang or 'neutral', meta_lang, brain.getURL(), brain.getPath(), default or "neutral"))
+                if change_property:
+                    obj.setLanguage(default)
+                    obj.reindexObject()
+        else:
+            out.append("""<tr class="discreet"><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td></td></tr>""" % (current_lang or 'neutral', meta_lang, brain.getURL(), brain.getPath()))
+
+    out.append('</tbody></table>')
+
+    if errors:
+        i = out.index("<table><thead><tr>")
+        errors.append('<br />')
+        out[i:i] = errors
+
+    return lf.join(out)
+
+###############################################################################
 
 def copy_image_attribute(self):
     """
