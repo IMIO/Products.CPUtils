@@ -1119,7 +1119,7 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
 
 def correct_pam_language(self, default='', search='all', onlycurrentfolder=0, dochange='', filter=0, avoidedlangfolders=''):
     """
-        correct language objects, set as neutral if no translation exists
+        manage language objects in Plone 4
     """
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
@@ -1203,12 +1203,15 @@ def correct_pam_language(self, default='', search='all', onlycurrentfolder=0, do
     for brain in results:
         obj = brain.getObject()
         #metadata can be missing !
-        if brain.Language == Missing.MV:
+        try:
+            if brain['Language'] == Missing.MV:
+                meta_lang = 'Missing.Value'
+            elif brain['Language'] == '':
+                meta_lang = 'neutral'
+            else:
+                meta_lang = brain['Language']
+        except KeyError:
             meta_lang = 'Missing.Value'
-        elif brain.Language == '':
-            meta_lang = 'neutral'
-        else:
-            meta_lang = brain.Language
         #we use obj instead
         try:
             if obj.Language() == '':
