@@ -2475,6 +2475,8 @@ def list_for_generator(self, tree):
     # on LOBTreeItems
     return [elem for elem in tree]
 
+###############################################################################
+
 def removeZFT(self):
     from zope.app.component.hooks import setSite
     from zope.component import getSiteManager
@@ -2499,7 +2501,6 @@ def removeZFT(self):
         del sm.utilities._subscribers[0][intclass]
     except:
         pass
-
     
     #From here, search for 'Zip' to see if it's gone
     #Each should return -1.  If not, you've done something wrong!
@@ -2510,3 +2511,27 @@ def removeZFT(self):
     import transaction
     transaction.commit()
 
+###############################################################################
+
+def order_folder(self, key='title', reverse='', dochange=0):
+    """
+        Order items in a folder
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    out = ['<h1>Order a folder</h1>']
+    out.append("You can/must call the script with following parameters:")
+    out.append("-> key='' : ordering key (default title).")
+    out.append("-> reverse='' : reversing order (default False).")
+    out.append("by example ...?key=title&reverse=")
+    out.append('')
+
+    do_reverse = False
+    if reverse not in ('', '0', 'False', 'false'):
+        do_reverse = True
+
+    self.orderObjects(key, reverse=do_reverse)
+    out.append("Re-ordered by '%s' in %s order"%(key, do_reverse and 'reverse' or 'normal'))
+
+    return '<br />\n'.join(out)
