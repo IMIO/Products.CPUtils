@@ -204,12 +204,12 @@ def object_info(self):
         for principalId, lr in localroles:
             out.append("\t'%s' has roles '%s'"%(principalId, ';'.join(lr)))
         inhlocalroles = putils.getInheritedLocalRoles(self)
-        if len(inhlocalroles):
+        if len(inhlocalroles) and putils.isLocalRoleAcquired(self):
             out.append('> inherited local roles :')
+            for principalId, lr, pType, pId in inhlocalroles:
+                 out.append("\t%s '%s' has roles '%s'"%(pType, principalId, ';'.join(lr)))
         else:
-            out.append('> inherited local roles : Nothing defined !')
-        for principalId, lr, pType, pId in inhlocalroles:
-             out.append("\t%s '%s' has roles '%s'"%(pType, principalId, ';'.join(lr)))
+            out.append('> inherited local roles : none !')
     except Exception, msg:
         out.append("! EXCEPTION !:%s"%msg)
     return '\n'.join(out)
