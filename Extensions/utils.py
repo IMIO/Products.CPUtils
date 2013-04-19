@@ -117,7 +117,7 @@ def install(self):
                    'list_portlets', 'list_context_portlets_by_name', 'copy_image_attribute', 'desactivate_base2dom',
                    'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles',
                    'unlock_webdav_objects', 'reftooltoobjects', 'del_bad_portlet', 'clean_utilities_for',
-                   'clean_provides_for', 'add_subject', 'order_folder', ):
+                   'clean_provides_for', 'add_subject', 'order_folder', 'move_item'):
         method_name = 'cputils_' + method
         if not base_hasattr(self, method_name):
             manage_addExternalMethod(self, method_name, '', 'CPUtils.utils', method)
@@ -2666,3 +2666,20 @@ def order_folder(self, key='title', reverse='', dochange=0):
     out.append("Re-ordered by '%s' in %s order" % (key, do_reverse and 'reverse' or 'normal'))
 
     return '<br />\n'.join(out)
+
+###############################################################################
+
+
+def move_item(self, delta=-1):
+    """
+        move an item in an ordered container
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    eid = self.getId()
+    folder = self.__parent__
+    oldpos = folder.getObjectPosition(eid)
+    folder.moveObjectsByDelta(eid, int(delta))
+    newpos = folder.getObjectPosition(eid)
+    print "%d => %d" % (oldpos, newpos)
