@@ -1335,7 +1335,7 @@ def correct_pam_language(self, default='', search='all', onlycurrentfolder=0, do
 
 def copy_image_attribute(self):
     """
-        copy image from canonical document into translated document
+        copy image from canonical document into translated document.
         method to add action in site :
         1. add external method (copy_image_attribute)
         2. in portal_action add new CMF action
@@ -1383,43 +1383,43 @@ def desactivate_base2dom(self):
 
 
 def unregister_adapter(self, unregister=''):
-        """
-            unregister lost adapter (product removed from the file system)
-            for error "AttributeError: type object 'IThemeSpecific' has no attribute 'isOrExtends' "
-        """
-        if not check_zope_admin():
-            return "You must be a zope manager to run this script"
+    """
+        unregister lost adapter (product removed from the file system)
+        for error "AttributeError: type object 'IThemeSpecific' has no attribute 'isOrExtends' "
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
 
-        lf = '\n'
-    #    lf = '<br />'
-        out = []
-        out.append("<p>You can call the script with the following parameters:<br />")
-        out.append("-> unregister=... => name of the adapter to unregister (default to empty => "
-                   "list all adapters)<br />")
+    lf = '\n'
+#    lf = '<br />'
+    out = []
+    out.append("<p>You can call the script with the following parameters:<br />")
+    out.append("-> unregister=... => name of the adapter to unregister (default to empty => "
+               "list all adapters)<br />")
 
-        from zope.component import getSiteManager
-        from Products.CMFCore.utils import getToolByName
-        portal = getToolByName(self, "portal_url").getPortalObject()
+    from zope.component import getSiteManager
+    from Products.CMFCore.utils import getToolByName
+    portal = getToolByName(self, "portal_url").getPortalObject()
 
-        params = []
-        components = getSiteManager(portal)
-        for reg in components.registeredAdapters():
-            if unregister:
-                if reg.name == unregister:
-                    params = [reg.factory, reg.required, reg.provided]
-                    break
-            else:
-                out.append(reg.name)
+    params = []
+    components = getSiteManager(portal)
+    for reg in components.registeredAdapters():
         if unregister:
-            try:
-                if components.unregisterAdapter(params[0], params[1], params[2], unregister):
-                    out.append("Adapter '%s' unregistered" % unregister)
-                else:
-                    out.append("Adapter '%s' not unregistered !" % unregister)
-            except Exception, msg:
-                out.append("Adapter '%s' not unregistered : %s" % (unregister, msg))
+            if reg.name == unregister:
+                params = [reg.factory, reg.required, reg.provided]
+                break
+        else:
+            out.append(reg.name)
+    if unregister:
+        try:
+            if components.unregisterAdapter(params[0], params[1], params[2], unregister):
+                out.append("Adapter '%s' unregistered" % unregister)
+            else:
+                out.append("Adapter '%s' not unregistered !" % unregister)
+        except Exception, msg:
+            out.append("Adapter '%s' not unregistered : %s" % (unregister, msg))
 
-        return lf.join(out)
+    return lf.join(out)
 
 ###############################################################################
 
@@ -2007,6 +2007,9 @@ def removeStep(self, step=''):
     """
         Remove an import step
     """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
     from Products.CMFCore.utils import getToolByName
     out = []
 
@@ -2040,6 +2043,9 @@ def removeRegisteredTool(self, tool=''):
     """
         Remove a tool
     """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
     from Products.CMFCore.utils import getToolByName
     out = []
 
@@ -2609,6 +2615,9 @@ def list_for_generator(self, tree):
 
 
 def removeZFT(self):
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
     from zope.app.component.hooks import setSite
     from zope.component import getSiteManager
     from collective.zipfiletransport.utilities.interfaces import IZipFileTransportUtility
