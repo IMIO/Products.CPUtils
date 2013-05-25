@@ -2653,7 +2653,7 @@ def removeZFT(self):
 ###############################################################################
 
 
-def order_folder(self, key='title', reverse='', dochange=0):
+def order_folder(self, key='title', reverse='', verbose=1):
     """
         Order items in a folder
     """
@@ -2670,11 +2670,15 @@ def order_folder(self, key='title', reverse='', dochange=0):
     do_reverse = False
     if reverse not in ('', '0', 'False', 'false'):
         do_reverse = True
+    do_print = True
+    if verbose in ('', '0', 'False', 'false'):
+        do_print = False
 
     self.orderObjects(key, reverse=do_reverse)
     out.append("Re-ordered by '%s' in %s order" % (key, do_reverse and 'reverse' or 'normal'))
 
-    return '<br />\n'.join(out)
+    if do_print:
+        return '<br />\n'.join(out)
 
 ###############################################################################
 
