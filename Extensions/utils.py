@@ -2709,21 +2709,21 @@ def searchAllUsers(self, filter_login='', filter_name='', filter_mail=''):
     out.append("-> filter_login='' : expression to search in login")
     out.append("-> filter_name=''  : expression to search in fullname")
     out.append("-> filter_mail=''  : expression to search in email")
-    out.append("ie. searchAllUsers?filter_login=anuyens,anu&filter_name=André,nuyens,Patrick&filter_mail=anu,andre,nuyens")
+    out.append("ie. searchAllUsers?filter_login=anuyens,anu&filter_name=André,Patrick&filter_mail=anu,andre,nuyens")
     out.append('')
 
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-        
+
     from Products.CMFCore.utils import getToolByName
 
     out.append('<strong>Check on Zope Instance :</strong>')
     for user in self.acl_users.searchUsers():
-        if user['pluginid'] in ('users','source_users'):
+        if user['pluginid'] in ('users', 'source_users'):
             user_login = user['login']
             #for zope user, check only on login
             for filter in filter_login.split(','):
-                if user_login.find(filter)>=0 :
+                if user_login.find(filter) >= 0:
                     out.append(user_login)
     out.append('')
     out.append('<strong>Check on all plone site :</strong>')
@@ -2731,7 +2731,6 @@ def searchAllUsers(self, filter_login='', filter_name='', filter_mail=''):
         mtool = getToolByName(site, 'portal_membership')
         out.append('<strong>Plone site : %s/%s : </strong>' % ('/'.join(site.getPhysicalPath()), site.getId()))
         for user in site.acl_users.searchUsers():
-            isFind = False
             if user['pluginid'] == 'source_users':
                 member = mtool.getMemberById(user['id'])
                 user_login = user['login'].upper()
@@ -2740,6 +2739,6 @@ def searchAllUsers(self, filter_login='', filter_name='', filter_mail=''):
                 for user_prop, filter in ((user_login, filter_login), (user_fullname, filter_name),
                                           (user_mail, filter_mail)):
                     if [i for i in filter.split(',') if filter and i.upper() in user_prop]:
-                        out.append('Login : %s - Mail : %s - Full name : %s'%(user_login,user_mail,user_fullname))
+                        out.append('Login : %s - Mail : %s - Full name : %s' % (user_login, user_mail, user_fullname))
                         break
     return '<br />\n'.join(out)
