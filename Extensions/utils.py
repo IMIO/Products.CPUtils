@@ -2,14 +2,17 @@
 #utilities
 
 
-def search_users(self):
+def get_users(self, obj=True):
     from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject()
-    user_ids = []
+    users = []
     for user in portal.acl_users.searchUsers():
         if user['pluginid'] == 'source_users':
-            user_ids.append(user['userid'])
-    return user_ids
+            if obj:
+                users.append(portal.portal_membership.getMemberById(user['userid']))
+            else:
+                users.append(user['userid'])
+    return users
 
 
 def check_role(self, role='Manager', context=None):
@@ -330,18 +333,18 @@ def delete_users(self, delete=False):
     portal = getToolByName(self, "portal_url").getPortalObject()
     out = ['<h1>all Users</h1>']
     i = 0
-    for u in search_users(self):
+    for member in get_users(self):
         i += 1
     #  if i >100:
     #    break
-        member = portal.portal_membership.getMemberById(u)
+        u_id = member.id
         email = member.getProperty('email')
         if email.endswith('.com') and not (email.endswith('gmail.com') or email.endswith('hotmail.com')):
-            out.append("<span>%s, %s, deleted</span>" % (u, email))
+            out.append("<span>%s, %s, deleted</span>" % (u_id, email))
             if delete:
-                portal.portal_membership.deleteMembers([u], delete_memberareas=1, delete_localroles=0)
+                portal.portal_membership.deleteMembers([u_id], delete_memberareas=1, delete_localroles=0)
         else:
-            out.append("<span>%s, %s, kept</span>" % (u, email))
+            out.append("<span>%s, %s, kept</span>" % (u_id, email))
     return '<br/>'.join(out)
 
 ###############################################################################
@@ -405,10 +408,10 @@ def change_user_properties(self, kw='', dochange='', filter=''):
         change_property = True
     newvaluestring = ','.join(["%s='%s'" % (key, dic[key]) for key in dic.keys()])
     total = filtered = 0
-    for u in search_users(self):
+    for member in get_users(self):
         total += 1
-        member = portal.portal_membership.getMemberById(u)
-        if userscreen and u != userscreen:
+        u_id = member.id
+        if userscreen and u_id != userscreen:
             continue
         for propname in screen:
             #if user doesn't have the property or his property is different from the filtering value,
@@ -417,7 +420,7 @@ def change_user_properties(self, kw='', dochange='', filter=''):
                 break  # do not continue in else clause
         else:
             filtered += 1
-            out.append("<br/>USER:'%s'" % (u))
+            out.append("<br/>USER:'%s'" % (u_id))
             #out.append("->  old properties=%s" % portal.portal_membership.getMemberInfo(memberId=u))
             #display not all properties
             out.append("=>  all properties: %s" %
@@ -461,11 +464,11 @@ def store_user_properties(self):
 #    skipped_properties = ['description', ]
 #    properties_names = [name for name in properties_names if name not in skipped_properties]
     txt.append('Count\tUser\t'+'\t'.join(properties_names))
-#    userids = [ud['userid'] for ud in search_users(self)]
+#    userids = [ud['userid'] for ud in get_users(self)]
     count = 1
-    for user in search_users(self):
+    for member in get_users(self):
+        user = member.id
         out.append("Current member '%s'" % (user))
-        member = portal.portal_membership.getMemberById(user)
         if member is None:
             out.append("! Member not found ")
             continue
@@ -775,7 +778,6 @@ def list_users(self, output='csv', sort='users'):
     separator = ','
 
     from Products.CMFCore.utils import getToolByName
-    portal = getToolByName(self, "portal_url").getPortalObject()
     pg = getToolByName(self, "portal_groups")
     out = []
     out.append('<h2>Users list</h2>')
@@ -795,8 +797,8 @@ def list_users(self, output='csv', sort='users'):
 
     users = {}
     groups = {}
-    for userid in search_users(self):
-        member = portal.portal_membership.getMemberById(userid)
+    for member in get_users(self):
+        userid = member.id
         if not userid in users:
             users[userid] = {}
         users[userid]['obj'] = member
@@ -2715,30 +2717,23 @@ def searchAllUsers(self, filter_login='', filter_name='', filter_mail=''):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
 
-    from Products.CMFCore.utils import getToolByName
-
-    out.append('<strong>Check on Zope Instance :</strong>')
     for user in self.acl_users.searchUsers():
         if user['pluginid'] in ('users', 'source_users'):
             user_login = user['login']
             #for zope user, check only on login
-            for filter in filter_login.split(','):
-                if user_login.find(filter) >= 0:
-                    out.append(user_login)
-    out.append('')
-    out.append('<strong>Check on all plone site :</strong>')
+            for filter_value in filter_login.split(','):
+                if filter_value and filter_value.upper() in user_login.upper():
+                    out.append('Zope, id: %s' % user_login)
+
     for site in get_all_site_objects(self):
-        mtool = getToolByName(site, 'portal_membership')
-        out.append('<strong>Plone site : %s/%s : </strong>' % ('/'.join(site.getPhysicalPath()), site.getId()))
-        for user in site.acl_users.searchUsers():
-            if user['pluginid'] == 'source_users':
-                member = mtool.getMemberById(user['id'])
-                user_login = user['login'].upper()
-                user_fullname = member.getProperty('fullname').upper()
-                user_mail = member.getProperty('email').upper()
-                for user_prop, filter in ((user_login, filter_login), (user_fullname, filter_name),
-                                          (user_mail, filter_mail)):
-                    if [i for i in filter.split(',') if filter and i.upper() in user_prop]:
-                        out.append('Login : %s - Mail : %s - Full name : %s' % (user_login, user_mail, user_fullname))
-                        break
+        for member in get_users(site):
+            user_login = member.id
+            user_fullname = member.getProperty('fullname')
+            user_mail = member.getProperty('email')
+            for user_prop, filter_value in ((user_login, filter_login), (user_fullname, filter_name),
+                                            (user_mail, filter_mail)):
+                if [i for i in filter_value.split(',') if filter_value and i.upper() in user_prop.upper()]:
+                    out.append('%s, id: %s, mail: %s, fullname: %s' % ('/'.join(site.getPhysicalPath()), user_login,
+                                                                       user_mail, user_fullname))
+                    break
     return '<br />\n'.join(out)
