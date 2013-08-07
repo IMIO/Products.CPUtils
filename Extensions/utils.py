@@ -2702,7 +2702,7 @@ def move_item(self, delta=-1):
 ###############################################################################
 
 
-def searchAllUsers(self, filter_login='', filter_name='', filter_mail=''):
+def search_users_by_name(self, filter_login='', filter_name='', filter_mail=''):
     """
         search users by login, fullname or email.
     """
