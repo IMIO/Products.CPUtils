@@ -1993,7 +1993,7 @@ def zmi(self):
         port = port.replace('Port: ', '')
 #        if servers.has_key(hostname):
 #            server = servers[hostname]
-        server = server.replace('localhost', "%s.all2all.org" % hostname)
+        server = server.replace('localhost', hostname)
 #        server = server.replace('localhost', ip_address)
         server = server.replace('0000', port)
         url = "http://%s/manage_main" % server
