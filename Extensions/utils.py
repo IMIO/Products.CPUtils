@@ -25,7 +25,8 @@ def check_zope_admin():
     from AccessControl.SecurityManagement import getSecurityManager
     user = getSecurityManager().getUser()
     if user.has_role('Manager') and user.__module__ in ('Products.PluggableAuthService.PropertiedUser',
-                                                        'AccessControl.users',):
+                                                        'AccessControl.users',
+                                                        'AccessControl.User'):
         return True
     return False
 
