@@ -2620,8 +2620,11 @@ def list_for_generator(self, tree):
 def removeZFT(self):
     if not check_role(self):
         return "You must have a manager role to run this script"
+    try:
+        from zope.app.component.hooks import setSite
+    except ImportError:
+        from zope.component.hooks import setSite
 
-    from zope.app.component.hooks import setSite
     from zope.component import getSiteManager
     from collective.zipfiletransport.utilities.interfaces import IZipFileTransportUtility
     setSite(self)
