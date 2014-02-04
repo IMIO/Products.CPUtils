@@ -2626,10 +2626,14 @@ def removeZFT(self):
         from zope.component.hooks import setSite
 
     from zope.component import getSiteManager
+    from zope.component import queryUtility
     from collective.zipfiletransport.utilities.interfaces import IZipFileTransportUtility
     setSite(self)
     sm = getSiteManager()
+    util = sm.queryUtility(IZipFileTransportUtility, name='zipfiletransport')
     sm.unregisterUtility(component=None, provided=IZipFileTransportUtility)
+    sm.utilities.unsubscribe((), IZipFileTransportUtility)
+    del util
 
     #Even though unregister happened, it probably said it worked but left crap around.
     #Let's clean it up
@@ -2642,8 +2646,14 @@ def removeZFT(self):
         del sm.utilities._adapters[0][intclass]
     except:
         pass
+
     try:
         del sm.utilities._subscribers[0][intclass]
+    except:
+        pass
+
+    try:
+        del sm.utilities._provided[intclass]
     except:
         pass
 
@@ -2651,6 +2661,7 @@ def removeZFT(self):
     #Each should return -1.  If not, you've done something wrong!
     str(sm.utilities._adapters[0]).find('Zip')
     str(sm.utilities._subscribers[0]).find('Zip')
+    str(sm.utilities._provided).find('Zip')
     str(sm.utilities.__bases__[0].__dict__).find('Zip')
 
     import transaction
