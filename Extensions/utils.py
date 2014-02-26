@@ -121,7 +121,7 @@ def install(self):
                    'list_portlets', 'list_context_portlets_by_name', 'copy_image_attribute', 'desactivate_base2dom',
                    'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles',
                    'unlock_webdav_objects', 'reftooltoobjects', 'del_bad_portlet', 'clean_utilities_for',
-                   'clean_provides_for', 'add_subject', 'order_folder', 'move_item'):
+                   'clean_provides_for', 'add_subject', 'order_folder', 'move_item', 'export_subscribers_csv'):
         method_name = 'cputils_' + method
         if not base_hasattr(self, method_name):
             manage_addExternalMethod(self, method_name, '', 'CPUtils.utils', method)
@@ -307,15 +307,14 @@ def export_subscribers_csv(self):
     if not check_role(self):
         return "You must have a manager role to run this script"
 
-    out = ['"title";"active";"format"']
+    out = ['"email","active","format"']
 
     for obj in self.objectValues():
         if obj.meta_type != 'Subscriber':
             continue
         try:
-            ligne = obj.Title().encode('iso-8859-15') + '";'
-            ligne = ligne + '"' + str(obj.active) + '";'
-            ligne = ligne + '"' + obj.format.encode('iso-8859-15') + '"'
+            ligne = '"%s","%s","%s"' % (obj.Title().encode('utf8'), obj.active and '1' or '0',
+                                        obj.format.encode('utf8'))
             out.append(ligne)
         except:
             continue
