@@ -1,3 +1,16 @@
-graft src/Products
-graft docs/
 include *.cfg *.rst *.in
+include *.py
+include .travis.yml
+recursive-include src *.conf
+recursive-include src *.log
+recursive-include src *.po
+recursive-include src *.pot
+recursive-include src *.sh
+recursive-include src *.txt
+recursive-include src *.xml
+recursive-include src *.zargo
+recursive-include src *.zcml
+recursive-include buildout.d *.cfg
+recursive-include docs *.GPL
+recursive-include docs *.rst
+
