@@ -37,3 +37,20 @@ def runCommand(cmd):
     return(stdout, stderr)
 
 #------------------------------------------------------------------------------
+
+
+def writeTo(filepath, data, replace=True):
+    """
+        Write the data in the file
+    """
+    if os.path.exists(filepath) and not replace:
+        return verbose("%s already exists" % filepath)
+    ofile = open(filepath, 'w')
+    if isinstance(data, list):
+        for line in data:
+            ofile.write("%s\n" % (isinstance(line, unicode) and line.encode('utf8') or line))
+    elif isinstance(data, str):
+        ofile.write(data)
+    elif isinstance(data, unicode):
+        ofile.write(data.encode('utf8'))
+    ofile.close()
