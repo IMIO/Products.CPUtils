@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
+import collections
+from functools import partial
 
 
 def verbose(*messages):
@@ -54,3 +56,21 @@ def writeTo(filepath, data, replace=True):
     elif isinstance(data, unicode):
         ofile.write(data.encode('utf8'))
     ofile.close()
+
+#------------------------------------------------------------------------------
+
+
+def encodeData(data, encoding='utf8'):
+    """
+        Encode any data to the specified encoding
+    """
+    if isinstance(data, unicode):
+        return data.encode(encoding)
+    elif isinstance(data, collections.Mapping):
+        mapfunc = partial(encodeData, encoding=encoding)
+        return dict(map(mapfunc, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        mapfunc = partial(encodeData, encoding=encoding)
+        return type(data)(map(mapfunc, data))
+    else:
+        return data
