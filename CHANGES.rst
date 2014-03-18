@@ -2,10 +2,11 @@ Changelog
 =========
 
 
-1.1 (unreleased)
+1.1 (2014-03-18)
 ----------------
 
-- Nothing changed yet.
+- Added utils module.
+  [sgeulette]
 
 
 1.0 (2014-03-10)
