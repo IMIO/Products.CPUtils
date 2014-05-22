@@ -837,7 +837,7 @@ def list_users(self, output='csv', sort='users'):
 ###############################################################################
 
 
-def recreate_users_groups(self):
+def recreate_users_groups(self, only_users=False, only_groups=False, dochange=''):
     """copy users from old acl_users to the new one """
 
     if not check_zope_admin():
@@ -846,46 +846,70 @@ def recreate_users_groups(self):
     from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject()
 
+    out = []
+    lf = '\n'
+    out.append("call the script followed by needed parameters:")
+    out.append("-> only_users=... : recreate only users")
+    out.append("-> only_groups=... : recreate only groups")
+    out.append("-> dochange=1 : apply changes")
+    out.append("")
+
+    change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        change = True
+    if not change:
+        out.append("The following changes are not applied: you must run the script with the parameter 'dochange=1'")
+
     if 'oldacl' not in portal.objectIds():
-        return ("First you must create a folder at Plonesite root named 'oldacl' and containing a "
-                "copy of another acl_users")
+        out.append("First you must create a folder at Plonesite root named 'oldacl' and containing a "
+                   "copy of another acl_users")
+        return lf.join(out)
 
     if 'acl_users' not in portal.oldacl.objectIds():
-        return "You must import a Plonesite acl_users folder in the folder named '/oldacl'"
+        out.append("You must import a Plonesite acl_users folder in the folder named '/oldacl'")
+        return lf.join(out)
 
     old_acl = portal.oldacl.acl_users
     acl = portal.acl_users
     prg = portal.portal_registration
     pgr = portal.portal_groups
-    messages = []
 
-    for gd in old_acl.searchGroups():
-        if gd['pluginid'] == 'auto_group':
-            continue
+    if not only_users:
+        for gd in old_acl.searchGroups():
+            if gd['pluginid'] == 'auto_group':
+                continue
+            g = old_acl.source_groups.getGroupById(gd['groupid'])
+            if g.getId() not in acl.getGroupIds():
+                if change:
+                    pgr.addGroup(g.getId(), roles=g.getRoles(), groups=g.getGroups())
+                out.append("Group '%s' is added" % g.getId())
+            else:
+                out.append("Group '%s' already exists" % g.getId())
 
-        g = old_acl.source_groups.getGroupById(gd['groupid'])
-        if g.getId() not in acl.getGroupIds():
-            pgr.addGroup(g.getId(), roles=g.getRoles(), groups=g.getGroups())
-            messages.append("Group '%s' is added" % g.getId())
-        else:
-            messages.append("Group '%s' already exists" % g.getId())
-
-    users = old_acl.getUsers()
-    #thanks http://blog.kagesenshi.org/2008/05/exporting-plone30-memberdata-and.html
-    passwords = old_acl.source_users._user_passwords
-    for user in users:
-        if user.getUserId() not in [ud['userid'] for ud in acl.searchUsers()]:
-            prg.addMember(user.getUserId(), passwords[user.getUserId()], roles=user.getRoles(),
-                          domains=user.getDomains())
-            messages.append("User '%s' is added" % user.getUserId())
-            for groupid in user.getGroupIds():
-                if groupid == 'AuthenticatedUsers':
-                    continue
-                pgr.addPrincipalToGroup(user.getUserId(), groupid)
-                messages.append("    -> Added in group '%s'" % groupid)
-        else:
-            messages.append("User '%s' already exists" % user.getUserId())
-    return "\n".join(messages)
+    if not only_groups:
+        users = old_acl.getUsers()
+        #thanks http://blog.kagesenshi.org/2008/05/exporting-plone30-memberdata-and.html
+        passwords = old_acl.source_users._user_passwords
+        for user in users:
+            if user.getUserId() not in [ud['userid'] for ud in acl.searchUsers()]:
+                if change:
+                    try:
+                        prg.addMember(user.getUserId(), passwords[user.getUserId()], roles=user.getRoles(),
+                                      domains=user.getDomains())
+                    except ValueError, error:
+                        out.append("Problem creating user '%s': %s" % (user.getUserId(), error))
+                        continue
+                out.append("User '%s' is added" % user.getUserId())
+                if not only_users:
+                    for groupid in user.getGroupIds():
+                        if groupid == 'AuthenticatedUsers':
+                            continue
+                        if change:
+                            pgr.addPrincipalToGroup(user.getUserId(), groupid)
+                        out.append("    -> Added in group '%s'" % groupid)
+            else:
+                out.append("User '%s' already exists" % user.getUserId())
+    return lf.join(out)
 
 ###############################################################################
 
