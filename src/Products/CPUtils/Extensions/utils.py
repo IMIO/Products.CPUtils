@@ -2253,21 +2253,22 @@ def list_used_views(self, specific_view=None):
             ob = brain.getObject()
             layout = ob.getLayout()
             if t not in views:
-                views[t] = []
-            if not specific_view and layout not in views[t]:
-                views[t].append(layout)
+                views[t] = {}
+            if not specific_view:
+                if layout not in views[t]:
+                    views[t][layout] = 0
+                views[t][layout] += 1
             elif specific_view and specific_view == layout:
-                views[t].append(ob.absolute_url())
+                views[t]['/'.join(ob.getPhysicalPath())] = ob.absolute_url()
     if not specific_view:
         out = ["Used views on objects\n---------------------\n"]
         for typ in views.keys():
-            out.append("%s : %s" % (typ, ', '.join(views[typ])))
+            out.append("%s : %s" % (typ, ', '.join(['%s (%s)' % (lay, views[typ][lay]) for lay in sorted(views[typ])])))
     else:
-        out = ["<b>Objects using the '%s' layout</b><br /><br /><html>" % specific_view]
+        out = ["<html><b><u>Objects using the '%s' layout</u></b><br /><br />" % specific_view]
         for typ in views.keys():
-            if views[typ]:
-                out.append("%s : %s" %
-                           (typ, '<br />'.join(["<a href='%s'>%s</a>" % (view, view) for view in views[typ]])))
+            for path in sorted(views[typ]):
+                out.append("%s : <a href='%s'>%s</a>" % (typ, views[typ][path], path))
                 out.append('<br />')
         out.append('</html>')
     return '\n'.join(out)
