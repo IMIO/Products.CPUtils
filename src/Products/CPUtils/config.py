@@ -84,20 +84,22 @@ import os
 PRODUCT_FOLDER = os.path.dirname(__file__)
 FILES_FOLDER = os.path.join(PRODUCT_FOLDER, 'data')
 
+
 def getPloneVersion():
-    pv = ''
     import Products.CMFPlone as cmfp
     plonedir = cmfp.__path__[0]
+    # 2.5, 3 version
     if os.path.exists(plonedir):
         for name in ('version.txt', 'VERSION.txt', 'VERSION.TXT'):
             versionfile = os.path.join(plonedir,name)
             if os.path.exists(versionfile):
-                file=open(versionfile, 'r')
-                data=file.readline()
+                file = open(versionfile, 'r')
+                data = file.readline()
                 file.close()
-                pv = data.strip()
-                return pv
-    return pv
+                return data.strip()
+    # 4 version
+    import pkg_resources
+    return pkg_resources.get_distribution('Products.CMFPlone').version
 
 PLONE_VERSION = getPloneVersion()
 
