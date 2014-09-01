@@ -2,10 +2,15 @@ Changelog
 =========
 
 
-1.2 (unreleased)
+1.2 (2014-09-01)
 ----------------
 
-- Nothing changed yet.
+- Plone 4 compatibility Plone version detection 
+  [sgeulette]
+- Corrected and improved views listing method 
+  [sgeulette]
+- Improved users and groups migration method
+  [sgeulette]
 
 
 1.1 (2014-03-18)
