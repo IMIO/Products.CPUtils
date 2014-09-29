@@ -2650,7 +2650,6 @@ def removeZFT(self):
         from zope.component.hooks import setSite
 
     from zope.component import getSiteManager
-    from zope.component import queryUtility
     from collective.zipfiletransport.utilities.interfaces import IZipFileTransportUtility
     setSite(self)
     sm = getSiteManager()
