@@ -678,7 +678,7 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
         return "You must have a manager role to run this script"
 
     customs = {'urban':
-               u"[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
+               u"[\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
                "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
                "['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter',"
                "'JustifyRight','JustifyBlock'],\n['Table','SpecialChar'],\n'/',\n['Styles','Format'],"
