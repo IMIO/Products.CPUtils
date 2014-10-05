@@ -121,7 +121,8 @@ def install(self):
                    'list_portlets', 'list_context_portlets_by_name', 'copy_image_attribute', 'desactivate_base2dom',
                    'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles',
                    'unlock_webdav_objects', 'reftooltoobjects', 'del_bad_portlet', 'clean_utilities_for',
-                   'clean_provides_for', 'add_subject', 'order_folder', 'move_item', 'export_subscribers_csv'):
+                   'clean_provides_for', 'add_subject', 'order_folder', 'move_item', 'export_subscribers_csv',
+                   'move_copy_objects'):
         method_name = 'cputils_' + method
         if not base_hasattr(self, method_name):
             manage_addExternalMethod(self, method_name, '', 'CPUtils.utils', method)
