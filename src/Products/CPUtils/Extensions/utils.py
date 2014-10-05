@@ -2775,3 +2775,50 @@ def search_users_by_name(self, filter_login='', filter_name='', filter_mail=''):
                                                                        user_mail, user_fullname))
                     break
     return '<br />\n'.join(out)
+
+###############################################################################
+
+
+def move_copy_objects(self, action='move', dest='', ftype=''):
+    """
+        move or copy objects.
+    """
+    out = ['<strong>Move or copy objects</strong>']
+    out.append("You can/must call the script with following parameters:")
+    out.append("-> action='move' : copy|move")
+    out.append("-> dest='' : relative path")
+    out.append("-> ftype='' : filter on this portal type (Not yet implemented")
+    out.append("ie. move_copy_objects?action=copy")
+    out.append('')
+
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    if not dest:
+        out.append("!! You must give the dest path")
+        return '<br />\n'.join(out)
+    portal = self.portal_url.getPortalObject()
+    dest = dest.lstrip('/')
+    try:
+        dest_folder = portal.unrestrictedTraverse(dest)
+    except KeyError, e:
+        out.append("!! The dest path '%s' isn't correct: %s" % (dest, e))
+        return '<br />\n'.join(out)
+    if not self.plone_utils.isStructuralFolder(dest_folder):
+        out.append("!! The dest object '%s' isn't folderish" % (dest_folder))
+        return '<br />\n'.join(out)
+
+    dest_path = dest_folder.absolute_url_path()
+    ids = []
+    for obj in self.listFolderContents():
+        if dest_path.startswith(obj.absolute_url_path()):
+            continue
+        if obj.portal_type not in dest_folder.getLocallyAllowedTypes():
+            out.append("Object not allowed: '%s'" % obj)
+            continue
+        ids.append(obj.getId())
+    if action == 'move':
+        clipboard = self.manage_cutObjects(ids)
+    elif action == 'copy':
+        clipboard = self.manage_copyObjects(ids)
+    dest_folder.manage_pasteObjects(clipboard)
