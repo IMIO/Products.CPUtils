@@ -2780,16 +2780,18 @@ def search_users_by_name(self, filter_login='', filter_name='', filter_mail=''):
 ###############################################################################
 
 
-def move_copy_objects(self, action='move', dest='', ftype=''):
+def move_copy_objects(self, action='move', dest='', doit='', types='', by=50):
     """
         move or copy objects.
     """
-    out = ['<strong>Move or copy objects</strong>']
+    out = ['Move or copy objects']
     out.append("You can/must call the script with following parameters:")
     out.append("-> action='move' : copy|move")
     out.append("-> dest='' : relative path")
-    out.append("-> ftype='' : filter on this portal type (Not yet implemented")
-    out.append("ie. move_copy_objects?action=copy")
+    out.append("-> doit='' : commit flag")
+    out.append("-> types='' : filter on those portal types (comma separated without space)")
+    out.append("-> by='50' : slice number")
+    out.append("ie. move_copy_objects?action=copy&dest=archives")
     out.append('')
 
     if not check_role(self):
@@ -2800,6 +2802,7 @@ def move_copy_objects(self, action='move', dest='', ftype=''):
         return '<br />\n'.join(out)
     portal = self.portal_url.getPortalObject()
     dest = dest.lstrip('/')
+    by = int(by)
     try:
         dest_folder = portal.unrestrictedTraverse(dest)
     except KeyError, e:
@@ -2808,18 +2811,33 @@ def move_copy_objects(self, action='move', dest='', ftype=''):
     if not self.plone_utils.isStructuralFolder(dest_folder):
         out.append("!! The dest object '%s' isn't folderish" % (dest_folder))
         return '<br />\n'.join(out)
-
+    do_change = False
+    if doit not in ('', '0', 'False', 'false'):
+        do_change = True
+    params = {}
+    if types:
+        params['portal_type'] = [typ.strip() for typ in types.split(',')]
     dest_path = dest_folder.absolute_url_path()
     ids = []
-    for obj in self.listFolderContents():
+    found_types = []
+    for obj in self.listFolderContents(contentFilter=params):
         if dest_path.startswith(obj.absolute_url_path()):
             continue
+        if obj.portal_type not in found_types:
+            found_types.append(obj.portal_type)
         if obj.portal_type not in dest_folder.getLocallyAllowedTypes():
             out.append("Object not allowed: '%s'" % obj)
             continue
         ids.append(obj.getId())
-    if action == 'move':
-        clipboard = self.manage_cutObjects(ids)
-    elif action == 'copy':
-        clipboard = self.manage_copyObjects(ids)
-    dest_folder.manage_pasteObjects(clipboard)
+    out.append("\nExisting types: %s" % ', '.join(found_types))
+    out.append("Will %s: %s" % (action, ', '.join(ids)))
+    while ids:
+        pids = ids[0:by]
+        ids[0:by] = []
+        if action == 'move':
+            clipboard = self.manage_cutObjects(pids)
+        elif action == 'copy':
+            clipboard = self.manage_copyObjects(pids)
+        if do_change:
+            dest_folder.manage_pasteObjects(clipboard)
+    return "\n".join(out)
