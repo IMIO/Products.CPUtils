@@ -545,6 +545,7 @@ def load_user_properties(self, dochange=''):
                     #this column is made empty, this will not be used when reading value
                 elif property not in properties_names:
                     out.append("Warning: old property '%s' not found in portal_memberdata properties" % property)
+                    property = ''
                 columns[i] = property
             elif columns[i]:
                 props[columns[i]] = property.replace('|', '\r\n')
