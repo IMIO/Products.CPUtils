@@ -767,11 +767,12 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
 ###############################################################################
 
 
-def list_users(self, output='csv', sort='users'):
+def list_users(self, output='csv', sort='users', gtitle='1'):
     """
         list users following parameters :
             group = True, group information is included
             sort = 'users' or 'groups', sort key for output
+            gtitle = '1' or '0', include group title (1 by default)
     """
     if not check_role(self):
         return "You must have a manager role to run this script"
@@ -796,6 +797,9 @@ def list_users(self, output='csv', sort='users'):
     if output not in ('csv', 'screen'):
         out.append("invalid parameter output, value must be 'csv' or 'screen'")
         return
+    title = False
+    if gtitle not in ('', '0', 'False', 'false'):
+        title = True
 
     users = {}
     groups = {}
@@ -804,11 +808,11 @@ def list_users(self, output='csv', sort='users'):
         if not userid in users:
             users[userid] = {}
         users[userid]['obj'] = member
-        groupids = pg.getGroupsForPrincipal(member)
+        groupids = [gid for gid in pg.getGroupsForPrincipal(member) if gid != 'AuthenticatedUsers']
         users[userid]['groups'] = groupids
         for groupid in groupids:
             if not groupid in groups:
-                groups[groupid] = {}
+                groups[groupid] = {'title': pg.getGroupInfo(groupid)['title']}
                 groups[groupid]['users'] = []
             groups[groupid]['users'].append(userid)
 
@@ -820,18 +824,22 @@ def list_users(self, output='csv', sort='users'):
                 out.append("- userid: %s" % userid)
             for groupid in users[userid]['groups']:
                 if output == 'csv':
-                    out.append(separator.join([userid, groupid]))
+                    out.append(separator.join([userid, (title and '%s "%s"' % (groupid, groups[groupid]['title'])
+                                                        or groupid)]))
                 else:
-                    out.append('&emsp&emsp&rArr %s' % groupid)
+                    out.append('&emsp&emsp&rArr %s' % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
+                                                       or groupid))
     elif sort == 'groups':
         if output == 'csv':
             out.append(separator.join(['GroupId', 'UserId', ]))
         for groupid in groups.keys():
             if output == 'screen':
-                out.append("- groupid: %s" % groupid)
+                out.append("- groupid: %s" % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
+                                              or groupid))
             for userid in groups[groupid]['users']:
                 if output == 'csv':
-                    out.append(separator.join([groupid, userid, ]))
+                    out.append(separator.join([(title and '%s "%s"' % (groupid, groups[groupid]['title'])
+                                                or groupid), userid, ]))
                 else:
                     out.append('&emsp&emsp&rArr %s' % userid)
     return lf.join(out)
