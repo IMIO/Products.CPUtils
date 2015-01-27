@@ -777,7 +777,7 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
     if not check_role(self):
         return "You must have a manager role to run this script"
     lf = '\n'
-    lf = '<br />'
+    lf = '<br />\n'
     separator = ','
 
     from Products.CMFCore.utils import getToolByName
@@ -827,7 +827,7 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
                     out.append(separator.join([userid, (title and '%s "%s"' % (groupid, groups[groupid]['title'])
                                                         or groupid)]))
                 else:
-                    out.append('&emsp&emsp&rArr %s' % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
+                    out.append('&emsp;&emsp;&rArr; %s' % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
                                                        or groupid))
     elif sort == 'groups':
         if output == 'csv':
@@ -841,7 +841,7 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
                     out.append(separator.join([(title and '%s "%s"' % (groupid, groups[groupid]['title'])
                                                 or groupid), userid, ]))
                 else:
-                    out.append('&emsp&emsp&rArr %s' % userid)
+                    out.append('&emsp;&emsp;&rArr; %s' % userid)
     return lf.join(out)
 
 ###############################################################################
