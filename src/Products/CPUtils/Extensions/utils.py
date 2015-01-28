@@ -2925,3 +2925,45 @@ def move_copy_objects(self, action='move', dest='', doit='', types='', by=50):
         if do_change:
             dest_folder.manage_pasteObjects(clipboard)
     return "\n".join(out)
+
+###############################################################################
+
+
+def reset_passwords(self, not_for_ids='siteadmin', dochange=''):
+    """
+        Reset all users passwords
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    portal = self.portal_url.getPortalObject()
+    regtool = portal.portal_registration
+    out = []
+    out.append("call the script followed by needed parameters:")
+    out.append("-> not_for_ids=user1|user2  : list of userids exception (default siteadmin)")
+    out.append("-> dochange=1")
+    change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        change = True
+
+    out.append("\nResetting all users passwords")
+    exceptions = not_for_ids.strip().split('|')
+    out.append("Userids exceptions: '%s'" % ','.join(exceptions))
+    users = portal.portal_membership.listMembers()
+    out.append("Total users: %d" % len(users))
+    out.append("Total exceptions: %d" % len(exceptions))
+    intersect = list(set([u.id for u in users]) & set(exceptions))
+    out.append("Intersection: %d => %s" % (len(intersect), ','.join(intersect)))
+    reset = 0
+    for user in users:
+        if user.id in exceptions:
+            continue
+        reset += 1
+        if change:
+            pw = regtool.generatePassword()
+            user.setSecurityProfile(password=pw)
+    out.append("Total reset: %d" % reset)
+    if change:
+        out.append("\nReset really done")
+    else:
+        out.append("\nReset not really done")
+    return '\n'.join(out)
