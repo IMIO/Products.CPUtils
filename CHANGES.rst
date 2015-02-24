@@ -5,7 +5,20 @@ Changelog
 1.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added method to clear and rebuild zc.relation.catalog
+  [sgeulette]
+- Added method to display portal types used in site
+  [sgeulette]
+- Added method to reset passwords
+  [sgeulette]
+- Modified user & group listing
+  [sgeulette]
+- Modified user properties export information
+  [sgeulette]
+- Added method to move or copy objects
+  [sgeulette]
+- Adapted CKEditor toolbar for PloneMeeting
+  [gbastien]
 
 
 1.2 (2014-09-01)
