@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.3 (unreleased)
+1.3 (2015-02-24)
 ----------------
 
 - Added method to clear and rebuild zc.relation.catalog
