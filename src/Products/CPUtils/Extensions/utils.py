@@ -2360,76 +2360,19 @@ def unlock_webdav_objects(self, dochange=''):
 
 
 def objects_stats(self):
-    from Products.CMFCore.utils import getToolByName
     if not check_role(self):
         return "You must have a manager role to run this script"
-
-    portal_url = getToolByName(self, "portal_url")
-    portal = portal_url.getPortalObject()
-
-    kw = {}
-    kw['path'] = '/'.join(self.getPhysicalPath())
-    results = portal.portal_catalog.searchResults(kw)
-
-    header = "<h1>SEARCH RESULTS</h1> <p>Search in : %s</p> <p>Nb Items found : %d </p>" \
-             % (kw['path'], len(results))
-    out = [header]
-
-    res = []
-    out.append("""counter : %s : %s : %s""" % ('portal_type', 'getObjSize', 'url'))
-    typeTreated = []
-    for r in results:
-        res.append((r.portal_type, r.getObjSize, r.getURL()+'/view', tobytes(r.getObjSize)))
-        isTreated = isTypeTreated(r.portal_type, typeTreated)
-        if isTreated == -1:
-            kw1 = {}
-            kw1['path'] = '/'.join(self.getPhysicalPath())
-            kw1['portal_type'] = r.portal_type
-            resultsForCurrentType = portal.portal_catalog.searchResults(kw1)
-            currValue = tobytes(r.getObjSize)/1024
-            typeTreated.append([r.portal_type, len(resultsForCurrentType), currValue])
-
-        else:
-            currValue = tobytes(r.getObjSize)/1024
-            typeTreated[isTreated][2] = typeTreated[isTreated][2] + currValue
-
-    def sortBySize(row1, row2):
-        size1 = row1[-1]
-        size2 = row2[-1]
-        #reverse order
-        return cmp(size1, size2)
-    res.sort(sortBySize, reverse=True)
-
-    count = 0
-    for row in res:
-        (ptype, size, url, bytes) = row
-        count += 1
-        out.append("""%d : %s : %s : <a href="%s">%s</a>""" % (count, ptype, size, url, url))
-    out.append("<hr/>")
-
-    totalSize = 0
-    for row in typeTreated:
-        (ptype, nb, size) = row
-        totalSize += row[2]
-        out.append("""%s : %d (total => %s KB)""" % (ptype, nb, size))
-    out.append("""<br/>Total size is %s KB""" % (totalSize))
-    out.append("<br />END")
-    return '<br />'.join(out)
-
-###############################################################################
-
-
-# -1 if not find
-# x if find where x is the table place.
-def isTypeTreated(ptype, typeTreated):
-    isTreat = -1
-    tableplace = 0
-    for row in typeTreated:
-        (currtype, nb, size) = row
-        if ptype == currtype:
-            isTreat = tableplace
-        tableplace = tableplace + 1
-    return isTreat
+    portal = self.portal_url.getPortalObject()
+    brains = portal.portal_catalog.searchResults()
+    types = {}
+    for brain in brains:
+        if brain.portal_type not in types:
+            types[brain.portal_type] = 0
+        types[brain.portal_type] += 1
+    out = []
+    for typ in sorted(types.keys()):
+        out.append("%s: %d" % (typ, types[typ]))
+    return "\n".join(out)
 
 ###############################################################################
 
