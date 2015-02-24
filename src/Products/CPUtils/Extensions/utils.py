@@ -2910,3 +2910,22 @@ def reset_passwords(self, not_for_ids='siteadmin', dochange=''):
     else:
         out.append("\nReset not really done")
     return '\n'.join(out)
+
+
+def reindex_relations(self):
+    """
+        Clear the relation catalog (zc.relation.catalog) to fix issues with interfaces that don't
+        exist anymore.
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    from z3c.relationfield.event import updateRelations
+    from z3c.relationfield.interfaces import IHasRelations
+    from zc.relation.interfaces import ICatalog
+    from zope.component import getUtility
+    rcatalog = getUtility(ICatalog)
+    rcatalog.clear()
+    brains = self.portal_catalog.searchResults(object_provides=IHasRelations.__identifier__)
+    for brain in brains:
+        obj = brain.getObject()
+        updateRelations(obj, None)
