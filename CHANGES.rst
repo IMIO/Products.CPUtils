@@ -2,10 +2,11 @@ Changelog
 =========
 
 
-1.4 (unreleased)
+1.4 (2015-03-20)
 ----------------
 
-- Nothing changed yet.
+- Added try except to avoid plone 4.3.3 to 4.3.4 migration.
+  [sgeulette]
 
 
 1.3 (2015-02-24)
