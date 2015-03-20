@@ -187,7 +187,10 @@ def listInstallableProducts40(self, skipInstalled=True):
        with keys:(id,title,hasError,status)
     """
     # reset the list of broken products
-    self.errors = {}
+    try:
+        self.errors = {}
+    except AttributeError:
+        pass
 
     # Returns full names with Products. prefix for all packages / products
     packages = get_packages()
