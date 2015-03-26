@@ -5,13 +5,14 @@ Changelog
 1.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added check_users method to check email validity.
+  [sgeulette]
 
 
 1.4 (2015-03-20)
 ----------------
 
-- Added try except to avoid plone 4.3.3 to 4.3.4 migration.
+- Added try except to avoid plone 4.3.3 to 4.3.4 migration error.
   [sgeulette]
 
 
