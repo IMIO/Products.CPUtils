@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.5 (unreleased)
+1.5 (2015-04-21)
 ----------------
 
 - Added check_users method to check email validity.
