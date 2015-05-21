@@ -5,7 +5,8 @@ Changelog
 1.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added method to update version in portal_quickinstaller.
+  [sgeulette]
 
 
 1.5 (2015-04-21)

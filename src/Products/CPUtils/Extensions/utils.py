@@ -2956,3 +2956,25 @@ def reindex_relations(self):
     for brain in brains:
         obj = brain.getObject()
         updateRelations(obj, None)
+
+
+def mark_last_version(self, product=''):
+    """
+        Mark a product in pqi as last version installed
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    if not product:
+        return "You must give the parameter product with the product name: mark_last_version?product=Products.Ploneboard"
+    pqi = self.portal_quickinstaller
+    try:
+        prod = pqi.get(product)
+        i_v = prod.getInstalledVersion()
+        s_v = pqi.getProductVersion(product)
+        if i_v != s_v:
+            setattr(prod, 'installedversion', s_v)
+            return "Product version set in pqi: '%s' from '%s' to '%s'" % (product, i_v, s_v)
+        else:
+            return "Product version in pqi already at last: '%s' '%s'" % (product, i_v)
+    except AttributeError, e:
+        return "Cannot get product '%s' from portal_quickinstaller: %s" % (product, e)
