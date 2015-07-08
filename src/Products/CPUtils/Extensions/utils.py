@@ -70,6 +70,15 @@ def get_all_site_objects(self):
     return allSiteObj
 
 
+def safe_encode(value, encoding='utf-8'):
+    """
+        Converts a value to encoding, only when it is not already encoded.
+    """
+    if isinstance(value, unicode):
+        return value.encode(encoding)
+    return value
+
+
 def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
     """
         send a mail
@@ -808,7 +817,7 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
         if not userid in users:
             users[userid] = {}
         users[userid]['obj'] = member
-        groupids = [gid for gid in pg.getGroupsForPrincipal(member) if gid != 'AuthenticatedUsers']
+        groupids = [safe_encode(gid) for gid in pg.getGroupsForPrincipal(member) if gid != 'AuthenticatedUsers']
         users[userid]['groups'] = groupids
         for groupid in groupids:
             if not groupid in groups:
