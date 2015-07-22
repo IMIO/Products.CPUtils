@@ -238,6 +238,62 @@ def listInstallableProducts40(self, skipInstalled=True):
                              y.get('title', y.get('id', None))))
     return res
 
+
+def listInstallableProducts434(self, skipInstalled=True):
+    """List candidate CMF products for installation -> list of dicts
+       with keys:(id,title,hasError,status)
+    """
+    # reset the list of broken products
+    if getattr(self, '_v_errors', True):
+        self._v_errors = {}
+
+    # Returns full names with Products. prefix for all packages / products
+    packages = get_packages()
+
+    pids = []
+    for p in packages:
+        if not self.isProductInstallable(p):
+            continue
+        if p.startswith('Products.'):
+            p = p[9:]
+        pids.append(p)
+
+    # Get product list from the extension profiles
+    profile_pids = self.listInstallableProfiles()
+
+    for p in profile_pids:
+        if p in pids or p in packages:
+            continue
+        if not self.isProductInstallable(p):
+            continue
+        pids.append(p)
+
+    if skipInstalled:
+        installed = [p['id'] for p in self.listInstalledProducts(showHidden=True)]
+        pids = [r for r in pids if r not in installed]
+
+    from Products.CPUtils.__init__ import getQIFilteringInformation
+    (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
+
+    res = []
+    for r in pids:
+        if doFiltering and r in hiddenProducts and r not in shownProducts:
+            continue
+        p = self._getOb(r, None)
+        name = r
+        profile = self.getInstallProfile(r)
+        if profile:
+            name = profile['title']
+        if p:
+            res.append({'id': r, 'title': name, 'status': p.getStatus(),
+                        'hasError': p.hasError()})
+        else:
+            res.append({'id': r, 'title': name, 'status': 'new', 'hasError': False})
+    res.sort(lambda x, y: cmp(x.get('title', x.get('id', None)),
+                             y.get('title', y.get('id', None))))
+    return res
+
+
 def listInstalledProducts31(self, showHidden=False):
     """Returns a list of products that are installed -> list of
     dicts with keys:(id, title, hasError, status, isLocked, isHidden,
@@ -331,7 +387,7 @@ def initialize(context):
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
         MaxSizeValidator.__call__ = CallMaxSizeValidator
         logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
-    elif PLONE_VERSION.startswith('4.'):
+    elif PLONE_VERSION < '4.3.4':
         QuickInstallerTool.listInstallableProducts = listInstallableProducts40
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
@@ -349,3 +405,9 @@ def initialize(context):
             logger.info("TinyMCE getContentType MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
         except:
             pass
+    elif PLONE_VERSION >= '4.3.4':
+        QuickInstallerTool.listInstallableProducts = listInstallableProducts434
+        QuickInstallerTool.listInstalledProducts = listInstalledProducts31
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
+        MaxSizeValidator.__call__ = CallMaxSizeValidator
+        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)

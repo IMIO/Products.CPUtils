@@ -7,7 +7,10 @@ Changelog
 
 - Added method to update version in portal_quickinstaller.
   [sgeulette]
-
+- Added safe_encode method. Improved list_users
+  [sgeulette]
+- Updated listInstallableProducts for Plone 4.3.4
+  [sgeulette]
 
 1.5 (2015-04-21)
 ----------------
