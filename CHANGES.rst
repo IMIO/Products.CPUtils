@@ -5,6 +5,8 @@ Changelog
 1.6 (unreleased)
 ----------------
 
+- list_users: output users without group
+  [sgeulette]
 - Added method to update version in portal_quickinstaller.
   [sgeulette]
 - Added safe_encode method. Improved list_users

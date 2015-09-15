@@ -779,7 +779,6 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
 def list_users(self, output='csv', sort='users', gtitle='1'):
     """
         list users following parameters :
-            group = True, group information is included
             sort = 'users' or 'groups', sort key for output
             gtitle = '1' or '0', include group title (1 by default)
     """
@@ -796,6 +795,7 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
     out.append("You can call the script with the following parameters:")
     out.append("-> output=screen => output for screen or csv (default=csv)")
     out.append("-> sort=groups (or users) => output is sorted following groups (default=users)")
+    out.append("-> gtitle=0 => include group title (default=1)")
     out.append("by example /cputils_list_users?output=screen&sort=groups")
     out.append("You can copy/paste the following lines in the right program like openoffice calc ;-) or Excel :-(%s" %
                lf)
@@ -818,37 +818,50 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
             users[userid] = {}
         users[userid]['obj'] = member
         groupids = [safe_encode(gid) for gid in pg.getGroupsForPrincipal(member) if gid != 'AuthenticatedUsers']
+        if not groupids:
+            groupids = ['aucun']
         users[userid]['groups'] = groupids
         for groupid in groupids:
             if not groupid in groups:
-                groups[groupid] = {'title': pg.getGroupInfo(groupid)['title']}
+                groups[groupid] = {'title': pg.getGroupInfo(groupid) and pg.getGroupInfo(groupid)['title'] or ''}
                 groups[groupid]['users'] = []
             groups[groupid]['users'].append(userid)
 
+    if output == 'csv':
+        titles = {'users': ['UserId', 'GroupId'],
+                  'groups': ['GroupId', 'UserId', ],
+                  }
+        # insert 'GroupTitle' after 'GroupId'
+        if title:
+            titles[sort].insert(titles[sort].index('GroupId')+1, 'GroupTitle')
+        out.append(separator.join(titles[sort]))
+
     if sort == 'users':
-        if output == 'csv':
-            out.append(separator.join(['UserId', 'GroupId']))
         for userid in users.keys():
             if output == 'screen':
                 out.append("- userid: %s" % userid)
             for groupid in users[userid]['groups']:
                 if output == 'csv':
-                    out.append(separator.join([userid, (title and '%s "%s"' % (groupid, groups[groupid]['title'])
-                                                        or groupid)]))
+                    if title:
+                        infos = (userid, groupid, groups[groupid]['title'])
+                    else:
+                        infos = (userid, groupid)
+                    out.append(separator.join(infos))
                 else:
                     out.append('&emsp;&emsp;&rArr; %s' % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
-                                                       or groupid))
+                                                          or groupid))
     elif sort == 'groups':
-        if output == 'csv':
-            out.append(separator.join(['GroupId', 'UserId', ]))
         for groupid in groups.keys():
             if output == 'screen':
                 out.append("- groupid: %s" % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
                                               or groupid))
             for userid in groups[groupid]['users']:
                 if output == 'csv':
-                    out.append(separator.join([(title and '%s "%s"' % (groupid, groups[groupid]['title'])
-                                                or groupid), userid, ]))
+                    if title:
+                        infos = (groupid, groups[groupid]['title'], userid)
+                    else:
+                        infos = (groupid, userid)
+                    out.append(separator.join(infos))
                 else:
                     out.append('&emsp;&emsp;&rArr; %s' % userid)
     return lf.join(out)
