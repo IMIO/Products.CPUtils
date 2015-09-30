@@ -875,27 +875,23 @@ def check_users(self):
         from Products.CMFCore.utils import getToolByName
         from Products.CMFPlone.RegistrationTool import _checkEmail
         utils = getToolByName(self, 'plone_utils')
-        try:
-            lf = '\n'
-            errors = []
-            for member in get_users(self):
-                userid = member.id
-                email = member.getProperty('email')
-                if not email:
-                    errors.append("Le userid '%s' n'a pas d'adresse email" % userid)
+        lf = '\n'
+        errors = []
+        for member in get_users(self):
+            userid = member.id
+            email = member.getProperty('email')
+            if not email:
+                errors.append("Le userid '%s' n'a pas d'adresse email" % userid)
+                continue
+            else:
+                # add the single email address
+                if not utils.validateSingleEmailAddress(email):
+                    errors.append("L'email '%s' du userid '%s' n'est pas valide" % (email, userid))
                     continue
-                else:
-                    # add the single email address
-                    if not utils.validateSingleEmailAddress(email):
-                        errors.append("L'email '%s' du userid '%s' n'est pas valide" % (email, userid))
-                        continue
-                check, msg = _checkEmail(email)
-                if not check:
-                    errors.append("L'email '%s' du userid '%s' a un problème: %s" % (email, userid, msg))
-            return lf.join(errors)
-        except:
-            import ipdb;ipdb.set_trace()
-
+            check, msg = _checkEmail(email)
+            if not check:
+                errors.append("L'email '%s' du userid '%s' a un problème: %s" % (email, userid, msg))
+        return lf.join(errors)
 
 ###############################################################################
 
