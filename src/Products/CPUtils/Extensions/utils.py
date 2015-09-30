@@ -130,7 +130,7 @@ def install(self):
                    'list_portlets', 'list_context_portlets_by_name', 'copy_image_attribute', 'desactivate_base2dom',
                    'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles',
                    'unlock_webdav_objects', 'reftooltoobjects', 'del_bad_portlet', 'clean_utilities_for',
-                   'clean_provides_for', 'add_subject', 'order_folder', 'objects_stats', 'move_item',
+                   'clean_provides_for', 'add_subject', 'order_folder', 'objects_stats', 'list_objects', 'move_item',
                    'export_subscribers_csv', 'move_copy_objects'):
         method_name = 'cputils_' + method
         if not base_hasattr(self, method_name):
@@ -870,28 +870,32 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
 
 
 def check_users(self):
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-    from Products.CMFCore.utils import getToolByName
-    from Products.CMFPlone.RegistrationTool import _checkEmail
-    utils = getToolByName(self, 'plone_utils')
-    lf = '\n'
-    errors = []
-    for member in get_users(self):
-        userid = member.id
-        email = member.getProperty('email')
-        if not email:
-            errors.append("Le userid '%s' n'a pas d'adresse email" % userid)
-            continue
-        else:
-            # add the single email address
-            if not utils.validateSingleEmailAddress(email):
-                errors.append("L'email '%s' du userid '%s' n'est pas valide" % (email, userid))
-                continue
-        check, msg = _checkEmail(email)
-        if not check:
-            errors.append("L'email '%s' du userid '%s' a un problème: %s" % (email, userid, msg))
-    return lf.join(errors)
+        if not check_role(self):
+            return "You must have a manager role to run this script"
+        from Products.CMFCore.utils import getToolByName
+        from Products.CMFPlone.RegistrationTool import _checkEmail
+        utils = getToolByName(self, 'plone_utils')
+        try:
+            lf = '\n'
+            errors = []
+            for member in get_users(self):
+                userid = member.id
+                email = member.getProperty('email')
+                if not email:
+                    errors.append("Le userid '%s' n'a pas d'adresse email" % userid)
+                    continue
+                else:
+                    # add the single email address
+                    if not utils.validateSingleEmailAddress(email):
+                        errors.append("L'email '%s' du userid '%s' n'est pas valide" % (email, userid))
+                        continue
+                check, msg = _checkEmail(email)
+                if not check:
+                    errors.append("L'email '%s' du userid '%s' a un problème: %s" % (email, userid, msg))
+            return lf.join(errors)
+        except:
+            import ipdb;ipdb.set_trace()
+
 
 ###############################################################################
 
@@ -2420,8 +2424,25 @@ def objects_stats(self):
         types[brain.portal_type] += 1
     out = []
     for typ in sorted(types.keys()):
-        out.append("%s: %d" % (typ, types[typ]))
-    return "\n".join(out)
+        out.append("%s: %d (%s)" % (typ, types[typ], "<a href="+self.absolute_url() +
+                                    "/cputils_list_objects?type="+typ+">+</a>"))
+    return "<br/>".join(out)
+
+###############################################################################
+
+
+def list_objects(self, type):
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    portal = self.portal_url.getPortalObject()
+    brains = portal.portal_catalog.searchResults({'portal_type': type})
+    out = []
+    for brain in brains:
+        obj = brain.getObject()
+        url = obj.absolute_url()
+        info = "&nbsp;<a href= " + url + "/cputils_object_info>(more info)</a>"
+        out.append("%s %s %s %s %s %s" % ("<a href= ", url, ">", url, "</a>", info))
+    return "<br/>".join(out)
 
 ###############################################################################
 

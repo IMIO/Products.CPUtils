@@ -13,6 +13,8 @@ Changelog
   [sgeulette]
 - Updated listInstallableProducts for Plone 4.3.4
   [sgeulette]
+- Added method "list_objects" to view all objects path for specific type
+  [boulch]
 
 1.5 (2015-04-21)
 ----------------
