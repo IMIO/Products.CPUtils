@@ -680,7 +680,7 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
 ###############################################################################
 
 
-def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTextPaste=1):
+def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTextPaste=1, scayt=1):
     """
         configure collective.ckeditor with default parameters.
         This method can be called as an external method, with the following parameters: ...?default=1&alluser=0&custom=0
@@ -699,6 +699,11 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
                "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
                "['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter',"
                "'JustifyRight','JustifyBlock'],\n['Table','SpecialChar'],\n'/',\n['Styles','Format'],\n['Maximize', "
+               "'ShowBlocks', 'Source']\n]",
+               'ged':
+               u"[\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
+               "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
+               "['NumberedList','BulletedList'],\n['Table','SpecialChar'],\n['Format'],\n['Maximize', "
                "'ShowBlocks', 'Source']\n]",
                'site':
                u"[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n"
@@ -770,6 +775,10 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
     if forceTextPaste:
         ckp.manage_changeProperties(forcePasteAsPlainText=True)
         out.append("Set forcePasteAsPlainText to True")
+
+    # activate scayt
+    if scayt:
+        ckp.enableScaytOnStartup = True
 
     return '\n'.join(out)
 

@@ -5,6 +5,8 @@ Changelog
 1.6 (unreleased)
 ----------------
 
+- configure_ckeditor: added ged config, added scayt activation
+  [sgeulette]
 - list_users: output users without group
   [sgeulette]
 - Added method to update version in portal_quickinstaller.
