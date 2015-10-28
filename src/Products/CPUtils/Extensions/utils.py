@@ -3013,7 +3013,8 @@ def mark_last_version(self, product=''):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     if not product:
-        return "You must give the parameter product with the product name: mark_last_version?product=Products.Ploneboard"
+        return ("You must give the parameter product with the product name: "
+                "mark_last_version?product=Products.Ploneboard")
     pqi = self.portal_quickinstaller
     try:
         prod = pqi.get(product)
