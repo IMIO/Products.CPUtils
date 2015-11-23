@@ -326,6 +326,68 @@ def listInstallableProducts434(self, skipInstalled=True):
     return res
 
 
+def listInstallableProducts437(self, skipInstalled=True):
+    """List candidate CMF products for installation -> list of dicts
+       with keys:(id,title,hasError,status)
+    """
+    self._init_errors(reset=True)
+
+    # Returns full names with Products. prefix for all packages / products
+    packages = get_packages()
+
+    pids = []
+    for pkg in packages:
+        if not self.isProductInstallable(pkg):
+            continue
+        if pkg.startswith('Products.'):
+            pkg = pkg[9:]
+        pids.append(pkg)
+
+    # Get product list from the extension profiles
+    profile_pids = self.listInstallableProfiles()
+
+    for pp in profile_pids:
+        if pp in pids or pp in packages:
+            continue
+        if not self.isProductInstallable(pp):
+            continue
+        pids.append(pp)
+
+    from Products.CPUtils.__init__ import getQIFilteringInformation
+    (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
+
+    if skipInstalled:
+        installed = [
+            p['id'] for p in self.listInstalledProducts(showHidden=True)
+        ]
+        pids = [r for r in pids if r not in installed]
+
+    res = []
+    for pid in pids:
+        if doFiltering and pid in hiddenProducts and pid not in shownProducts:
+            continue
+        installed_product = self._getOb(pid, None)
+        name = pid
+        profile = self.getInstallProfile(pid)
+        if profile:
+            name = profile['title']
+        record = {'id': pid, 'title': name}
+        if installed_product:
+            record['status'] = installed_product.getStatus()
+            record['hasError'] = installed_product.hasError()
+        else:
+            record['status'] = 'new'
+            record['hasError'] = False
+        res.append(record)
+    res.sort(
+        lambda x, y: cmp(
+            x.get('title', x.get('id', None)),
+            y.get('title', y.get('id', None))
+        )
+    )
+    return res
+
+
 def CallMaxSizeValidator(self, value, *args, **kwargs):
         instance = kwargs.get('instance', None)
         field = kwargs.get('field', None)
@@ -409,6 +471,12 @@ def initialize(context):
             pass
     elif PLONE_VERSION >= '4.3.4':
         QuickInstallerTool.listInstallableProducts = listInstallableProducts434
+        QuickInstallerTool.listInstalledProducts = listInstalledProducts31
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
+        MaxSizeValidator.__call__ = CallMaxSizeValidator
+        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
+    elif PLONE_VERSION >= '4.3.7':
+        QuickInstallerTool.listInstallableProducts = listInstallableProducts437
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
         MaxSizeValidator.__call__ = CallMaxSizeValidator
