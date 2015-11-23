@@ -44,22 +44,15 @@ try:
     from Products.CMFQuickInstallerTool.utils import get_packages
 except:
     pass
-  
-try: # New CMF
-    from Products.CMFCore import permissions as CMFCorePermissions 
-except: # Old CMF
-    from Products.CMFCore import CMFCorePermissions
 
 from Products.CMFCore import DirectoryView
-from Products.CMFPlone.utils import ToolInit
-from Products.Archetypes.atapi import *
-from Products.Archetypes import listTypes
-from Products.Archetypes.utils import capitalize
-from config import *
+#from Products.Archetypes.atapi import *
+#from Products.Archetypes import listTypes
+from config import product_globals, PLONE_VERSION
 
 DirectoryView.registerDirectory('skins', product_globals)
-DirectoryView.registerDirectory('skins/CPUtils',
-                                    product_globals)
+DirectoryView.registerDirectory('skins/CPUtils', product_globals)
+
 
 def getQIFilteringInformation(self):
     from AccessControl.SecurityManagement import getSecurityManager
@@ -78,15 +71,17 @@ def getQIFilteringInformation(self):
         shownProducts += [p.strip() for p in sp]
     return doFiltering, hiddenProducts, shownProducts
 
-def listInstallableProducts25(self,skipInstalled=1):
+
+def listInstallableProducts25(self, skipInstalled=1):
     """List candidate CMF products for
-    installation -> list of dicts with keys:(id,hasError,status)
+    installation -> list of dicts with keys: (id, hasError, status)
     """
     try:
-        from zpi.zope import not_installed, hot_plug
+        from zpi.zope import not_installed
         #print 'Packman support(hotplug) installed'
     except ImportError:
-        def not_installed(s): return []
+        def not_installed(s):
+            return []
 
     # reset the list of broken products
     self.errors = {}
@@ -94,28 +89,29 @@ def listInstallableProducts25(self,skipInstalled=1):
     pids = [pid for pid in pids if self.isProductInstallable(pid)]
 
     if skipInstalled:
-        installed=[p['id'] for p in self.listInstalledProducts(showHidden=1)]
-        pids=[r for r in pids if r not in installed]
+        installed = [p['id'] for p in self.listInstalledProducts(showHidden=1)]
+        pids = [r for r in pids if r not in installed]
 
     from Products.CPUtils.__init__ import getQIFilteringInformation
     (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
 
-    res=[]
+    res = []
     for r in pids:
-        p=self._getOb(r,None)
+        p = self._getOb(r, None)
         if doFiltering and r in hiddenProducts and r not in shownProducts:
             continue
         if p:
-            res.append({'id':r, 'status':p.getStatus(),
-                        'hasError':p.hasError()})
+            res.append({'id': r, 'status': p.getStatus(),
+                        'hasError': p.hasError()})
         else:
-            res.append({'id':r, 'status':'new', 'hasError':0})
-    res.sort(lambda x,y: cmp(x.get('id',None),y.get('id',None)))
+            res.append({'id': r, 'status': 'new', 'hasError': 0})
+    res.sort(lambda x, y: cmp(x.get('id', None), y.get('id', None)))
     return res
+
 
 def listInstalledProducts25(self, showHidden=0):
     """Returns a list of products that are installed -> list of
-    dicts with keys:(id, hasError, status, isLocked, isHidden,
+    dicts with keys: (id, hasError, status, isLocked, isHidden,
     installedVersion)
     """
     pids = [o.id for o in self.objectValues()
@@ -124,22 +120,23 @@ def listInstalledProducts25(self, showHidden=0):
     from Products.CPUtils.__init__ import getQIFilteringInformation
     (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
 
-    res=[]
+    res = []
     for r in pids:
-        p = self._getOb(r,None)
+        p = self._getOb(r, None)
         if doFiltering and r in hiddenProducts and r not in shownProducts:
             continue
-        res.append({'id':r, 'status':p.getStatus(),
-                    'hasError':p.hasError(),
-                    'isLocked':p.isLocked(),
-                    'isHidden':p.isHidden(),
-                    'installedVersion':p.getInstalledVersion()})
-    res.sort(lambda x,y: cmp(x.get('id',None),y.get('id',None)))
+        res.append({'id': r, 'status': p.getStatus(),
+                    'hasError': p.hasError(),
+                    'isLocked': p.isLocked(),
+                    'isHidden': p.isHidden(),
+                    'installedVersion': p.getInstalledVersion()})
+    res.sort(lambda x, y: cmp(x.get('id', None), y.get('id', None)))
     return res
+
 
 def listInstallableProducts31(self, skipInstalled=True):
     """List candidate CMF products for installation -> list of dicts
-       with keys:(id,title,hasError,status)
+       with keys: (id, title, hasError, status)
     """
     # reset the list of broken products
     self.errors = {}
@@ -158,34 +155,34 @@ def listInstallableProducts31(self, skipInstalled=True):
             pids.append(p)
 
     if skipInstalled:
-        installed=[p['id'] for p in self.listInstalledProducts(showHidden=True)]
-        pids=[r for r in pids if r not in installed]
+        installed = [p['id'] for p in self.listInstalledProducts(showHidden=True)]
+        pids = [r for r in pids if r not in installed]
 
     from Products.CPUtils.__init__ import getQIFilteringInformation
     (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
 
-    res=[]
+    res = []
     for r in pids:
         if doFiltering and r in hiddenProducts and r not in shownProducts:
             continue
-        p=self._getOb(r,None)
+        p = self._getOb(r, None)
         name = r
         profile = self.getInstallProfile(r)
         if profile:
             name = profile['title']
         if p:
-            res.append({'id':r, 'title':name, 'status':p.getStatus(),
-                        'hasError':p.hasError()})
+            res.append({'id': r, 'title': name, 'status': p.getStatus(),
+                        'hasError': p.hasError()})
         else:
-            res.append({'id':r, 'title':name,'status':'new', 'hasError':False})
-    res.sort(lambda x,y: cmp(x.get('title', x.get('id', None)),
-                             y.get('title', y.get('id', None))))
+            res.append({'id': r, 'title': name, 'status': 'new', 'hasError': False})
+    res.sort(lambda x, y: cmp(x.get('title', x.get('id', None)),
+                              y.get('title', y.get('id', None))))
     return res
 
 
 def listInstalledProducts31(self, showHidden=False):
     """Returns a list of products that are installed -> list of
-    dicts with keys:(id, title, hasError, status, isLocked, isHidden,
+    dicts with keys: (id, title, hasError, status, isLocked, isHidden,
     installedVersion)
     """
     pids = [o.id for o in self.objectValues()
@@ -195,31 +192,31 @@ def listInstalledProducts31(self, showHidden=False):
     from Products.CPUtils.__init__ import getQIFilteringInformation
     (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
 
-    res=[]
+    res = []
     for r in pids:
         if doFiltering and r in hiddenProducts and r not in shownProducts:
             continue
-        p = self._getOb(r,None)
+        p = self._getOb(r, None)
         name = r
         profile = self.getInstallProfile(r)
         if profile:
             name = profile['title']
 
-        res.append({'id':r,
-                    'title':name,
-                    'status':p.getStatus(),
-                    'hasError':p.hasError(),
-                    'isLocked':p.isLocked(),
-                    'isHidden':p.isHidden(),
-                    'installedVersion':p.getInstalledVersion()})
-    res.sort(lambda x,y: cmp(x.get('title', x.get('id', None)),
-                             y.get('title', y.get('id', None))))
+        res.append({'id': r,
+                    'title': name,
+                    'status': p.getStatus(),
+                    'hasError': p.hasError(),
+                    'isLocked': p.isLocked(),
+                    'isHidden': p.isHidden(),
+                    'installedVersion': p.getInstalledVersion()})
+    res.sort(lambda x, y: cmp(x.get('title', x.get('id', None)),
+                              y.get('title', y.get('id', None))))
     return res
 
 
 def listInstallableProducts40(self, skipInstalled=True):
     """List candidate CMF products for installation -> list of dicts
-       with keys:(id,title,hasError,status)
+       with keys: (id, title, hasError, status)
     """
     # reset the list of broken products
     try:
@@ -249,34 +246,34 @@ def listInstallableProducts40(self, skipInstalled=True):
         pids.append(p)
 
     if skipInstalled:
-        installed=[p['id'] for p in self.listInstalledProducts(showHidden=True)]
-        pids=[r for r in pids if r not in installed]
+        installed = [p['id'] for p in self.listInstalledProducts(showHidden=True)]
+        pids = [r for r in pids if r not in installed]
 
     from Products.CPUtils.__init__ import getQIFilteringInformation
     (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
 
-    res=[]
+    res = []
     for r in pids:
         if doFiltering and r in hiddenProducts and r not in shownProducts:
             continue
-        p=self._getOb(r,None)
+        p = self._getOb(r, None)
         name = r
         profile = self.getInstallProfile(r)
         if profile:
             name = profile['title']
         if p:
-            res.append({'id':r, 'title':name, 'status':p.getStatus(),
-                        'hasError':p.hasError()})
+            res.append({'id': r, 'title': name, 'status': p.getStatus(),
+                        'hasError': p.hasError()})
         else:
-            res.append({'id':r, 'title':name,'status':'new', 'hasError':False})
-    res.sort(lambda x,y: cmp(x.get('title', x.get('id', None)),
-                             y.get('title', y.get('id', None))))
+            res.append({'id': r, 'title': name, 'status': 'new', 'hasError': False})
+    res.sort(lambda x, y: cmp(x.get('title', x.get('id', None)),
+                              y.get('title', y.get('id', None))))
     return res
 
 
 def listInstallableProducts434(self, skipInstalled=True):
     """List candidate CMF products for installation -> list of dicts
-       with keys:(id,title,hasError,status)
+       with keys: (id, title, hasError, status)
     """
     # reset the list of broken products
     if getattr(self, '_v_errors', True):
@@ -325,16 +322,16 @@ def listInstallableProducts434(self, skipInstalled=True):
         else:
             res.append({'id': r, 'title': name, 'status': 'new', 'hasError': False})
     res.sort(lambda x, y: cmp(x.get('title', x.get('id', None)),
-                             y.get('title', y.get('id', None))))
+                              y.get('title', y.get('id', None))))
     return res
 
 
 def CallMaxSizeValidator(self, value, *args, **kwargs):
         instance = kwargs.get('instance', None)
-        field    = kwargs.get('field', None)
-        type_doc = instance.getPortalTypeName().replace(' ','').lower() +'_maxsize'
+        field = kwargs.get('field', None)
+        type_doc = instance.getPortalTypeName().replace(' ', '').lower() + '_maxsize'
         # get max size
-        if kwargs.has_key('maxsize'):
+        if 'maxsize' in kwargs:
             maxsize = kwargs.get('maxsize')
         elif hasattr(aq_base(instance), 'getMaxSizeFor'):
             maxsize = instance.getMaxSizeFor(field.getName())
@@ -352,7 +349,7 @@ def CallMaxSizeValidator(self, value, *args, **kwargs):
         # calculate size
         elif (isinstance(value, FileUpload) or isinstance(value, file) or
               hasattr(aq_base(value), 'tell')):
-            value.seek(0, 2) # eof
+            value.seek(0, 2)  # eof
             size = value.tell()
             value.seek(0)
         else:
@@ -365,14 +362,15 @@ def CallMaxSizeValidator(self, value, *args, **kwargs):
 
         if sizeMB > maxsize:
             msg = _("Validation failed($name: Uploaded data is too large: ${size}MB (max ${max}MB)",
-                    mapping = {
-                        'name' : safe_unicode(self.name),
-                        'size' : safe_unicode("%.3f" % sizeMB),
-                        'max' : safe_unicode("%.3f" % maxsize)
-                        })
+                    mapping={
+                        'name': safe_unicode(self.name),
+                        'size': safe_unicode("%.3f" % sizeMB),
+                        'max': safe_unicode("%.3f" % maxsize)
+                    })
             return recursiveTranslate(msg, **kwargs)
         else:
             return True
+
 
 def initialize(context):
     logger.info("ADDING MONKEY PATCHS !")
@@ -382,34 +380,36 @@ def initialize(context):
     elif PLONE_VERSION.startswith('2.5'):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts25
         QuickInstallerTool.listInstalledProducts = listInstalledProducts25
-        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
     elif PLONE_VERSION.startswith('3.'):
         QuickInstallerTool.listInstallableProducts = listInstallableProducts31
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
-        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
         MaxSizeValidator.__call__ = CallMaxSizeValidator
-        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
+        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
     elif PLONE_VERSION < '4.3.4':
         QuickInstallerTool.listInstallableProducts = listInstallableProducts40
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
-        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
         MaxSizeValidator.__call__ = CallMaxSizeValidator
-        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
+        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
         try:
             #Patching tinymce to load as html in Ploneboard
             from Products.TinyMCE.utility import TinyMCE
             old_getContentType = TinyMCE.getContentType
+
             def getContentType(self, object=None, field=None, fieldname=None):
-                if object is not None and fieldname == 'text' and object.meta_type in ('PloneboardForum', 'PloneboardConversation'):
+                if object is not None and fieldname == 'text' and object.meta_type in ('PloneboardForum',
+                                                                                       'PloneboardConversation'):
                     return 'text/html'
                 return old_getContentType(self, object=object, field=field, fieldname=fieldname)
             #TinyMCE.getContentType = getContentType
-            logger.info("TinyMCE getContentType MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
+            logger.info("TinyMCE getContentType MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
         except:
             pass
     elif PLONE_VERSION >= '4.3.4':
         QuickInstallerTool.listInstallableProducts = listInstallableProducts434
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
-        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)    
+        logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
         MaxSizeValidator.__call__ = CallMaxSizeValidator
-        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!"%PLONE_VERSION)
+        logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
