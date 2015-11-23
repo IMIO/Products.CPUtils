@@ -37,9 +37,9 @@ __docformat__ = 'plaintext'
 # AppConfig.py in your product's root directory. This will be included
 # in this file if found.
 
-try: # New CMF
-    from Products.CMFCore.permissions import setDefaultRoles 
-except ImportError: # Old CMF
+try:  # New CMF
+    from Products.CMFCore.permissions import setDefaultRoles
+except ImportError:  # Old CMF
     from Products.CMFCore.CMFCorePermissions import setDefaultRoles
 
 
@@ -91,7 +91,7 @@ def getPloneVersion():
     # 2.5, 3 version
     if os.path.exists(plonedir):
         for name in ('version.txt', 'VERSION.txt', 'VERSION.TXT'):
-            versionfile = os.path.join(plonedir,name)
+            versionfile = os.path.join(plonedir, name)
             if os.path.exists(versionfile):
                 file = open(versionfile, 'r')
                 data = file.readline()
