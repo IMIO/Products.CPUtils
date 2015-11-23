@@ -182,6 +182,41 @@ def listInstallableProducts31(self, skipInstalled=True):
                              y.get('title', y.get('id', None))))
     return res
 
+
+def listInstalledProducts31(self, showHidden=False):
+    """Returns a list of products that are installed -> list of
+    dicts with keys:(id, title, hasError, status, isLocked, isHidden,
+    installedVersion)
+    """
+    pids = [o.id for o in self.objectValues()
+            if o.isInstalled() and (o.isVisible() or showHidden)]
+    pids = [pid for pid in pids if self.isProductInstallable(pid)]
+
+    from Products.CPUtils.__init__ import getQIFilteringInformation
+    (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
+
+    res=[]
+    for r in pids:
+        if doFiltering and r in hiddenProducts and r not in shownProducts:
+            continue
+        p = self._getOb(r,None)
+        name = r
+        profile = self.getInstallProfile(r)
+        if profile:
+            name = profile['title']
+
+        res.append({'id':r,
+                    'title':name,
+                    'status':p.getStatus(),
+                    'hasError':p.hasError(),
+                    'isLocked':p.isLocked(),
+                    'isHidden':p.isHidden(),
+                    'installedVersion':p.getInstalledVersion()})
+    res.sort(lambda x,y: cmp(x.get('title', x.get('id', None)),
+                             y.get('title', y.get('id', None))))
+    return res
+
+
 def listInstallableProducts40(self, skipInstalled=True):
     """List candidate CMF products for installation -> list of dicts
        with keys:(id,title,hasError,status)
@@ -293,39 +328,6 @@ def listInstallableProducts434(self, skipInstalled=True):
                              y.get('title', y.get('id', None))))
     return res
 
-
-def listInstalledProducts31(self, showHidden=False):
-    """Returns a list of products that are installed -> list of
-    dicts with keys:(id, title, hasError, status, isLocked, isHidden,
-    installedVersion)
-    """
-    pids = [o.id for o in self.objectValues()
-            if o.isInstalled() and (o.isVisible() or showHidden)]
-    pids = [pid for pid in pids if self.isProductInstallable(pid)]
-
-    from Products.CPUtils.__init__ import getQIFilteringInformation
-    (doFiltering, hiddenProducts, shownProducts) = getQIFilteringInformation(self)
-
-    res=[]
-    for r in pids:
-        if doFiltering and r in hiddenProducts and r not in shownProducts:
-            continue
-        p = self._getOb(r,None)
-        name = r
-        profile = self.getInstallProfile(r)
-        if profile:
-            name = profile['title']
-        
-        res.append({'id':r,
-                    'title':name,
-                    'status':p.getStatus(),
-                    'hasError':p.hasError(),
-                    'isLocked':p.isLocked(),
-                    'isHidden':p.isHidden(),
-                    'installedVersion':p.getInstalledVersion()})
-    res.sort(lambda x,y: cmp(x.get('title', x.get('id', None)),
-                             y.get('title', y.get('id', None))))
-    return res
 
 def CallMaxSizeValidator(self, value, *args, **kwargs):
         instance = kwargs.get('instance', None)
