@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.6 (unreleased)
+1.6 (2015-11-24)
 ----------------
 
 - configure_ckeditor: added ged config, added scayt activation
