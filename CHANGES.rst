@@ -13,7 +13,7 @@ Changelog
   [sgeulette]
 - Added safe_encode method. Improved list_users
   [sgeulette]
-- Updated listInstallableProducts for Plone 4.3.4
+- Updated listInstallableProducts for Plone 4.3.4 and Plone 4.3.7
   [sgeulette]
 - Added method "list_objects" to view all objects path for specific type
   [boulch]
