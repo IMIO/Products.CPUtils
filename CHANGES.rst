@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.7 (unreleased)
+1.7 (2016-02-16)
 ----------------
 
 - configure_ckeditor : added buttons 'Link', 'Unlink' and 'Image' to the
