@@ -5,8 +5,9 @@ Changelog
 1.7 (unreleased)
 ----------------
 
-- Nothing changed yet.
-
+- configure_ckeditor : added buttons 'Link', 'Unlink' and 'Image' to the
+  default CKeditor custom toolbar used for 'plonemeeting'.
+  [gbastien]
 
 1.6 (2015-11-24)
 ----------------

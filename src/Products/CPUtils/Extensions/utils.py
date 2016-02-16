@@ -698,8 +698,8 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
                u"[\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
                "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
                "['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter',"
-               "'JustifyRight','JustifyBlock'],\n['Table','SpecialChar'],\n'/',\n['Styles','Format'],\n['Maximize', "
-               "'ShowBlocks', 'Source']\n]",
+               "'JustifyRight','JustifyBlock'],\n['Table','SpecialChar','Link','Unlink','Image'],\n'/',\n"
+               "['Styles','Format'],\n['Maximize','ShowBlocks', 'Source']\n]",
                'ged':
                u"[\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
                "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
