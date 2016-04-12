@@ -2986,6 +2986,8 @@ def reset_passwords(self, not_for_ids='siteadmin', dochange=''):
         out.append("\nReset not really done")
     return '\n'.join(out)
 
+###############################################################################
+
 
 def reindex_relations(self):
     """
@@ -3004,6 +3006,8 @@ def reindex_relations(self):
     for brain in brains:
         obj = brain.getObject()
         updateRelations(obj, None)
+
+###############################################################################
 
 
 def mark_last_version(self, product=''):
@@ -3027,3 +3031,34 @@ def mark_last_version(self, product=''):
             return "Product version in pqi already at last: '%s' '%s'" % (product, i_v)
     except AttributeError, e:
         return "Cannot get product '%s' from portal_quickinstaller: %s" % (product, e)
+
+
+###############################################################################
+
+
+def resources_order(self, tool='css', output='xml'):
+    """
+        Print resources order:
+        - with output type: 'list', 'xml' (default)
+        - with tool: 'css' (default), 'js'
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    portal = self.portal_url.getPortalObject()
+    out = []
+    out.append(resources_order.__doc__.strip('\n '))
+    out.append("Used parameters: tool='%s', output='%s'\n" % (tool, output))
+    tools = {'css': 'portal_css', 'js': 'portal_javascripts'}
+    if tool not in tools:
+        out.append('Bad parameter value for tool')
+        return "\n".join(out)
+
+    last = ''
+    for i, rsc in enumerate(getattr(portal, tools[tool]).getResources()):
+        if output == 'list':
+            out.append("%02d: %s" % (i, rsc.getId()))
+        elif output == 'xml':
+            out.append('<stylesheet id="%s" insert-after="%s" />\n' % (rsc.getId(), last))
+        last = rsc.getId()
+
+    return "\n".join(out)
