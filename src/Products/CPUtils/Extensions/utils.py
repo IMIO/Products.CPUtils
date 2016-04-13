@@ -3069,7 +3069,7 @@ def resources_order(self, tool='css', output='xml'):
     last = ''
     for i, rsc in enumerate(getattr(portal, tools[tool]).getResources()):
         if output == 'list':
-            out.append("%02d: %s" % (i, rsc.getId()))
+            out.append("%02d: %s: %s" % (i, rsc.getEnabled() and 'O' or '-', rsc.getId()))
         elif output == 'xml':
             out.append('<stylesheet id="%s" insert-after="%s" />\n' % (rsc.getId(), last))
         last = rsc.getId()
