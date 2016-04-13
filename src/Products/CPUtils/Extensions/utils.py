@@ -756,6 +756,19 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
         sp.manage_changeProperties(available_editors=availables)
         out.append("Removed Tiny from available editors")
 
+        def disable_resource(tool, names=[]):
+            changes = False
+            for name in names:
+                rsc = tool.getResource(name)
+                if rsc.getEnabled():
+                    changes = True
+                    rsc.setEnabled(False)
+            if changes:
+                tool.cookResources()
+
+        disable_resource(portal.portal_css, names=['++resource++tinymce.stylesheets/tinymce.css'])
+        disable_resource(portal.portal_javascripts, names=['jquery.tinymce.js', 'tiny_mce_gzip.js'])
+
     #changing editor for all users
     if allusers:
         change_user_properties(portal, kw='wysiwyg_editor:CKeditor', dochange=1)
