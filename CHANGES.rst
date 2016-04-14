@@ -5,8 +5,10 @@ Changelog
 1.8 (unreleased)
 ----------------
 
-- Nothing changed yet.
-
+- resources_order : function to list resources and output order.
+  [sgeulette]
+- configure_ckeditor : disable tinymce resources.
+  [sgeulette]
 
 1.7 (2016-02-16)
 ----------------
@@ -67,9 +69,9 @@ Changelog
 1.2 (2014-09-01)
 ----------------
 
-- Plone 4 compatibility Plone version detection 
+- Plone 4 compatibility Plone version detection
   [sgeulette]
-- Corrected and improved views listing method 
+- Corrected and improved views listing method
   [sgeulette]
 - Improved users and groups migration method
   [sgeulette]
@@ -87,4 +89,3 @@ Changelog
 
 - First release.
   [sgeulette]
-
