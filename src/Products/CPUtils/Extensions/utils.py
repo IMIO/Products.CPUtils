@@ -3075,3 +3075,25 @@ def resources_order(self, tool='css', output='xml'):
         last = rsc.getId()
 
     return "\n".join(out)
+
+
+###############################################################################
+
+
+def load_site(self, duration='15'):
+    """
+        Load the site during a specified duration
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    import time
+    portal = self.portal_url.getPortalObject()
+    infinity = True
+    t_end = time.time() + int(duration)
+    while infinity:
+        for brain in portal.portal_catalog():
+            obj = brain.getObject()
+            obj
+            if time.time() > t_end:
+                infinity = False
+                break

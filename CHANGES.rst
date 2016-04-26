@@ -9,6 +9,8 @@ Changelog
   [sgeulette]
 - configure_ckeditor : disable tinymce resources.
   [sgeulette]
+- load_site : load site during specified time
+  [sgeulette]
 
 1.7 (2016-02-16)
 ----------------
