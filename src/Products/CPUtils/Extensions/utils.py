@@ -3061,17 +3061,18 @@ def resources_order(self, tool='css', output='xml'):
     out = []
     out.append(resources_order.__doc__.strip('\n '))
     out.append("Used parameters: tool='%s', output='%s'\n" % (tool, output))
-    tools = {'css': 'portal_css', 'js': 'portal_javascripts'}
+    tools = {'css': {'n': 'portal_css', 'tag': 'stylesheet'},
+             'js': {'n': 'portal_javascripts', 'tag': 'javascript'}}
     if tool not in tools:
         out.append('Bad parameter value for tool')
         return "\n".join(out)
 
     last = ''
-    for i, rsc in enumerate(getattr(portal, tools[tool]).getResources()):
+    for i, rsc in enumerate(getattr(portal, tools[tool]['n']).getResources()):
         if output == 'list':
             out.append("%02d: %s: %s" % (i, rsc.getEnabled() and 'O' or '-', rsc.getId()))
         elif output == 'xml':
-            out.append('<stylesheet id="%s" insert-after="%s" />\n' % (rsc.getId(), last))
+            out.append('<%s id="%s" insert-after="%s" />\n' % (tools[tool]['tag'], rsc.getId(), last))
         last = rsc.getId()
 
     return "\n".join(out)
