@@ -2436,10 +2436,12 @@ def objects_stats(self, csv=''):
     if not check_role(self):
         return "You must have a manager role to run this script"
     sep = "<br/>"
+    out = []
     as_csv = False
     if csv not in ('', '0', 'False', 'false'):
         sep = '\n'
         as_csv = True
+        out.append("Type\tNumber\tSize")
     portal = self.portal_url.getPortalObject()
     brains = portal.portal_catalog.searchResults()
     types = {}
@@ -2448,10 +2450,9 @@ def objects_stats(self, csv=''):
             types[brain.portal_type] = {'nb': 0, 'size': 0}
         types[brain.portal_type]['nb'] += 1
         types[brain.portal_type]['size'] += tobytes(brain.getObjSize or '0 KB')
-    out = []
     for typ in sorted(types.keys()):
         if as_csv:
-            out.append("%s,%d,%s" % (typ, types[typ]['nb'], fileSize(types[typ]['size'], as_size='M')))
+            out.append("%s\t%d\t%s" % (typ, types[typ]['nb'], fileSize(types[typ]['size'], as_size='M')))
         else:
             out.append("%s: %d, %s (%s)" % (typ, types[typ]['nb'], fileSize(types[typ]['size'], as_size='M'),
                                             '<a href="%s/cputils_list_objects?type=%s">+</a>' %
