@@ -2452,7 +2452,7 @@ def objects_stats(self, csv=''):
     if csv not in ('', '0', 'False', 'false'):
         sep = '\n'
         as_csv = True
-        out.append("Type\tNumber\tSize")
+        out.append("Type\tNumber\tSize (Mb)")
     portal = self.portal_url.getPortalObject()
     brains = portal.portal_catalog.searchResults()
     types = {}
