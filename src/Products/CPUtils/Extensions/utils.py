@@ -31,15 +31,26 @@ def check_zope_admin():
     return False
 
 
-def fileSize(nb, as_size=''):
+def fileSize(nb, as_size='', decimal='', rm_sz=False):
+    """
+        Convert bytes nb in formatted string.
+        as_size : force size k, M, G or T
+        decimal : replace . decimal by given one
+        rm_sz : remove letter size
+    """
     sizeletter = {1: 'k', 2: 'M', 3: 'G', 4: 'T'}
     if as_size and as_size not in sizeletter.values():
         as_size = ''
+    if rm_sz and not as_size:
+        rm_sz = False
     for x in range(1, 4):
         quot = nb // 1024 ** x
         if as_size == sizeletter[x] or (not as_size and quot < 1024):
             break
-    return "%.1f%s" % (float(nb) / 1024 ** x, sizeletter[x])
+    res = "%.1f%s" % (float(nb) / 1024 ** x, (not rm_sz and sizeletter[x] or ''))
+    if decimal:
+        return res.replace('.', decimal)
+    return res
 
 
 def tobytes(objsize):
@@ -2452,7 +2463,8 @@ def objects_stats(self, csv=''):
         types[brain.portal_type]['size'] += tobytes(brain.getObjSize or '0 KB')
     for typ in sorted(types.keys()):
         if as_csv:
-            out.append("%s\t%d\t%s" % (typ, types[typ]['nb'], fileSize(types[typ]['size'], as_size='M')))
+            out.append("%s\t%d\t%s" % (typ, types[typ]['nb'], fileSize(types[typ]['size'], as_size='M', decimal=',',
+                                                                       rm_sz=True)))
         else:
             out.append("%s: %d, %s (%s)" % (typ, types[typ]['nb'], fileSize(types[typ]['size'], as_size='M'),
                                             '<a href="%s/cputils_list_objects?type=%s">+</a>' %
