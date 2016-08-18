@@ -11,6 +11,10 @@ Changelog
   [sgeulette]
 - load_site : load site during specified time
   [sgeulette]
+- objects_stats : output as csv
+  [sgeulette]
+- fileSize : force format
+  [sgeulette]
 
 1.7 (2016-02-16)
 ----------------

@@ -31,11 +31,13 @@ def check_zope_admin():
     return False
 
 
-def fileSize(nb):
+def fileSize(nb, as_size=''):
     sizeletter = {1: 'k', 2: 'M', 3: 'G', 4: 'T'}
+    if as_size and as_size not in sizeletter.values():
+        as_size = ''
     for x in range(1, 4):
         quot = nb // 1024 ** x
-        if quot < 1024:
+        if as_size == sizeletter[x] or (not as_size and quot < 1024):
             break
     return "%.1f%s" % (float(nb) / 1024 ** x, sizeletter[x])
 
@@ -2430,21 +2432,31 @@ def unlock_webdav_objects(self, dochange=''):
 ###############################################################################
 
 
-def objects_stats(self):
+def objects_stats(self, csv=''):
     if not check_role(self):
         return "You must have a manager role to run this script"
+    sep = "<br/>"
+    as_csv = False
+    if csv not in ('', '0', 'False', 'false'):
+        sep = '\n'
+        as_csv = True
     portal = self.portal_url.getPortalObject()
     brains = portal.portal_catalog.searchResults()
     types = {}
     for brain in brains:
         if brain.portal_type not in types:
-            types[brain.portal_type] = 0
-        types[brain.portal_type] += 1
+            types[brain.portal_type] = {'nb': 0, 'size': 0}
+        types[brain.portal_type]['nb'] += 1
+        types[brain.portal_type]['size'] += tobytes(brain.getObjSize or '0 KB')
     out = []
     for typ in sorted(types.keys()):
-        out.append("%s: %d (%s)" % (typ, types[typ], "<a href="+self.absolute_url() +
-                                    "/cputils_list_objects?type="+typ+">+</a>"))
-    return "<br/>".join(out)
+        if as_csv:
+            out.append("%s,%d,%s" % (typ, types[typ]['nb'], fileSize(types[typ]['size'], as_size='M')))
+        else:
+            out.append("%s: %d, %s (%s)" % (typ, types[typ]['nb'], fileSize(types[typ]['size'], as_size='M'),
+                                            '<a href="%s/cputils_list_objects?type=%s">+</a>' %
+                                            (self.absolute_url(), typ)))
+    return sep.join(out)
 
 ###############################################################################
 
