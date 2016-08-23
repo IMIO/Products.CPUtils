@@ -15,6 +15,10 @@ Changelog
   [sgeulette]
 - fileSize : force format
   [sgeulette]
+- dv_conversion : function to list documentviewer stats or do conversion
+  [sgeulette]
+- dv_images_size : return documentviewer blobs information
+  [sgeulette]
 
 1.7 (2016-02-16)
 ----------------

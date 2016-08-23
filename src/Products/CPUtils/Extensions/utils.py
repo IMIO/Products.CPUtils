@@ -3123,3 +3123,78 @@ def load_site(self, duration='15'):
             if time.time() > t_end:
                 infinity = False
                 break
+
+
+###############################################################################
+
+
+def dv_images_size(self):
+    """
+        Return size of documentviewer files
+    """
+    from zope.annotation.interfaces import IAnnotations
+    from plone.app.blob.utils import openBlob
+    import os
+    sizes = {'large': 0, 'normal': 0, 'small': 0, 'text': 0}
+    annot = IAnnotations(self).get('collective.documentviewer', '')
+    if not annot or not annot['successfully_converted'] or not annot.get('blob_files', None):
+        return sizes
+    files = annot.get('blob_files', None)
+    keys = files.keys()
+    iformat = annot['pdf_image_format']
+    for name in sizes:
+        for page in range(1, annot['num_pages']+1):
+            img = '%s/dump_%d.%s' % (name, page, (name != 'text' and iformat or 'txt'))
+            if img in keys:
+                blob = files[img]
+                blobfi = openBlob(blob)
+                sizes[name] += os.fstat(blobfi.fileno()).st_size
+                blobfi.close()
+    sizes['fmt'] = iformat
+    sizes['pages'] = annot['num_pages']
+    return sizes
+
+
+###############################################################################
+
+
+def dv_conversion(self, pt='dmsmainfile', convert=''):
+    """
+        Convert pdf files into document viewer images
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    out = []
+    out.append("call the script followed by needed parameters:")
+    out.append("-> pt=portal_type to search (default dmsmainfile)")
+    out.append("-> convert=1")
+    try:
+        from collective.documentviewer.convert import runConversion
+    except ImportError:
+        out.append("collective.documentviewer not found")
+        return '\n'.join(out)
+    change = False
+    if convert not in ('', '0', 'False', 'false'):
+        change = True
+    brains = self.portal_catalog(portal_type=pt)
+    bl = len(brains)
+    out.append("Searching portal_type '%s': found %d objects" % (pt, bl))
+    portal_path = self.portal_url.getPortalPath()
+    ppl = len(portal_path)
+    for brain in brains:
+        obj = brain.getObject()
+        if change:
+            ret = runConversion(obj)
+            out.append('%s,%d,%s' % (brain.getPath()[ppl:], tobytes(brain.getObjSize), ret))
+        else:
+            sizes = dv_images_size(obj)
+            out.append('%s,%d,%d,%d,%d,%d,%s,%s' % (brain.getPath()[ppl:], tobytes(brain.getObjSize), sizes['large'],
+                                                    sizes['normal'], sizes['small'], sizes['text'],
+                                                    sizes.get('fmt', ''), sizes.get('pages', '')))
+    if change:
+        out.insert(4, '\nFile,File size,Conversion status')
+    else:
+        out.insert(4, "\nFile,File size,Large size,Normal size,Small size,Text size,Format,Pages")
+        out.append('TOTAL,=somme(B2:B{0}),=somme(C2:C{0}),=somme(D2:D{0}),=somme(E2:E{0}),=somme(F2:F{0}),,'
+                   '=somme(H2:H{0})'.format(bl+1))
+    return '\n'.join(out)
