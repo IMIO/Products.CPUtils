@@ -3173,6 +3173,10 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
     except ImportError:
         out.append("collective.documentviewer not found")
         return '\n'.join(out)
+    from datetime import datetime
+    start = datetime(1973, 02, 12).now()
+    print "Starting dv_conversion at %s" % start
+    out.append("Starting dv_conversion at %s" % start)
     change = False
     if convert not in ('', '0', 'False', 'false'):
         change = True
@@ -3197,4 +3201,8 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
         out.insert(4, "\nFile,File size,Large size,Normal size,Small size,Text size,Format,Pages")
         out.append('TOTAL,=somme(B2:B{0}),=somme(C2:C{0}),=somme(D2:D{0}),=somme(E2:E{0}),=somme(F2:F{0}),,'
                    '=somme(H2:H{0})'.format(bl+1))
+    end = datetime(1973, 02, 12).now()
+    delta = end - start
+    print "Finishing dv_conversion, duration %s" % delta
+    out.append("Finishing dv_conversion, duration %s" % delta)
     return '\n'.join(out)
