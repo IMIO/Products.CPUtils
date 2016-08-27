@@ -3185,8 +3185,10 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
     out.append("Searching portal_type '%s': found %d objects" % (pt, bl))
     portal_path = self.portal_url.getPortalPath()
     ppl = len(portal_path)
-    for brain in brains:
+    for i, brain in enumerate(brains):
         obj = brain.getObject()
+        if change and not i % 1000:
+            print "dv_conversion: treating %d" % i
         if change:
             ret = runConversion(obj)
             out.append('%s,%d,%s' % (brain.getPath()[ppl:], tobytes(brain.getObjSize), ret))
@@ -3196,9 +3198,9 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
                                                     sizes['normal'], sizes['small'], sizes['text'],
                                                     sizes.get('fmt', ''), sizes.get('pages', '')))
     if change:
-        out.insert(4, '\nFile,File size,Conversion status')
+        out.insert(5, '\nFile,File size,Conversion status')
     else:
-        out.insert(4, "\nFile,File size,Large size,Normal size,Small size,Text size,Format,Pages")
+        out.insert(5, "\nFile,File size,Large size,Normal size,Small size,Text size,Format,Pages")
         out.append('TOTAL,=somme(B2:B{0}),=somme(C2:C{0}),=somme(D2:D{0}),=somme(E2:E{0}),=somme(F2:F{0}),,'
                    '=somme(H2:H{0})'.format(bl+1))
     end = datetime(1973, 02, 12).now()
