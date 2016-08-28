@@ -3175,7 +3175,9 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
         return '\n'.join(out)
     from datetime import datetime
     start = datetime(1973, 02, 12).now()
-    print "Starting dv_conversion at %s" % start
+    import logging
+    logger = logging.getLogger('CPUtils dv_conversion')
+    logger.info("Starting dv_conversion at %s" % start)
     out.append("Starting dv_conversion at %s" % start)
     change = False
     if convert not in ('', '0', 'False', 'false'):
@@ -3188,7 +3190,7 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
     for i, brain in enumerate(brains):
         obj = brain.getObject()
         if change and not i % 1000:
-            print "dv_conversion: treating %d" % i
+            logger.info("dv_conversion: treating %d" % i)
         if change:
             ret = runConversion(obj)
             out.append('%s,%d,%s' % (brain.getPath()[ppl:], tobytes(brain.getObjSize), ret))
@@ -3205,6 +3207,6 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
                    '=somme(H2:H{0})'.format(bl+1))
     end = datetime(1973, 02, 12).now()
     delta = end - start
-    print "Finishing dv_conversion, duration %s" % delta
+    logger.info("Finishing dv_conversion, duration %s" % delta)
     out.append("Finishing dv_conversion, duration %s" % delta)
     return '\n'.join(out)
