@@ -137,14 +137,19 @@ def install(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     methods = []
-    for method in ('cpdb', 'object_info', 'audit_catalog', 'change_user_properties', 'configure_ckeditor',
-                   'list_users', 'store_user_properties', 'load_user_properties', 'recreate_users_groups',
-                   'sync_properties', 'send_adminMail', 'install_plone_product', 'change_authentication_plugins',
-                   'list_portlets', 'list_context_portlets_by_name', 'copy_image_attribute', 'desactivate_base2dom',
-                   'rename_long_ids', 'list_newsletter_users', 'zmi', 'list_used_views', 'list_local_roles',
-                   'unlock_webdav_objects', 'reftooltoobjects', 'del_bad_portlet', 'clean_utilities_for',
-                   'clean_provides_for', 'add_subject', 'order_folder', 'objects_stats', 'list_objects', 'move_item',
-                   'export_subscribers_csv', 'move_copy_objects', 'resources_order'):
+    for method in ('add_subject', 'audit_catalog', 'change_authentication_plugins',
+                   'change_user_properties', 'clean_provides_for', 'clean_utilities_for',
+                   'configure_ckeditor', 'copy_image_attribute', 'cpdb',
+                   'del_bad_portlet', 'desactivate_base2dom', 'export_subscribers_csv',
+                   'install_plone_product', 'list_context_portlets_by_name', 'list_local_roles',
+                   'list_newsletter_users', 'list_objects', 'list_portlets',
+                   'list_used_views', 'list_users', 'load_user_properties',
+                   'move_copy_objects', 'move_item', 'object_info',
+                   'objects_stats', 'order_folder', 'recreate_users_groups',
+                   'reftooltoobjects', 'removeStep' 'rename_long_ids',
+                   'resources_order', 'send_adminMail', 'store_user_properties',
+                   'sync_properties', 'unlock_webdav_objects', 'zmi'
+                   ):
         method_name = 'cputils_' + method
         if not base_hasattr(self, method_name):
             manage_addExternalMethod(self, method_name, '', 'CPUtils.utils', method)
