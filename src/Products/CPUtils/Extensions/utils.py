@@ -146,7 +146,7 @@ def install(self):
                    'list_used_views', 'list_users', 'load_user_properties',
                    'move_copy_objects', 'move_item', 'object_info',
                    'objects_stats', 'order_folder', 'recreate_users_groups',
-                   'reftooltoobjects', 'removeStep' 'rename_long_ids',
+                   'reftooltoobjects', 'removeStep', 'rename_long_ids',
                    'resources_order', 'send_adminMail', 'store_user_properties',
                    'sync_properties', 'unlock_webdav_objects', 'zmi'
                    ):
