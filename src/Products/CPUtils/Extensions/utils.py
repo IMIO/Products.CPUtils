@@ -3215,3 +3215,21 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
     logger.info("Finishing dv_conversion, duration %s" % delta)
     out.append("Finishing dv_conversion, duration %s" % delta)
     return '\n'.join(out)
+    
+    
+###############################################################################
+
+
+def remove_empty_related_items(self):
+    """
+        Convert pdf files into document viewer images
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    old_related = len(self.relatedItems)
+    self.relatedItems = [rel for rel in self.relatedItems if not rel.isBroken()]
+    new_related = len(self.relatedItems)
+    import transaction
+    transaction.commit()
+    return "This object has now {0} related items (before: {1}".format(new_related, old_related)
+    
