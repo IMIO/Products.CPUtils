@@ -3222,7 +3222,7 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
 
 def remove_empty_related_items(self):
     """
-        Convert pdf files into document viewer images
+        Remove related items which do not exists anymore (bugs with plone.app.contenttypes on Plone 4.3)
     """
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
