@@ -139,7 +139,7 @@ def install(self):
     methods = []
     for method in ('add_subject', 'audit_catalog', 'change_authentication_plugins',
                    'change_user_properties', 'clean_provides_for', 'clean_utilities_for',
-                   'configure_ckeditor', 'copy_image_attribute', 'cpdb',
+                   'configure_ckeditor', 'copy_image_attribute', 'cpdb', 'creators',
                    'del_bad_portlet', 'desactivate_base2dom', 'export_subscribers_csv',
                    'install_plone_product', 'list_context_portlets_by_name', 'list_local_roles',
                    'list_newsletter_users', 'list_objects', 'list_portlets',
@@ -3215,8 +3215,7 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
     logger.info("Finishing dv_conversion, duration %s" % delta)
     out.append("Finishing dv_conversion, duration %s" % delta)
     return '\n'.join(out)
-    
-    
+
 ###############################################################################
 
 
@@ -3232,4 +3231,73 @@ def remove_empty_related_items(self):
     import transaction
     transaction.commit()
     return "This object has now {0} related items (before: {1}".format(new_related, old_related)
-    
+
+###############################################################################
+
+
+def creators(self, value='', replace='1', add='-1', recursive='', dochange=''):
+    """
+        Change creators metadata.
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    from Products.CMFPlone.utils import base_hasattr
+
+    out = ['<strong>Creators change</strong>']
+    out.append("You can/must call the script with following parameters:")
+    out.append("-> value='' : creator name. Mandatory param")
+    out.append("-> replace='1' : if not empty, replace creators value. Default=1")
+    out.append("-> add='0' : index insertion value in creators list. Default=0")
+    out.append("-> recursive=''  : do it recursively. Default=empty")
+    out.append("-> dochange=''  : apply changes. Default=empty")
+    out.append("ie. cputils_creators?value=sgeulette&replace=&add=0")
+    out.append('')
+    sep = '\n<br />'
+    users = get_users(self, obj=False)
+    if not value:
+        out.append('!! value is mandatory')
+        return sep.join(out)
+    values = [v.strip() for v in value.split(',')]
+    for val in values:
+        if val not in users:
+            out.append("!! value '%s' is not a user" % val)
+            return sep.join(out)
+    change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        change = True
+    new_i = int(add)
+
+    def set_creators(obj):
+        if not base_hasattr(obj, 'Creators'):
+            return
+        cur_val = list(obj.Creators())
+        mod = False
+        if replace == '1':
+            if cur_val != values:
+                cur_val = values
+                mod = True
+        else:
+            for val in reversed(values):
+                if val in cur_val:
+                    i = cur_val.index(val)
+                    if i == new_i or (new_i >= len(cur_val) - 1 and i == len(cur_val) - 1):
+                        continue  # right place
+                    else:
+                        cur_val.remove(val)
+                mod = True
+                cur_val.insert(new_i, val)
+        if mod:
+            out.append("New val set '%s' for <a href='%s'>%s</a>" % (cur_val, obj.absolute_url(), obj.Title()))
+            if change:
+                obj.setCreators(tuple(cur_val))
+                obj.reindexObject(['Creator', 'listCreators'])
+        else:
+            out.append("Old val kept '%s' for <a href='%s'>%s</a>" % (cur_val, obj.absolute_url(), obj.Title()))
+
+    set_creators(self)
+    if recursive:
+        pc = self.portal_catalog
+        for brain in pc(path={"query": '/'.join(self.getPhysicalPath()), "depth": 2}, sort_on='path'):
+            set_creators(brain._unrestrictedGetObject())
+
+    return sep.join(out)

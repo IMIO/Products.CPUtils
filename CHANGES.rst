@@ -19,6 +19,10 @@ Changelog
   [sgeulette]
 - dv_images_size : return documentviewer blobs information
   [sgeulette]
+- remove_empty_related_items : remove broken related items
+  [bsuttor]
+- creators : change recursively creators
+  [sgeulette]
 
 1.7 (2016-02-16)
 ----------------
