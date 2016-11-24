@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.8 (unreleased)
+1.8 (2016-11-24)
 ----------------
 
 - configure_ckeditor : added buttons 'FontSize', 'NbSpace' and 'NbHyphen' and
