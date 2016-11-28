@@ -2,9 +2,19 @@ Changelog
 =========
 
 
-1.8 (unreleased)
+1.9 (unreleased)
 ----------------
 
+- Nothing changed yet.
+
+
+1.8 (2016-11-24)
+----------------
+
+- configure_ckeditor : added buttons 'FontSize', 'NbSpace' and 'NbHyphen' and
+  removed button 'Blockquote', from the default CKeditor custom toolbar used
+  for 'plonemeeting'.
+  [gbastien]
 - resources_order : function to list resources and output order.
   [sgeulette]
 - configure_ckeditor : disable tinymce resources.
