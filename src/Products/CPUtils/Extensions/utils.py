@@ -3294,10 +3294,10 @@ def creators(self, value='', replace='1', add='-1', recursive='', dochange=''):
         else:
             out.append("Old val kept '%s' for <a href='%s'>%s</a>" % (cur_val, obj.absolute_url(), obj.Title()))
 
-    set_creators(self)
     if recursive:
         pc = self.portal_catalog
         for brain in pc(path={"query": '/'.join(self.getPhysicalPath()), "depth": 2}, sort_on='path'):
             set_creators(brain._unrestrictedGetObject())
-
+    else:
+        set_creators(self)
     return sep.join(out)
