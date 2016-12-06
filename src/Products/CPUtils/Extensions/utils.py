@@ -1328,7 +1328,7 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
 ###############################################################################
 
 
-def correct_pam_language(self, default='', search='all', onlycurrentfolder=0, dochange='', filter=0,
+def correct_pam_language(self, default='', search='all', onlycurrentfolder='0', dochange='', filter=0,
                          avoidedlangfolders=''):
     """
         manage language objects in Plone 4

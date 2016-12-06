@@ -5,8 +5,8 @@ Changelog
 1.9 (unreleased)
 ----------------
 
-- Nothing changed yet.
-
+- Corrected default value.
+  [sgeulette]
 
 1.8 (2016-11-24)
 ----------------
