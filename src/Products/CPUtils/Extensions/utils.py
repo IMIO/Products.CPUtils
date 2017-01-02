@@ -3307,3 +3307,49 @@ def creators(self, value='', replace='1', add='-1', recursive='', dochange=''):
     else:
         set_creators(self)
     return sep.join(out)
+
+
+###############################################################################
+
+
+def change_uuid(self, recursive='', dochange=''):
+    """
+        Change uuid values.
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    from zope.component import getUtility
+    from Products.CMFPlone.utils import base_hasattr
+    from plone.uuid.interfaces import IUUIDGenerator, ATTRIBUTE_NAME, IUUID
+    generator = getUtility(IUUIDGenerator)
+
+    out = ['<strong>Creators change</strong>']
+    out.append("You can/must call the script with following parameters:")
+    out.append("-> recursive=''  : do it recursively. Default=empty")
+    out.append("-> dochange=''  : apply changes. Default=empty")
+    out.append("ie. cputils_change_uuid?recursive=1")
+    out.append('')
+    sep = '\n<br />'
+
+    change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        change = True
+
+    def set_uuid(obj):
+        new_uuid = generator()
+        out.append("%s, old='%s', new='%s'" % ('/'.join(obj.getPhysicalPath()), IUUID(obj), new_uuid))
+        if change:
+            if base_hasattr(obj, ATTRIBUTE_NAME):
+                setattr(obj, ATTRIBUTE_NAME, new_uuid)
+            else:
+                obj._setUID(new_uuid)
+            obj.reindexObject(idxs=['UID'])
+
+    if recursive:
+        pc = self.portal_catalog
+        for brain in pc(path='/'.join(self.getPhysicalPath()), sort_on='path'):
+            set_uuid(brain._unrestrictedGetObject())
+    else:
+        set_uuid(self)
+
+    return sep.join(out)

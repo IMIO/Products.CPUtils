@@ -7,6 +7,8 @@ Changelog
 
 - Corrected default value.
   [sgeulette]
+- Added method to change UID (after zmi import by example).
+  [sgeulette]
 
 1.8 (2016-11-24)
 ----------------
