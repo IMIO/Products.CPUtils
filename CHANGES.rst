@@ -9,6 +9,8 @@ Changelog
   [sgeulette]
 - Added method to change UID (after zmi import by example).
   [sgeulette]
+- Added Link and Unlink in ckeditor config to configure correctly messagesviewlet
+  [sgeulette]
 
 1.8 (2016-11-24)
 ----------------
