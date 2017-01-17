@@ -5,8 +5,8 @@ Changelog
 1.10 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Added correct_intids (Correct intids key references after a zodb change: mount point to main).
+  [sgeulette]
 
 1.9 (2017-01-17)
 ----------------

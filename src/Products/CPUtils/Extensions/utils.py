@@ -3353,3 +3353,41 @@ def change_uuid(self, recursive='', dochange=''):
         set_uuid(self)
 
     return sep.join(out)
+
+
+###############################################################################
+
+
+def correct_intids(self, dochange=''):
+    """
+        Correct intids key references after a zodb change: mount point to main
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    from zope.component import getUtility
+    from zope.intid.interfaces import IIntIds
+    from zope.keyreference.interfaces import IKeyReference
+    change = False
+    if dochange not in ('', '0', 'False', 'false'):
+        change = True
+    intids = getUtility(IIntIds)
+    items = intids.items()
+    ilen = len(intids.ids)
+    rlen = len(intids.refs)
+    wlen = len(items)
+    errors = 0
+    for (iid, keyref) in items:
+        obj = keyref.object
+        key = IKeyReference(obj)
+        if key not in intids.ids:
+            errors += 1
+            if change:
+                # remove old keyref
+                del intids.ids[keyref]
+                # add new one
+                intids.ids[key] = iid
+                # correct refs
+                intids.refs[iid] = key
+
+    return "ids bef=%d, refs bef=%d, walked=%d, errors=%d, ids aft=%d, refs aft=%d" % (ilen, rlen, wlen, errors,
+           len(intids.ids), len(intids.refs))
