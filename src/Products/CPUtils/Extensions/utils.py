@@ -2111,13 +2111,23 @@ def zmi(self):
                 'villesetcommunes3' : 'villesetcommunes3.all2all.org:0000',}
     """
     import socket
+    import os
     infos = self.Control_Panel.getServers()
     hostname = socket.gethostname()
+    if 'instance' in hostname:  # into docker
+        hostname = os.environ('HOSTNAME_HOST')
+        http_port = os.environ('HTTP_PORT')
+        url = "http://{}:{}/manage_main" .format(hostname, http_port)
+        out.append('<a href="%s">%s</a>' % (url, url))
+        return self.REQUEST.RESPONSE.redirect(url)
+
     #ip_address = socket.gethostbyname(hostname)
     out = []
     server = 'localhost:0000'
     if infos and len(infos[0]) > 1:
         port = infos[0][1]
+        if port == 8081: #  docker
+            pass
         out.append(port)
         port = port.replace('Port: ', '')
 #        if servers.has_key(hostname):

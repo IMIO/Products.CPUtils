@@ -5,6 +5,8 @@ Changelog
 1.10 (unreleased)
 -----------------
 
+- Improve zmi scripts for Docker instances.
+  [bsuttor]
 - Added correct_intids (Correct intids key references after a zodb change: mount point to main).
   [sgeulette]
 
