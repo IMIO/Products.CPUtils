@@ -2126,8 +2126,6 @@ def zmi(self):
     server = 'localhost:0000'
     if infos and len(infos[0]) > 1:
         port = infos[0][1]
-        if port == 8081: #  docker
-            pass
         out.append(port)
         port = port.replace('Port: ', '')
 #        if servers.has_key(hostname):
