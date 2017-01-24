@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.10 (unreleased)
+1.10 (2017-01-24)
 -----------------
 
 - Improve zmi scripts for Docker instances.
