@@ -2115,6 +2115,14 @@ def zmi(self):
     hostname = socket.gethostname()
     #ip_address = socket.gethostbyname(hostname)
     out = []
+    if 'instance' in hostname:  # into docker
+        import os
+        hostname = os.environ.get('HOSTNAME_HOST')
+        http_port = os.environ.get('HTTP_PORT')
+        url = "http://{0}:{1}/manage_main" .format(hostname, http_port)
+        out.append('<a href="%s">%s</a>' % (url, url))
+        return self.REQUEST.RESPONSE.redirect(url)
+    
     server = 'localhost:0000'
     if infos and len(infos[0]) > 1:
         port = infos[0][1]
