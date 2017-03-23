@@ -1442,9 +1442,13 @@ def correct_pam_language(self, default='', search='all', onlycurrentfolder='0', 
         #no translation and language must be changed
         elif current_lang != default:
             if 3 in filters:
-                out.append('<tr><td class="red">%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td>'
-                           '<td class="red">%s</td></tr>' % (current_lang or 'neutral', meta_lang, brain.getURL(),
-                           brain.getPath(), default or "neutral"))
+                out.append(
+                    '<tr><td class="red">%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td>'
+                    '<td class="red">%s</td></tr>' % (current_lang or 'neutral',
+                                                      meta_lang,
+                                                      brain.getURL(),
+                                                      brain.getPath(),
+                                                      default or "neutral"))
                 if change_property:
                     obj.setLanguage(default)
                     obj.reindexObject()
@@ -2122,7 +2126,7 @@ def zmi(self):
         url = "http://{0}:{1}/manage_main" .format(hostname, http_port)
         out.append('<a href="%s">%s</a>' % (url, url))
         return self.REQUEST.RESPONSE.redirect(url)
-    
+
     server = 'localhost:0000'
     if infos and len(infos[0]) > 1:
         port = infos[0][1]
