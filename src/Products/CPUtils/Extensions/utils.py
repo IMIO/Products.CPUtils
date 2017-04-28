@@ -138,7 +138,7 @@ def install(self):
         return "You must be a zope manager to run this script"
     methods = []
     for method in ('add_subject', 'audit_catalog', 'change_authentication_plugins',
-                   'change_user_properties', 'clean_provides_for', 'clean_utilities_for',
+                   'change_user_properties', 'check_users', 'clean_provides_for', 'clean_utilities_for',
                    'configure_ckeditor', 'copy_image_attribute', 'cpdb', 'creators',
                    'del_bad_portlet', 'desactivate_base2dom', 'export_subscribers_csv',
                    'install_plone_product', 'list_context_portlets_by_name', 'list_local_roles',
