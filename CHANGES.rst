@@ -7,6 +7,9 @@ Changelog
 
 - list_users script: added fullname and email, added separator option
   [sgeulette]
+- Added 'Subscript' and 'Superscript' to the CKeditor custom toolbar
+  used for 'plonemeeting'.
+  [gbastien]
 
 1.10 (2017-01-24)
 -----------------

@@ -716,7 +716,7 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
                u"[\n"
                u"['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n"
                u"['Undo','Redo','-','RemoveFormat'],\n"
-               u"['Bold','Italic','Underline','Strike'],\n"
+               u"['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],\n"
                u"['NumberedList','BulletedList','-','Outdent','Indent'],\n"
                u"['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','FontSize'],\n"
                u"['Table','SpecialChar','Link','Unlink','Image'],\n"
