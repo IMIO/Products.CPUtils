@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.11 (unreleased)
+1.11 (2017-05-08)
 -----------------
 
 - list_users script: added fullname and email, added separator option
