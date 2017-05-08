@@ -843,7 +843,7 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
     out.append("-> sort=groups (or users) => output is sorted following groups (default=users)")
     out.append("-> gtitle=0 => include group title (default=1)")
     out.append("by example /cputils_list_users?output=screen&sort=groups")
-    out.append("You can copy/paste the following lines in the right program like openoffice calc ;-) or Excel :-(%s" %
+    out.append("You can copy/paste the following lines in the right program like libreoffice calc ;-) or Excel :-(%s" %
                lf)
 
     if sort not in ('users', 'groups'):
@@ -861,8 +861,8 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
     for member in get_users(self):
         userid = member.id
         if not userid in users:
-            users[userid] = {}
-        users[userid]['obj'] = member
+            users[userid] = {'obj': member, 'name': member.getProperty('fullname'),
+                             'email': member.getProperty('email')}
         groupids = [safe_encode(gid) for gid in pg.getGroupsForPrincipal(member) if gid != 'AuthenticatedUsers']
         if not groupids:
             groupids = ['aucun']
@@ -874,8 +874,8 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
             groups[groupid]['users'].append(userid)
 
     if output == 'csv':
-        titles = {'users': ['UserId', 'GroupId'],
-                  'groups': ['GroupId', 'UserId', ],
+        titles = {'users': ['UserId', 'GroupId', 'Username', 'Email'],
+                  'groups': ['GroupId', 'UserId', 'Username', 'Email'],
                   }
         # insert 'GroupTitle' after 'GroupId'
         if title:
@@ -883,33 +883,33 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
         out.append(separator.join(titles[sort]))
 
     if sort == 'users':
-        for userid in users.keys():
+        for userid in sorted(users.keys()):
             if output == 'screen':
-                out.append("- userid: %s" % userid)
+                out.append("- userid: %s, fullname: %s, email: %s" % (userid, users[userid]['name'],
+                           users[userid]['email']))
             for groupid in users[userid]['groups']:
                 if output == 'csv':
+                    infos = [userid, groupid, users[userid]['name'], users[userid]['email']]
                     if title:
-                        infos = (userid, groupid, groups[groupid]['title'])
-                    else:
-                        infos = (userid, groupid)
+                        infos.insert(2, groups[groupid]['title'])
                     out.append(separator.join(infos))
                 else:
                     out.append('&emsp;&emsp;&rArr; %s' % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
                                                           or groupid))
     elif sort == 'groups':
-        for groupid in groups.keys():
+        for groupid in sorted(groups.keys()):
             if output == 'screen':
                 out.append("- groupid: %s" % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
                                               or groupid))
             for userid in groups[groupid]['users']:
                 if output == 'csv':
+                    infos = [groupid, userid, users[userid]['name'], users[userid]['email']]
                     if title:
-                        infos = (groupid, groups[groupid]['title'], userid)
-                    else:
-                        infos = (groupid, userid)
+                        infos.insert(1, groups[groupid]['title'])
                     out.append(separator.join(infos))
                 else:
-                    out.append('&emsp;&emsp;&rArr; %s' % userid)
+                    out.append('&emsp;&emsp;&rArr; %s, fullname: %s, email: %s' % (userid, users[userid]['name'],
+                               users[userid]['email']))
     return lf.join(out)
 
 ###############################################################################

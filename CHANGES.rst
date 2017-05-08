@@ -5,8 +5,8 @@ Changelog
 1.11 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Added fullname and email in list_users
+  [sgeulette]
 
 1.10 (2017-01-24)
 -----------------
