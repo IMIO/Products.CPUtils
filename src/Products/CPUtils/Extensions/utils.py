@@ -822,7 +822,7 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
 ###############################################################################
 
 
-def list_users(self, output='csv', sort='users', gtitle='1'):
+def list_users(self, output='csv', sort='users', gtitle='1', separator=';'):
     """
         list users following parameters :
             sort = 'users' or 'groups', sort key for output
@@ -832,7 +832,6 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
         return "You must have a manager role to run this script"
     lf = '\n'
     lf = '<br />\n'
-    separator = ','
 
     from Products.CMFCore.utils import getToolByName
     pg = getToolByName(self, "portal_groups")
@@ -842,6 +841,7 @@ def list_users(self, output='csv', sort='users', gtitle='1'):
     out.append("-> output=screen => output for screen or csv (default=csv)")
     out.append("-> sort=groups (or users) => output is sorted following groups (default=users)")
     out.append("-> gtitle=0 => include group title (default=1)")
+    out.append("-> separator=; => csv separator (default=;)")
     out.append("by example /cputils_list_users?output=screen&sort=groups")
     out.append("You can copy/paste the following lines in the right program like libreoffice calc ;-) or Excel :-(%s" %
                lf)

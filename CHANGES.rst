@@ -5,7 +5,7 @@ Changelog
 1.11 (unreleased)
 -----------------
 
-- Added fullname and email in list_users
+- list_users script: added fullname and email, added separator option
   [sgeulette]
 
 1.10 (2017-01-24)
