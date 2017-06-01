@@ -3436,8 +3436,7 @@ def check_blobs(self, delete=''):
     from plone.dexterity.content import DexterityContent
 
     portal = getToolByName(self, "portal_url").getPortalObject()
-    start = datetime(1973, 02, 12).now()
-    log_list("Starting check_blobs at %s" % start, ret)
+    log_list("Starting check_blobs at %s" % datetime(1973, 02, 12).now(), ret)
 
     blob_attrs = {}
     # get all files attributes
@@ -3470,11 +3469,11 @@ def check_blobs(self, delete=''):
         for brain in portal.portal_catalog(portal_type=typ):
             obj = brain.getObject()
             for attr in blob_attrs[typ]['at']:
-                if blob_attrs[typ]['t'] == 'dx':
-                    val = getattr(obj, attr)
-                else:
-                    val = obj.getField(attr).get(obj)
                 try:
+                    if blob_attrs[typ]['t'] == 'dx':
+                        val = getattr(obj, attr)
+                    else:
+                        val = obj.getField(attr).get(obj)
                     val.getSize()
                 except POSKeyError:
                     log_list("Found damaged object %s on %s" % (typ, obj.absolute_url()), ret)
@@ -3483,7 +3482,7 @@ def check_blobs(self, delete=''):
                     log_list("  => will be deleted", ret)
                     parent.manage_delObjects([obj.getId()])
 
-    log_list("Finished check_blobs at %s" % start, ret)
+    log_list("Finished check_blobs at %s" % datetime(1973, 02, 12).now(), ret)
     return '\n'.join(ret)
 
 
@@ -3569,5 +3568,5 @@ def check_blobs_slow(self, delete=''):
                 recurse(child, delete=delete)
 
     recurse(portal, delete=delt)
-    log_list("Finished check_blobs at %s" % start, ret)
+    log_list("Finished check_blobs at %s" % datetime(1973, 02, 12).now(), ret)
     return '\n'.join(ret)
