@@ -3464,6 +3464,8 @@ def check_blobs(self, delete=''):
                         if typ not in blob_attrs:
                             blob_attrs[typ] = {'t': 'dx', 'at': []}
                         blob_attrs[typ]['at'].append(key)
+    log_list("Blob attributes: %s" % str(blob_attrs), ret)
+
     for typ in blob_attrs:
         for brain in portal.portal_catalog(portal_type=typ):
             obj = brain.getObject()
