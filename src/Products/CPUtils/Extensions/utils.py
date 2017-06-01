@@ -3415,6 +3415,81 @@ def correct_intids(self, dochange=''):
 
 def check_blobs(self, delete=''):
     """
+        Check blobs for poskeyerrors, limited to cataloged object
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    delt = False
+    if delete not in ('', '0', 'False', 'false'):
+        delt = True
+    ret = []
+
+    from datetime import datetime
+    from ZODB.POSException import POSKeyError
+    from Products.CMFCore.utils import getToolByName
+    from Products.CMFPlone.utils import base_hasattr
+    from Products.Archetypes.Field import FileField
+    from Products.Archetypes.interfaces import IBaseContent
+    from plone.app.blob.subtypes.file import ExtensionBlobField
+    from plone.namedfile.interfaces import INamedFile
+    from plone.dexterity.content import DexterityContent
+
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    start = datetime(1973, 02, 12).now()
+    log_list("Starting check_blobs at %s" % start, ret)
+
+    blob_attrs = {}
+    # get all files attributes
+    for typ in portal.portal_types:
+        brains = portal.portal_catalog(portal_type=typ)
+        if not brains:
+            continue
+        obj = brains[0].getObject()
+        if IBaseContent.providedBy(obj):
+            schema = obj.Schema()
+            for field in schema.fields():
+                if isinstance(field, FileField) or isinstance(field, ExtensionBlobField):
+                    value = field.getAccessor(obj)()
+                    if not base_hasattr(value, 'getSize'):
+                        continue
+                    if typ not in blob_attrs:
+                        blob_attrs[typ] = {'t': 'at', 'at': []}
+                    blob_attrs[typ]['at'].append(field.getName())
+        elif isinstance(obj, DexterityContent):
+            # Iterate through all Python object attributes
+            for key, value in obj.__dict__.items():
+                if not key.startswith("_"):
+                    if INamedFile.providedBy(value):
+                        if typ not in blob_attrs:
+                            blob_attrs[typ] = {'t': 'dx', 'at': []}
+                        blob_attrs[typ]['at'].append(key)
+    for typ in blob_attrs:
+        for brain in portal.portal_catalog(portal_type=typ):
+            obj = brain.getObject()
+            for attr in blob_attrs[typ]['at']:
+                if blob_attrs[typ]['t'] == 'dx':
+                    val = getattr(obj, attr)
+                else:
+                    val = obj.getField(attr).get(obj)
+                try:
+                    val.getSize()
+                except POSKeyError:
+                    log_list("Found damaged object %s on %s" % (typ, obj.absolute_url()), ret)
+                if delt:
+                    parent = obj.aq_parent
+                    log_list("  => will be deleted", ret)
+                    parent.manage_delObjects([obj.getId()])
+
+    log_list("Finished check_blobs at %s" % start, ret)
+    return '\n'.join(ret)
+
+
+###############################################################################
+
+
+def check_blobs_slow(self, delete=''):
+    """
         Check blobs for poskeyerrors
     """
     if not check_zope_admin():
