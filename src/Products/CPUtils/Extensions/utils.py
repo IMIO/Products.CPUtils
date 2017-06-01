@@ -125,6 +125,11 @@ def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
     except Exception, msg:
         return msg
 
+
+def log_list(line, lst):
+    print "log_list: %s\n" % line
+    lst.append(line)
+
 ###############################################################################
 
 
@@ -3403,3 +3408,89 @@ def correct_intids(self, dochange=''):
 
     return "ids bef=%d, refs bef=%d, walked=%d, errors=%d, ids aft=%d, refs aft=%d" % (ilen, rlen, wlen, errors,
            len(intids.ids), len(intids.refs))
+
+
+###############################################################################
+
+
+def check_blobs(self, delete=''):
+    """
+        Check blobs for poskeyerrors
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+
+    delt = False
+    if delete not in ('', '0', 'False', 'false'):
+        delt = True
+    ret = []
+
+    from datetime import datetime
+    from ZODB.POSException import POSKeyError
+    from Products.CMFCore.interfaces import IFolderish
+    from Products.CMFCore.utils import getToolByName
+    from Products.Archetypes.Field import FileField
+    from Products.Archetypes.interfaces import IBaseContent
+    from plone.namedfile.interfaces import INamedFile
+    from plone.dexterity.content import DexterityContent
+
+    portal = getToolByName(self, "portal_url").getPortalObject()
+    start = datetime(1973, 02, 12).now()
+    log_list("Starting check_blobs at %s" % start, ret)
+
+    def check_at_blobs(context):
+        """ Archetypes content checker. Return True if purge needed """
+        if IBaseContent.providedBy(context):
+            schema = context.Schema()
+            for field in schema.fields():
+                id = field.getName()
+                if isinstance(field, FileField):
+                    try:
+                        field.get_size(context)
+                    except POSKeyError:
+                        log_list("Found damaged AT FileField %s on %s" % (id, context.absolute_url()), ret)
+                        return True
+        return False
+
+    def check_dexterity_blobs(context):
+        """ Check Dexterity content for damaged blob fields. Return True if purge needed """
+        # Assume dexterity content inherits from Item
+        if isinstance(context, DexterityContent):
+            # Iterate through all Python object attributes
+            # XXX: Might be smarter to use zope.schema introspection here?
+            for key, value in context.__dict__.items():
+                # Ignore non-contentish attributes to speed up us a bit
+                if not key.startswith("_"):
+                    if INamedFile.providedBy(value):
+                        try:
+                            value.getSize()
+                        except POSKeyError:
+                            log_list("Found damaged Dexterity plone.app.NamedFile %s on %s" % (key,
+                                     context.absolute_url()))
+                            return True
+        return False
+
+    def fix_blobs(context, delete=False):
+        """
+        Iterate through the object variables and see if they are blob fields
+        and if the field loading fails then poof
+        """
+        if check_at_blobs(context) or check_dexterity_blobs(context):
+            log_list("Bad blobs found on %s" % context.absolute_url(), ret)
+            if delete:
+                parent = context.aq_parent
+                log_list("  => will be deleted", ret)
+                parent.manage_delObjects([context.getId()])
+
+    def recurse(tree, delete=False):
+        """ Walk through all the content on a Plone site """
+        for id, child in tree.contentItems():
+
+            fix_blobs(child, delete=delete)
+
+            if IFolderish.providedBy(child):
+                recurse(child, delete=delete)
+
+    recurse(portal, delete=delt)
+    log_list("Finished check_blobs at %s" % start, ret)
+    return '\n'.join(ret)

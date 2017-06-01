@@ -5,8 +5,8 @@ Changelog
 1.12 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Added method check_blobs
+  [sgeulette]
 
 1.11 (2017-05-08)
 -----------------
