@@ -126,7 +126,7 @@ def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
         return msg
 
 
-def log_list(line, lst, prefix='>> '):
+def log_list(lst, line, prefix='>> '):
     print "%s%s" % (prefix, line)
     lst.append(line)
 
@@ -3436,7 +3436,7 @@ def check_blobs(self, delete=''):
     from plone.dexterity.content import DexterityContent
 
     portal = getToolByName(self, "portal_url").getPortalObject()
-    log_list("Starting check_blobs at %s" % datetime(1973, 02, 12).now(), ret)
+    log_list(ret, "Starting check_blobs at %s" % datetime(1973, 02, 12).now())
 
     blob_attrs = {}
     # get all files attributes
@@ -3463,7 +3463,7 @@ def check_blobs(self, delete=''):
                         if typ not in blob_attrs:
                             blob_attrs[typ] = {'t': 'dx', 'at': []}
                         blob_attrs[typ]['at'].append(key)
-    log_list("Blob attributes: %s" % str(blob_attrs), ret)
+    log_list(ret, "Blob attributes: %s" % str(blob_attrs))
 
     for typ in blob_attrs:
         for brain in portal.portal_catalog(portal_type=typ):
@@ -3476,13 +3476,13 @@ def check_blobs(self, delete=''):
                         val = obj.getField(attr).get(obj)
                     val.getSize()
                 except POSKeyError:
-                    log_list("Found damaged object %s on %s" % (typ, obj.absolute_url()), ret)
+                    log_list(ret, "Found damaged object %s on %s" % (typ, obj.absolute_url()))
                 if delt:
                     parent = obj.aq_parent
-                    log_list("  => will be deleted", ret)
+                    log_list(ret, "  => will be deleted")
                     parent.manage_delObjects([obj.getId()])
 
-    log_list("Finished check_blobs at %s" % datetime(1973, 02, 12).now(), ret)
+    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 02, 12).now())
     return '\n'.join(ret)
 
 
@@ -3512,7 +3512,7 @@ def check_blobs_slow(self, delete=''):
 
     portal = getToolByName(self, "portal_url").getPortalObject()
     start = datetime(1973, 02, 12).now()
-    log_list("Starting check_blobs at %s" % start, ret)
+    log_list(ret, "Starting check_blobs at %s" % start)
 
     def check_at_blobs(context):
         """ Archetypes content checker. Return True if purge needed """
@@ -3524,7 +3524,7 @@ def check_blobs_slow(self, delete=''):
                     try:
                         field.get_size(context)
                     except POSKeyError:
-                        log_list("Found damaged AT FileField %s on %s" % (id, context.absolute_url()), ret)
+                        log_list(ret, "Found damaged AT FileField %s on %s" % (id, context.absolute_url()))
                         return True
         return False
 
@@ -3541,7 +3541,7 @@ def check_blobs_slow(self, delete=''):
                         try:
                             value.getSize()
                         except POSKeyError:
-                            log_list("Found damaged Dexterity plone.app.NamedFile %s on %s" % (key,
+                            log_list(ret, "Found damaged Dexterity plone.app.NamedFile %s on %s" % (key,
                                      context.absolute_url()))
                             return True
         return False
@@ -3552,10 +3552,10 @@ def check_blobs_slow(self, delete=''):
         and if the field loading fails then poof
         """
         if check_at_blobs(context) or check_dexterity_blobs(context):
-            log_list("Bad blobs found on %s" % context.absolute_url(), ret)
+            log_list(ret, "Bad blobs found on %s" % context.absolute_url())
             if delete:
                 parent = context.aq_parent
-                log_list("  => will be deleted", ret)
+                log_list(ret, "  => will be deleted")
                 parent.manage_delObjects([context.getId()])
 
     def recurse(tree, delete=False):
@@ -3568,5 +3568,5 @@ def check_blobs_slow(self, delete=''):
                 recurse(child, delete=delete)
 
     recurse(portal, delete=delt)
-    log_list("Finished check_blobs at %s" % datetime(1973, 02, 12).now(), ret)
+    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 02, 12).now())
     return '\n'.join(ret)
