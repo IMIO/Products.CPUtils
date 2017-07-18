@@ -127,7 +127,7 @@ def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
 
 
 def log_list(line, lst):
-    print "log_list: %s\n" % line
+    print "log_list: %s" % line
     lst.append(line)
 
 ###############################################################################
