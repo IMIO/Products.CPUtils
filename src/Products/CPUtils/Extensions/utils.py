@@ -126,8 +126,8 @@ def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
         return msg
 
 
-def log_list(line, lst):
-    print "log_list: %s" % line
+def log_list(line, lst, prefix='>> '):
+    print "%s%s" % (prefix, line)
     lst.append(line)
 
 ###############################################################################
