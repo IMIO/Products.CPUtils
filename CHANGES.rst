@@ -7,6 +7,8 @@ Changelog
 
 - Added method check_blobs
   [sgeulette]
+- Added del_objects method
+  [sgeulette]
 
 1.11 (2017-05-08)
 -----------------

@@ -145,7 +145,7 @@ def install(self):
     for method in ('add_subject', 'audit_catalog', 'change_authentication_plugins',
                    'change_user_properties', 'check_users', 'clean_provides_for', 'clean_utilities_for',
                    'configure_ckeditor', 'copy_image_attribute', 'cpdb', 'creators',
-                   'del_bad_portlet', 'desactivate_base2dom', 'export_subscribers_csv',
+                   'del_bad_portlet', 'del_objects', 'desactivate_base2dom', 'export_subscribers_csv',
                    'install_plone_product', 'list_context_portlets_by_name', 'list_local_roles',
                    'list_newsletter_users', 'list_objects', 'list_portlets',
                    'list_used_views', 'list_users', 'load_user_properties',
@@ -3570,3 +3570,48 @@ def check_blobs_slow(self, delete=''):
     recurse(portal, delete=delt)
     log_list(ret, "Finished check_blobs at %s" % datetime(1973, 02, 12).now())
     return '\n'.join(ret)
+
+
+###############################################################################
+
+
+def del_objects(self, doit='', types='', linki='1'):
+    from plone import api
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+# person,held_position
+    out = ['<strong>Objects deletion following types search in context path</strong>']
+    out.append("You can/must call the script with following parameters:")
+    out.append("-> types=''  : portal_types (separated by ,). Default=empty.")
+    out.append("-> linki=''  : link integrity check. Default=1. "
+               "Possible values can be '', '0', 'False', 'false' or '1'")
+    out.append("-> doit=''  : apply changes if 1. Default=empty")
+    out.append("ie. cputils_del_objects?types=Document,Folder&linki=0&doit=1")
+    out.append('')
+
+    ptypes = [p.strip() for p in types.split(',')]
+    lk = False
+    if linki not in ('', '0', 'False', 'false'):
+        lk = True
+    out.append('Given parameters:')
+    out.append('Types: %s' % ptypes)
+    out.append('Link integrity: %s' % lk)
+    out.append('Apply: %s' % doit)
+    out.append('')
+    sep = '\n<br />'
+
+    # only valid for plone < 5 !!!! otherwise use linkintegrity/utils.py
+    pp = api.portal.get_tool('portal_properties')
+    livalue = pp.site_properties.enable_link_integrity_checks
+    if livalue != lk:
+        pp.site_properties.enable_link_integrity_checks = lk
+
+    for brain in api.content.find(context=self, portal_type=ptypes, sort_on='path', srt_order='descending'):
+        obj = brain.getObject()
+        out.append('<a href="%s">%s &nbsp;=>&nbsp; "%s"</a>' % (brain.getURL(), brain.getPath(), brain.Title))
+        if doit == '1':
+            api.content.delete(obj=obj, check_linkintegrity=False)
+
+    if livalue != lk:
+        pp.site_properties.enable_link_integrity_checks = livalue
+    return sep.join(out)
