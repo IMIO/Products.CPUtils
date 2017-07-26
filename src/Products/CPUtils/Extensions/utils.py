@@ -3606,7 +3606,7 @@ def del_objects(self, doit='', types='', linki='1'):
     if livalue != lk:
         pp.site_properties.enable_link_integrity_checks = lk
 
-    for brain in api.content.find(context=self, portal_type=ptypes, sort_on='path', srt_order='descending'):
+    for brain in api.content.find(context=self, portal_type=ptypes, sort_on='path', sort_order='descending'):
         obj = brain.getObject()
         out.append('<a href="%s">%s &nbsp;=>&nbsp; "%s"</a>' % (brain.getURL(), brain.getPath(), brain.Title))
         if doit == '1':
