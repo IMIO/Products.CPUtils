@@ -5,6 +5,8 @@ Changelog
 1.12 (unreleased)
 -----------------
 
+- Check Missing.Value on tobytes method. It's prevent error on bad indexed object on cputils_audit_catalog.
+  [bsuttor]
 - Added method check_blobs
   [sgeulette]
 - Added del_objects method
