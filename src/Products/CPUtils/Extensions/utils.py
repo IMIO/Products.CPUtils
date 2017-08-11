@@ -55,6 +55,9 @@ def fileSize(nb, as_size='', decimal='', rm_sz=False):
 
 def tobytes(objsize):
     """ Transform getObjSize metadata to bytes value """
+    from Missing import Value
+    if objsize is Value:
+        return 'No object size in catalog'
     parts = objsize.split()
     if len(parts) != 2:
         return "Problem when splitting '%s' obj size in 2 parts" % objsize
@@ -290,8 +293,9 @@ def audit_catalog(self):
 
     res = []
     out.append("""counter : %s : %s : %s""" % ('portal_type', 'getObjSize', 'url'))
-    for r in results:
-        res.append((r.portal_type, r.getObjSize, r.getURL()+'/view', tobytes(r.getObjSize)))
+    for result in results:
+        res.append((result.portal_type, result.getObjSize, result.getURL()+'/view', tobytes(result.getObjSize)))
+
 
     def sortBySize(row1, row2):
         size1 = row1[-1]
