@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.12 (unreleased)
+1.12 (2017-08-11)
 -----------------
 
 - Check Missing.Value on tobytes method. It's prevent error on bad indexed object on cputils_audit_catalog.
