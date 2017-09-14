@@ -5,7 +5,9 @@ Changelog
 1.13 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- In utils.configure_ckeditor, removed FontSize from default
+  PloneMeeting CKeditor toolbar.
+  [gbastien]
 
 
 1.12 (2017-08-11)

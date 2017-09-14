@@ -727,10 +727,10 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
                u"['Undo','Redo','-','RemoveFormat'],\n"
                u"['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],\n"
                u"['NumberedList','BulletedList','-','Outdent','Indent'],\n"
-               u"['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','FontSize'],\n"
+               u"['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n"
                u"['Table','SpecialChar','Link','Unlink','Image'],\n"
                u"'/',\n"
-               u"['Styles','Format','NbSpace','NbHyphen'],\n"
+               u"['Styles','NbSpace','NbHyphen'],\n"
                u"['Maximize','ShowBlocks','Source']\n"
                u"]\n",
                'ged':
