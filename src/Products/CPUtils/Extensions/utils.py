@@ -2453,23 +2453,28 @@ def unlock_webdav_objects(self, dochange=''):
     out.append("<p>You can call the script with following parameters:</p>")
     out.append("-> dochange=1 : to unlock objects")
     out.append("by example ...?dochange=1<br/>")
-    out.append("<h1>Locked objects</h1>")
+    out.append("<h1>Locked objects in '%s'</h1>" % self.absolute_url_path())
 
     do_change = False
     if dochange not in ('', '0', 'False', 'false'):
         do_change = True
 
+    def unlock_obj(obj):
+        if obj.wl_isLocked():
+            out.append('%s is locked' % obj.absolute_url())
+            if do_change:
+                obj.wl_clearLocks()
+                if obj.wl_isLocked():
+                    out.append("  ERROR: object is always locked")
+
     def walk_dir(folder):
         for obj in folder.objectValues():
-            if obj.wl_isLocked():
-                out.append('%s is locked' % obj.absolute_url())
-                if do_change:
-                    obj.wl_clearLocks()
-                    if obj.wl_isLocked():
-                        out.append("  ERROR: object is always locked")
+            unlock_obj(obj)
             if obj.isPrincipiaFolderish:
                 walk_dir(obj)
-    walk_dir(portal)
+    if self != portal:
+        unlock_obj(self)
+    walk_dir(self)
     return '<br />\n'.join(out)
 
 ###############################################################################

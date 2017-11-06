@@ -8,7 +8,8 @@ Changelog
 - In utils.configure_ckeditor, removed FontSize from default
   PloneMeeting CKeditor toolbar.
   [gbastien]
-
+- Update unlock_webdav_objects to search locked objects in context
+  [sgeulette]
 
 1.12 (2017-08-11)
 -----------------
