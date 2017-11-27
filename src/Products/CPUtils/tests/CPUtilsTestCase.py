@@ -38,7 +38,6 @@ if __name__ == '__main__':
 ##code-section module-header #fill in your manual code here
 from Products.CMFCore.utils import getToolByName
 from Products.CPUtils.config import *
-from Products.Archetypes.tests.utils import DummySessionDataManager
 from sets import Set
 
 ##/code-section module-header

@@ -48,6 +48,8 @@ setup(
         'test': [
             'plone.app.testing',
             'plone.app.robotframework',
+            'Products.PloneGazette',
+            'Products.PloneTestCase',
         ],
     },
     entry_points="""
