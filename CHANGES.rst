@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.13 (unreleased)
+1.13 (2017-11-27)
 -----------------
 
 - In utils.configure_ckeditor, removed FontSize from default
