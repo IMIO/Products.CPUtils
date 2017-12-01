@@ -1,6 +1,8 @@
 include *.cfg *.rst *.in
 include *.py
 include .travis.yml
+exclude .installed.cfg
+exclude .mr.developer.cfg
 recursive-include src *.conf
 recursive-include src *.log
 recursive-include src *.po

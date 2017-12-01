@@ -33,11 +33,8 @@ from Products.ExternalMethod.ExternalMethod import ExternalMethod
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 import transaction
-##code-section module-header #fill in your manual code here
 from AccessControl import getSecurityManager, ClassSecurityInfo
 from AccessControl.SecurityManagement import newSecurityManager, setSecurityManager
-from Products.PloneGazette import PloneGazetteFactory as _
-##/code-section module-header
 
 #
 # Test-cases for class(es) 
