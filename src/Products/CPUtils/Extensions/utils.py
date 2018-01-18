@@ -133,6 +133,11 @@ def log_list(lst, line, prefix='>> '):
     print "%s%s" % (prefix, line)
     lst.append(line)
 
+
+def object_link(obj, view='view'):
+    href = view and "%s/%s" % (obj.absolute_url(), view) or obj.absolute_url()
+    return '<a href="%s">%s</a>' % (href, obj.Title())
+
 ###############################################################################
 
 
