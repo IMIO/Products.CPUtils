@@ -135,8 +135,9 @@ def log_list(lst, line, prefix='>> '):
 
 
 def object_link(obj, view='view'):
+    from Products.CMFPlone.utils import safe_unicode
     href = view and "%s/%s" % (obj.absolute_url(), view) or obj.absolute_url()
-    return '<a href="%s">%s</a>' % (href, obj.Title())
+    return u'<a href="%s">%s</a>' % (href, safe_unicode(obj.Title()))
 
 ###############################################################################
 
