@@ -161,7 +161,7 @@ def install(self):
                    'move_copy_objects', 'move_item', 'object_info',
                    'objects_stats', 'order_folder', 'recreate_users_groups',
                    'reftooltoobjects', 'removeStep', 'rename_long_ids',
-                   'resources_order', 'send_adminMail', 'store_user_properties',
+                   'resources_order', 'send_adminMail', 'set_attr', 'store_user_properties',
                    'sync_properties', 'unlock_webdav_objects', 'zmi'
                    ):
         method_name = 'cputils_' + method
@@ -3629,4 +3629,60 @@ def del_objects(self, doit='', types='', linki='1'):
 
     if livalue != lk:
         pp.site_properties.enable_link_integrity_checks = livalue
+    return sep.join(out)
+
+
+###############################################################################
+
+
+def set_attr(self, attr='', value='', typ='str'):
+    """
+        Set attribute on context.
+        Usefull to change creation_date by example
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    from Products.CMFPlone.utils import safe_hasattr
+
+    good_types = ['str', 'int', 'DateTime', 'unicode', 'datetime']
+
+    sep = '\n<br />'
+    out = ["<h2>You can/must call the script with following parameters:</h2>"]
+    out.append("-> attr=''  : attribute name.")
+    out.append("-> value=''  : value to set.")
+    out.append("-> typ=''  : value type. Can be %s. Default='str'" % ', '.join(["'%s'" % t for t in good_types]))
+    out.append("-> Example: ?attr=creation_date&value=2017-10-13 9:00 GMT%2B1&typ=DateTime<br />")
+
+    if not attr or not value:
+        out.append("attr and value parameters are mandatory !")
+        return sep.join(out)
+    if not safe_hasattr(self, attr):
+        out.append("Attr '%s' doesn't exist !" % attr)
+        return sep.join(out)
+    if typ not in good_types:
+        out.append("Given typ '%s' not in good types !" % typ)
+        return sep.join(out)
+
+    new_val = value
+    try:
+        if typ == 'int':
+            new_val = int(value)
+        elif typ == 'unicode':
+            from Products.CMFPlone.utils import safe_unicode
+            new_val = safe_unicode(value)
+        elif typ == 'DateTime':
+            from DateTime import DateTime
+            new_val = DateTime(value)  # example '2017-10-13 9:00 GMT%2B1'  %2B = '+'
+        elif typ == 'datetime':
+            from datetime import datetime
+            import re
+            dt = map(int, filter(None, re.split("[\- /\\:]+", value)))
+            new_val = datetime(*dt)  # example '2017-10-13 9:00'
+    except Exception, msg:
+        out.append("Cannot cast value type to '%s': '%s'" % (typ, msg))
+        return sep.join(out)
+
+    setattr(self, attr, new_val)
+    self.reindexObject()
+    out.append("Attr '%s' set to '%s'" % (attr, new_val))
     return sep.join(out)

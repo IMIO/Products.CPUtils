@@ -7,6 +7,8 @@ Changelog
 
 - Added function to construct link to object 
   [sgeulette]
+- Added function to set an attribute on context
+  [sgeulette]
 
 1.13 (2017-11-27)
 -----------------
