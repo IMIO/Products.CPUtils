@@ -3392,7 +3392,8 @@ def change_uuid(self, recursive='', dochange=''):
 
 def correct_intids(self, dochange=''):
     """
-        Correct intids key references after a zodb change: mount point to main
+        Correct intids key references after a zodb change: mount point to main.
+        Not well working !!!!!!!
     """
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
@@ -3423,6 +3424,29 @@ def correct_intids(self, dochange=''):
 
     return "ids bef=%d, refs bef=%d, walked=%d, errors=%d, ids aft=%d, refs aft=%d" % (ilen, rlen, wlen, errors,
            len(intids.ids), len(intids.refs))
+
+
+###############################################################################
+
+
+def register_intid(self, dochange=''):
+    """
+        Register intid if object is not well registered.
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    from zope.component import getUtility
+    from zope.intid.interfaces import IIntIds
+    out = ["Check intid registration for '%s'" % self.absolute_url()]
+    intids = getUtility(IIntIds)
+    try:
+        out.append("obj already registered with intid '%s'" % intids.getId(self))
+    except KeyError:
+        out.append("!! Missing intid !!")
+        if dochange == '1':
+            intids.register(self)
+            out.append("obj now registered with intid '%s'" % intids.getId(self))
+    return "\n<br />".join(out)
 
 
 ###############################################################################
