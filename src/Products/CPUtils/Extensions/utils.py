@@ -3225,9 +3225,10 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
     change = False
     if convert not in ('', '0', 'False', 'false'):
         change = True
-    brains = self.portal_catalog(portal_type=pt)
+    pts = pt.split(',')
+    brains = self.portal_catalog(portal_type=pts)
     bl = len(brains)
-    out.append("Searching portal_type '%s': found %d objects" % (pt, bl))
+    out.append("Searching portal_type '%s': found %d objects" % (pts, bl))
     portal_path = self.portal_url.getPortalPath()
     ppl = len(portal_path)
     for i, brain in enumerate(brains):
