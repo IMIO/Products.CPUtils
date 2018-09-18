@@ -11,6 +11,8 @@ Changelog
   [sgeulette]
 - Improved dv_conversion
   [sgeulette]
+- Improved dv_images_size
+  [sgeulette]
 
 1.13 (2017-11-27)
 -----------------

@@ -3178,7 +3178,7 @@ def dv_images_size(self):
     from zope.annotation.interfaces import IAnnotations
     from plone.app.blob.utils import openBlob
     import os
-    sizes = {'large': 0, 'normal': 0, 'small': 0, 'text': 0}
+    sizes = {'large': 0, 'normal': 0, 'small': 0, 'text': 0, 'pages': 0, 'fmt': ''}
     annot = IAnnotations(self).get('collective.documentviewer', '')
     if not annot or not annot['successfully_converted'] or not annot.get('blob_files', None):
         return sizes
