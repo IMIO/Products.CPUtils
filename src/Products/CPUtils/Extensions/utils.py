@@ -129,8 +129,12 @@ def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
         return msg
 
 
-def log_list(lst, line, prefix='>> '):
-    print "%s%s" % (prefix, line)
+def log_list(lst, line, logger=None, level='info'):
+    levels = {'info': '>>', 'warn': '??', 'error': '!!'}
+    if logger:
+        getattr(logger, level)(line)
+    else:
+        print "%s %s" % (levels[level], line)
     lst.append(line)
 
 
@@ -3201,18 +3205,20 @@ def dv_images_size(self):
 ###############################################################################
 
 
-def dv_conversion(self, pt='dmsmainfile', convert=''):
+def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg', change='', csv=''):
     """
-        Convert pdf files into document viewer images
+        Convert files into document viewer images
     """
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     out = []
     out.append("call the script followed by needed parameters:")
-    out.append("-> pt=portal_type to search (default dmsmainfile)")
-    out.append("-> convert=1")
+    out.append("-> pt=portal_types to search, separated by comma (default dmsmainfile,dmsommainfile,dmsappendixfile)")
+    out.append("-> fmt=images format (jpg or png: default jpg)")
+    out.append("-> change=1")
     try:
         from collective.documentviewer.convert import runConversion
+        from collective.documentviewer.settings import GlobalSettings
     except ImportError:
         out.append("collective.documentviewer not found")
         return '\n'.join(out)
@@ -3220,39 +3226,62 @@ def dv_conversion(self, pt='dmsmainfile', convert=''):
     start = datetime(1973, 02, 12).now()
     import logging
     logger = logging.getLogger('CPUtils dv_conversion')
-    logger.info("Starting dv_conversion at %s" % start)
-    out.append("Starting dv_conversion at %s" % start)
-    change = False
-    if convert not in ('', '0', 'False', 'false'):
-        change = True
+    log_list(out, "Starting dv_conversion at %s" % start, logger)
+    doit = as_csv = False
+    if change == '1':
+        doit = True
+
+    gsettings = GlobalSettings(self.portal_url.getPortalObject())
+    gsettings.pdf_image_format = fmt
     pts = pt.split(',')
     brains = self.portal_catalog(portal_type=pts)
     bl = len(brains)
-    out.append("Searching portal_type '%s': found %d objects" % (pts, bl))
-    portal_path = self.portal_url.getPortalPath()
-    ppl = len(portal_path)
+    log_list(out, "Searching portal_types '%s': found %d objects" % (pts, bl), logger)
+    if csv == '1':
+        as_csv = True
+        portal_path = self.portal_url.getPortalPath()
+        ppl = len(portal_path)
+        log_list(out, "\nFile,File size,Large size,Normal size,Small size,Text size,Format,Pages", logger)
+    total = {'orig': 0, 'pages': 0, 'old_i': 0, 'new_i': 0}
+    loggerdv = logging.getLogger('collective.documentviewer')
+    loggerdv.setLevel(30)
+    to_convert = converted = 0
     for i, brain in enumerate(brains):
         obj = brain.getObject()
-        if change and not i % 1000:
-            logger.info("dv_conversion: treating %d" % i)
-        if change:
+        sizes = dv_images_size(obj)
+        total['orig'] += tobytes(brain.getObjSize)
+        total['old_i'] += (sizes['large'] + sizes['normal'] + sizes['small'])
+        total['pages'] += sizes['pages']
+        if as_csv:
+            log_list(out, '%s,%d,%d,%d,%d,%d,%s,%s' % (brain.getPath()[ppl:], tobytes(brain.getObjSize), sizes['large'],
+                                                       sizes['normal'], sizes['small'], sizes['text'],
+                                                       sizes.get('fmt', ''), sizes.get('pages', '')), logger)
+
+        if doit and not i % 1000:
+            log_list(out, "dv_conversion: treating %d" % i, logger)
+        if sizes['fmt'] == fmt:
+            total['new_i'] += (sizes['large'] + sizes['normal'] + sizes['small'])
+            continue
+        to_convert += 1
+        if doit:
             ret = runConversion(obj)
-            out.append('%s,%d,%s' % (brain.getPath()[ppl:], tobytes(brain.getObjSize), ret))
-        else:
-            sizes = dv_images_size(obj)
-            out.append('%s,%d,%d,%d,%d,%d,%s,%s' % (brain.getPath()[ppl:], tobytes(brain.getObjSize), sizes['large'],
-                                                    sizes['normal'], sizes['small'], sizes['text'],
-                                                    sizes.get('fmt', ''), sizes.get('pages', '')))
-    if change:
-        out.insert(5, '\nFile,File size,Conversion status')
-    else:
-        out.insert(5, "\nFile,File size,Large size,Normal size,Small size,Text size,Format,Pages")
-        out.append('TOTAL,=somme(B2:B{0}),=somme(C2:C{0}),=somme(D2:D{0}),=somme(E2:E{0}),=somme(F2:F{0}),,'
-                   '=somme(H2:H{0})'.format(bl+1))
+            if ret == 'failure':
+                log_list(out, "Error during conversion of %s" % brain.getURL(), logger, 'error')
+            else:
+                converted += 1
+                sizes = dv_images_size(obj)
+                total['new_i'] += (sizes['large'] + sizes['normal'] + sizes['small'])
+    loggerdv.setLevel(20)
+    if as_csv:
+        log_list(out, 'TOTAL,=somme(B2:B{0})/1048576,=somme(C2:C{0})/1048576,=somme(D2:D{0})/1048576,'
+                      '=somme(E2:E{0})/1048576,=somme(F2:F{0})/1048576,,=somme(H2:H{0})'.format(bl+1))
+
     end = datetime(1973, 02, 12).now()
     delta = end - start
-    logger.info("Finishing dv_conversion, duration %s" % delta)
-    out.append("Finishing dv_conversion, duration %s" % delta)
+    log_list(out, "Finishing dv_conversion, duration %s" % delta, logger)
+    log_list(out, "Files: '%d', 'To convert: %d', 'Converted: %d', PDF: '%s', Pages: '%d', old: '%s', new: '%s'" %
+             (bl, to_convert, converted, fileSize(total['orig'], decimal=','), total['pages'],
+              fileSize(total['old_i'], decimal=','), fileSize(total['new_i'], decimal=',')), logger)
     return '\n'.join(out)
 
 ###############################################################################
