@@ -3184,7 +3184,7 @@ def dv_images_size(self):
     import os
     sizes = {'large': 0, 'normal': 0, 'small': 0, 'text': 0, 'pages': 0, 'fmt': ''}
     annot = IAnnotations(self).get('collective.documentviewer', '')
-    if not annot or not annot['successfully_converted'] or not annot.get('blob_files', None):
+    if not annot or not annot.get('successfully_converted') or not annot.get('blob_files', None):
         return sizes
     files = annot.get('blob_files', None)
     keys = files.keys()
@@ -3205,7 +3205,8 @@ def dv_images_size(self):
 ###############################################################################
 
 
-def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg', change='', csv=''):
+def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg', change='', csv='',
+                  batch='3000'):
     """
         Convert files into document viewer images
     """
@@ -3226,13 +3227,14 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
     start = datetime(1973, 02, 12).now()
     import logging
     logger = logging.getLogger('CPUtils dv_conversion')
+    commit = int(batch)
+    import transaction
     log_list(out, "Starting dv_conversion at %s" % start, logger)
     doit = as_csv = False
     if change == '1':
         doit = True
-
-    gsettings = GlobalSettings(self.portal_url.getPortalObject())
-    gsettings.pdf_image_format = fmt
+        gsettings = GlobalSettings(self.portal_url.getPortalObject())
+        gsettings.pdf_image_format = fmt
     pts = pt.split(',')
     brains = self.portal_catalog(portal_type=pts)
     bl = len(brains)
@@ -3257,8 +3259,9 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
                                                        sizes['normal'], sizes['small'], sizes['text'],
                                                        sizes.get('fmt', ''), sizes.get('pages', '')), logger)
 
-        if doit and not i % 1000:
+        if doit and not i % commit:
             log_list(out, "dv_conversion: treating %d" % i, logger)
+            transaction.commit()
         if sizes['fmt'] == fmt:
             total['new_i'] += (sizes['large'] + sizes['normal'] + sizes['small'])
             continue
