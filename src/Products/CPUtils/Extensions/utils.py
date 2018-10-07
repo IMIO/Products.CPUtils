@@ -3216,6 +3216,8 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
     out.append("call the script followed by needed parameters:")
     out.append("-> pt=portal_types to search, separated by comma (default dmsmainfile,dmsommainfile,dmsappendixfile)")
     out.append("-> fmt=images format (jpg or png: default jpg)")
+    out.append("-> csv=1 export to csv")
+    out.append("-> batch=batch number to commit each nth (default 3000)")
     out.append("-> change=1")
     try:
         from collective.documentviewer.convert import runConversion
