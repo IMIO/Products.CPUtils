@@ -3261,9 +3261,6 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
                                                        sizes['normal'], sizes['small'], sizes['text'],
                                                        sizes.get('fmt', ''), sizes.get('pages', '')), logger)
 
-        if doit and i and not i % commit:
-            log_list(out, "treating %d" % i, logger)
-            transaction.commit()
         if sizes['fmt'] == fmt:
             total['new_i'] += (sizes['large'] + sizes['normal'] + sizes['small'])
             continue
@@ -3276,6 +3273,12 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
                 converted += 1
                 sizes = dv_images_size(obj)
                 total['new_i'] += (sizes['large'] + sizes['normal'] + sizes['small'])
+                if converted % commit == 0:
+                    transaction.commit()
+                    log_list(out, "Files: '%d', 'To convert: %d', 'Converted: %d', PDF: '%s', Pages: '%d', old: '%s', "
+                             "new: '%s'"
+                             % (bl, to_convert, converted, fileSize(total['orig'], decimal=','), total['pages'],
+                                fileSize(total['old_i'], decimal=','), fileSize(total['new_i'], decimal=',')), logger)
     loggerdv.setLevel(20)
     if as_csv:
         log_list(out, 'TOTAL,=somme(B2:B{0})/1048576,=somme(C2:C{0})/1048576,=somme(D2:D{0})/1048576,'
