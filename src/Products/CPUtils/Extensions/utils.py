@@ -2201,6 +2201,40 @@ def removeStep(self, step=''):
 ###############################################################################
 
 
+def remove_dependency_step(self, step='', dependency='', change=''):
+    """
+        Remove from import step an invalid dependency
+    """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+
+    from Products.CMFCore.utils import getToolByName
+    from Products.GenericSetup.registry import _import_step_registry
+    out = []
+
+    out.append("<h2>You can call the script with following parameters:\n</h2>")
+    out.append("-> step=name of step to search in\n")
+    out.append("-> dependency=name of dependency to remove from list\n")
+
+    setup = getToolByName(self, 'portal_setup')
+    # out.append(str(ir.listSteps()))  # for debugging and seeing what steps are available
+    for registry in setup.getImportStepRegistry(), _import_step_registry:
+        if registry._registered.get(step) is None:
+            continue
+        deps = list(registry._registered.get(step)['dependencies'])
+        out.append("orig dependencies: {}".format(deps))
+        if dependency in deps:
+            deps.remove(dependency)
+            out.append("new dependencies: {}".format(deps))
+            if change == '1':
+                registry._registered.get(step)['dependencies'] = tuple(deps)
+                out.append("new value applied")
+    return '<br />\n'.join(out)
+
+
+###############################################################################
+
+
 def removeRegisteredTool(self, tool=''):
     """
         Remove a tool

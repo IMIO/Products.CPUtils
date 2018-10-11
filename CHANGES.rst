@@ -13,6 +13,8 @@ Changelog
   [sgeulette]
 - Improved dv_images_size
   [sgeulette]
+- Added script to remove dependency step from import registry
+  [sgeulette]
 
 1.13 (2017-11-27)
 -----------------
