@@ -717,7 +717,7 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
 ###############################################################################
 
 
-def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTextPaste=1, scayt=1):
+def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTextPaste=1, scayt=1, skin='moono-lisa'):
     """
         configure collective.ckeditor with default parameters.
         This method can be called as an external method, with the following parameters: ...?default=1&alluser=0&custom=0
@@ -763,6 +763,7 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
     out.append("-> allusers=... : set ckeditor for all users (default 1)")
     out.append("-> rmTiny=... : remove Tiny from available editors (default 1)")
     out.append("-> forceTextPaste=... : set force paste as plain text (default 1)")
+    out.append("-> skin=... : set skin (default moono-lisa)")
     out.append("-> custom=%s : set custom toolbar (default None)'\n" % '|'.join(customs.keys()))
 
     from Products.CMFCore.utils import getToolByName
@@ -835,6 +836,8 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
     # activate scayt
     if scayt:
         ckp.enableScaytOnStartup = True
+
+    ckp.skin = skin
 
     return '\n'.join(out)
 
