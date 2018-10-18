@@ -2238,6 +2238,8 @@ def remove_dependency_step(self, step='', dependency='', change='', by='5'):
             if change == '1':
                 registry._registered.get(step)['dependencies'] = tuple(deps)
                 out.append("<b>New value applied</b>")
+    if change == '1':
+        setup._p_changed = True
     return '<br />\n'.join(out)
 
 
