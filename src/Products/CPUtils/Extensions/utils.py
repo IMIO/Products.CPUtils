@@ -2204,7 +2204,7 @@ def removeStep(self, step=''):
 ###############################################################################
 
 
-def remove_dependency_step(self, step='', dependency='', change=''):
+def remove_dependency_step(self, step='', dependency='', change='', by='5'):
     """
         Remove from import step an invalid dependency
     """
@@ -2218,20 +2218,26 @@ def remove_dependency_step(self, step='', dependency='', change=''):
     out.append("<h2>You can call the script with following parameters:\n</h2>")
     out.append("-> step=name of step to search in\n")
     out.append("-> dependency=name of dependency to remove from list\n")
+    out.append("-> by=5 print x items by line\n")
+    out.append("-> change=1 apply changes\n")
+    by = int(by)
 
     setup = getToolByName(self, 'portal_setup')
-    # out.append(str(ir.listSteps()))  # for debugging and seeing what steps are available
-    for registry in setup.getImportStepRegistry(), _import_step_registry:
+    for registry, name in ((setup.getImportStepRegistry(), 'getImportStepRegistry'),
+                           (_import_step_registry, '_import_step_registry')):
+        out.append("<br /><b>Available steps in '{}'</b>".format(name))
+        steps = sorted(registry.listSteps())
+        out.append("{}".format('<br />\n'.join([", ".join(steps[i:i+by]) for i in xrange(0, len(steps), by)])))
         if registry._registered.get(step) is None:
             continue
         deps = list(registry._registered.get(step)['dependencies'])
-        out.append("orig dependencies: {}".format(deps))
+        out.append("<b>Available dependencies</b> for {}: {}".format(step, deps))
         if dependency in deps:
             deps.remove(dependency)
-            out.append("new dependencies: {}".format(deps))
+            out.append("<b>New dependencies</b>: {}".format(deps))
             if change == '1':
                 registry._registered.get(step)['dependencies'] = tuple(deps)
-                out.append("new value applied")
+                out.append("<b>New value applied</b>")
     return '<br />\n'.join(out)
 
 
