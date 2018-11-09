@@ -3294,11 +3294,14 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
     total = {'orig': 0, 'pages': 0, 'old_i': 0, 'new_i': 0}
     loggerdv = logging.getLogger('collective.documentviewer')
     loggerdv.setLevel(30)
-    to_convert = converted = 0
+    to_convert = converted = already = 0
     for i, brain in enumerate(brains):
         obj = brain.getObject()
         sizes = dv_images_size(obj)
-        total['orig'] += tobytes(brain.getObjSize)
+        try:
+            total['orig'] += tobytes(brain.getObjSize)
+        except:
+            log_list(out, "getObjSize is empty for '%s'" % brain.getURL(), logger, 'warn')
         total['old_i'] += (sizes['large'] + sizes['normal'] + sizes['small'])
         total['pages'] += sizes['pages']
         if as_csv:
@@ -3308,6 +3311,7 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
 
         if sizes['fmt'] == fmt:
             total['new_i'] += (sizes['large'] + sizes['normal'] + sizes['small'])
+            already += 1
             continue
         to_convert += 1
         if doit:
@@ -3320,10 +3324,11 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
                 total['new_i'] += (sizes['large'] + sizes['normal'] + sizes['small'])
                 if converted % commit == 0:
                     transaction.commit()
-                    log_list(out, "Files: '%d', 'To convert: %d', 'Converted: %d', PDF: '%s', Pages: '%d', old: '%s', "
-                             "new: '%s'"
-                             % (bl, to_convert, converted, fileSize(total['orig'], decimal=','), total['pages'],
-                                fileSize(total['old_i'], decimal=','), fileSize(total['new_i'], decimal=',')), logger)
+                    log_list(out, "Files: '%d', To convert: '%d', Converted: '%d', Already: '%d', PDF: '%s', "
+                             "Pages: '%d', old: '%s', new: '%s'"
+                             % (bl, to_convert, converted, already, fileSize(total['orig'], decimal=','),
+                                total['pages'], fileSize(total['old_i'], decimal=','), fileSize(total['new_i'],
+                                decimal=',')), logger)
     loggerdv.setLevel(20)
     if as_csv:
         log_list(out, 'TOTAL,=somme(B2:B{0})/1048576,=somme(C2:C{0})/1048576,=somme(D2:D{0})/1048576,'
@@ -3332,9 +3337,11 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
     end = datetime(1973, 02, 12).now()
     delta = end - start
     log_list(out, "Finishing dv_conversion, duration %s" % delta, logger)
-    log_list(out, "Files: '%d', 'To convert: %d', 'Converted: %d', PDF: '%s', Pages: '%d', old: '%s', new: '%s'" %
-             (bl, to_convert, converted, fileSize(total['orig'], decimal=','), total['pages'],
-              fileSize(total['old_i'], decimal=','), fileSize(total['new_i'], decimal=',')), logger)
+    log_list(out, "Files: '%d', To convert: '%d', Converted: '%d', Already: '%d', PDF: '%s', "
+             "Pages: '%d', old: '%s', new: '%s'"
+             % (bl, to_convert, converted, already, fileSize(total['orig'], decimal=','),
+                total['pages'], fileSize(total['old_i'], decimal=','), fileSize(total['new_i'],
+                decimal=',')), logger)
     return '\n'.join(out)
 
 ###############################################################################
