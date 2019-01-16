@@ -837,7 +837,8 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
     if scayt:
         ckp.enableScaytOnStartup = True
 
-    ckp.skin = skin
+    if ckp.hasProperty('skin'):
+        ckp.manage_changeProperties(skin=skin)
 
     return '\n'.join(out)
 
@@ -1947,8 +1948,8 @@ def list_portlets(self):
     from zope.annotation.interfaces import IAnnotations
     out = []
     ann = IAnnotations(self)
-    out.append("left: "+str(dict(ann['plone.portlets.contextassignments']['plone.leftcolumn'])))
-    out.append("right: "+str(dict(ann['plone.portlets.contextassignments']['plone.rightcolumn'])))
+    out.append("left: "+str(dict(ann['plone.portlets.contextassignments'].get('plone.leftcolumn', ''))))
+    out.append("right: "+str(dict(ann['plone.portlets.contextassignments'].get('plone.rightcolumn', ''))))
     return "\n".join(out)
 
 ###############################################################################

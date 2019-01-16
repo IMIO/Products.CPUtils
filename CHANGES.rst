@@ -15,6 +15,8 @@ Changelog
   [sgeulette]
 - Added script to remove dependency step from import registry
   [sgeulette]
+- Improved configure_ckeditor and list_portlets
+  [sgeulette]
 
 1.13 (2017-11-27)
 -----------------
