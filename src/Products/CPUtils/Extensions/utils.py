@@ -3284,9 +3284,15 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
         gsettings = GlobalSettings(self.portal_url.getPortalObject())
         gsettings.pdf_image_format = fmt
     pts = pt.split(',')
-    brains = self.portal_catalog(portal_type=pts)
+    portal = self.portal_url.getPortalObject()
+    where = ''
+    crits = {'portal_type': pts}
+    if self != portal:
+        crits['path'] = '/'.join(self.getPhysicalPath())
+        where = "in context "
+    brains = self.portal_catalog(**crits)
     bl = len(brains)
-    log_list(out, "Searching portal_types '%s': found %d objects" % (pts, bl), logger)
+    log_list(out, "Searching portal_types '%s' %s: found %d objects" % (pts, where, bl), logger)
     if csv == '1':
         as_csv = True
         portal_path = self.portal_url.getPortalPath()
