@@ -3837,6 +3837,7 @@ def check_relations(self):
     for rel in relations:
         if not rel.from_id or not intids.queryObject(rel.from_id, False):
             log_list(out, "Missing from_id %s" % relation_infos(rel))
+            # rels.unindex(rel)
         elif not rel.to_id or not intids.queryObject(rel.to_id, False):
             log_list(out, "Missing to_id %s" % relation_infos(rel))
         elif not rel.from_object or not intids.queryId(rel.from_object, False):
