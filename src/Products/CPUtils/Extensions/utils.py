@@ -2927,7 +2927,7 @@ def removeZFT(self):
 ###############################################################################
 
 
-def order_folder(self, key='title', reverse='', verbose=1):
+def order_folder(self, key='title', reverse='', verbose='1'):
     """
         Order items in a folder
     """
@@ -3807,3 +3807,42 @@ def set_attr(self, attr='', value='', typ='str'):
     self.reindexObject()
     out.append("Attr '%s' set to '%s'" % (attr, new_val))
     return sep.join(out)
+
+
+###############################################################################
+
+def relation_infos(rel):
+    """ utils method: not to be called as external method """
+    return {'br': rel.isBroken(), 'fr_i': rel.from_id, 'fr_o': rel.from_object, 'fr_a': rel.from_attribute,
+            'fr_p': rel.from_path, 'to_i': rel.to_id, 'to_o': rel.to_object, 'to_p': rel.to_path}
+    # rel.from_interfaces, rel.from_interfaces_flattened, rel.to_interfaces, rel.to_interfaces_flattened
+
+
+def check_references(self):
+    """
+        check zc.relations problems
+        see collective.contact.core.upgrades.upgrades.reindex_relations
+        see from z3c.relationfield.event import updateRelations
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    from zc.relation.interfaces import ICatalog
+    from zope.app.intid.interfaces import IIntIds
+    from zope.component import getUtility
+
+    intids = getUtility(IIntIds)
+    rels = getUtility(ICatalog)
+    out = ['check_intids\n']
+    relations = list(rels.findRelations())
+    for rel in relations:
+        if not rel.from_id or not intids.queryObject(rel.from_id, False):
+            log_list(out, "Missing from_id %s" % relation_infos(rel))
+        elif not rel.to_id or not intids.queryObject(rel.to_id, False):
+            log_list(out, "Missing to_id %s" % relation_infos(rel))
+        elif not rel.from_object or not intids.queryId(rel.from_object, False):
+            log_list(out, "Missing from_object %s" % relation_infos(rel))
+        elif not rel.to_object or not intids.queryId(rel.to_object, False):
+            log_list(out, "Missing to_object %s" % relation_infos(rel))
+    if len(out) == 1:
+        out.append('No problem found')
+    return '\n'.join(out)
