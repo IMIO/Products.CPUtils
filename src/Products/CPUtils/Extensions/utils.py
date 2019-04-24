@@ -3818,7 +3818,7 @@ def relation_infos(rel):
     # rel.from_interfaces, rel.from_interfaces_flattened, rel.to_interfaces, rel.to_interfaces_flattened
 
 
-def check_references(self):
+def check_relations(self):
     """
         check zc.relations problems
         see collective.contact.core.upgrades.upgrades.reindex_relations
