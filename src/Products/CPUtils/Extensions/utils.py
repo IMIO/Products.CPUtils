@@ -2927,7 +2927,7 @@ def removeZFT(self):
 ###############################################################################
 
 
-def order_folder(self, key='title', reverse='', verbose='1'):
+def order_folder(self, key='title', reverse='', verbose=''):
     """
         Order items in a folder
     """

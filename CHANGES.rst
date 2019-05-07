@@ -17,6 +17,8 @@ Changelog
   [sgeulette]
 - Improved configure_ckeditor and list_portlets
   [sgeulette]
+- Improved order_folder
+  [sgeulette]
 
 1.13 (2017-11-27)
 -----------------
