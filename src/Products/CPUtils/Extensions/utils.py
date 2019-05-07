@@ -845,7 +845,8 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
 ###############################################################################
 
 
-def list_users(self, output='csv', sort='users', gtitle='1', separator=';'):
+def list_users(self, output='csv', sort='users', gtitle='1', separator=';',
+               ignored_global_roles=('Member', 'Authenticated')):
     """
         list users following parameters :
             sort = 'users' or 'groups', sort key for output
@@ -853,21 +854,16 @@ def list_users(self, output='csv', sort='users', gtitle='1', separator=';'):
     """
     if not check_role(self):
         return "You must have a manager role to run this script"
-    lf = '\n'
     lf = '<br />\n'
 
     from Products.CMFCore.utils import getToolByName
     pg = getToolByName(self, "portal_groups")
-    out = []
-    out.append('<h2>Users list</h2>')
-    out.append("You can call the script with the following parameters:")
-    out.append("-> output=screen => output for screen or csv (default=csv)")
-    out.append("-> sort=groups (or users) => output is sorted following groups (default=users)")
-    out.append("-> gtitle=0 => include group title (default=1)")
-    out.append("-> separator=; => csv separator (default=;)")
-    out.append("by example /cputils_list_users?output=screen&sort=groups")
-    out.append("You can copy/paste the following lines in the right program like libreoffice calc ;-) or Excel :-(%s" %
-               lf)
+    out = ['<h2>Users list</h2>', "You can call the script with the following parameters:",
+           "-> output=screen => output for screen or csv (default=csv)",
+           "-> sort=groups (or users) => output is sorted following groups (default=users)",
+           "-> gtitle=0 => include group title (default=1)", "-> separator=; => csv separator (default=;)",
+           "by example /cputils_list_users?output=screen&sort=groups",
+           "You can copy/paste the following lines in the right program like libreoffice calc ;-) or Excel :-(%s" % lf]
 
     if sort not in ('users', 'groups'):
         out.append("invalid parameter sort, value must be 'users' or 'groups'")
@@ -883,56 +879,98 @@ def list_users(self, output='csv', sort='users', gtitle='1', separator=';'):
     groups = {}
     for member in get_users(self):
         userid = member.id
+
         if not userid in users:
-            users[userid] = {'obj': member, 'name': member.getProperty('fullname'),
-                             'email': member.getProperty('email')}
+            roles = [role for role in member.getRoles() if role not in ignored_global_roles]
+            users[userid] = {'obj': member,
+                             'name': member.getProperty('fullname'),
+                             'email': member.getProperty('email'),
+                             'roles': roles}
         groupids = [safe_encode(gid) for gid in pg.getGroupsForPrincipal(member) if gid != 'AuthenticatedUsers']
         if not groupids:
             groupids = ['aucun']
         users[userid]['groups'] = groupids
         for groupid in groupids:
             if not groupid in groups:
-                groups[groupid] = {'title': pg.getGroupInfo(groupid) and pg.getGroupInfo(groupid)['title'] or ''}
-                groups[groupid]['users'] = []
+                grp = pg.getGroupById(groupid)
+                roles = [role for role in grp.getRoles() if role not in ignored_global_roles]
+                groups[groupid] = {'title': pg.getGroupInfo(groupid) and pg.getGroupInfo(groupid)['title'] or '',
+                                   'roles': roles,
+                                   'users': []}
             groups[groupid]['users'].append(userid)
 
     if output == 'csv':
-        titles = {'users': ['UserId', 'GroupId', 'Username', 'Email'],
-                  'groups': ['GroupId', 'UserId', 'Username', 'Email'],
+        titles = {'users': ['UserId', 'GroupId', 'Username', 'Email', 'UserGlobalRoles', 'GroupGlobalRoles'],
+                  'groups': ['GroupId', 'UserId', 'Username', 'Email', 'GroupGlobalRoles', 'UserGlobalRoles'],
                   }
         # insert 'GroupTitle' after 'GroupId'
         if title:
             titles[sort].insert(titles[sort].index('GroupId')+1, 'GroupTitle')
+        if ignored_global_roles == '*':
+            titles['users'].remove('UserGlobalRoles')
+            titles['users'].remove('GroupGlobalRoles')
+            titles['groups'].remove('UserGlobalRoles')
+            titles['groups'].remove('GroupGlobalRoles')
         out.append(separator.join(titles[sort]))
 
     if sort == 'users':
         for userid in sorted(users.keys()):
             if output == 'screen':
-                out.append("- userid: %s, fullname: %s, email: %s" % (userid, users[userid]['name'],
-                           users[userid]['email']))
+                outstr = "- userid: %s, fullname: %s, email: %s" % \
+                         (userid, users[userid]['name'], users[userid]['email'])
+                if ignored_global_roles != '*':
+                    outstr += ", global roles: %s" % (', '.join(users[userid]['roles']))
+
+                out.append(outstr)
+
             for groupid in users[userid]['groups']:
                 if output == 'csv':
-                    infos = [userid, groupid, users[userid]['name'], users[userid]['email']]
+                    infos = [userid,
+                             groupid,
+                             users[userid]['name'],
+                             users[userid]['email']]
                     if title:
                         infos.insert(2, groups[groupid]['title'])
+                    if ignored_global_roles != '*':
+                        infos.append(' '.join(users[userid]['roles']))  # user global roles before groups global roles
+                        infos.append(' '.join(groups[groupid]['roles']))
                     out.append(separator.join(infos))
                 else:
-                    out.append('&emsp;&emsp;&rArr; %s' % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
-                                                          or groupid))
+                    outstr = '&emsp;&emsp;&rArr; %s' % (groupid)
+                    if title:
+                        outstr += ', %s' % (groups[groupid]['title'])
+                    if ignored_global_roles != '*':
+                        outstr += ", global roles: %s" % (', '.join(groups[groupid]['roles']))
+                    out.append(outstr)
     elif sort == 'groups':
         for groupid in sorted(groups.keys()):
             if output == 'screen':
-                out.append("- groupid: %s" % (title and '%s "%s"' % (groupid, groups[groupid]['title'])
-                                              or groupid))
+                outstr = '- groupid: %s' % (groupid)
+                if title:
+                    outstr += ', %s' % (groups[groupid]['title'])
+                if ignored_global_roles != '*':
+                    outstr += ", global roles: %s" % (', '.join(groups[groupid]['roles']))
+                out.append(outstr)
+
             for userid in groups[groupid]['users']:
                 if output == 'csv':
-                    infos = [groupid, userid, users[userid]['name'], users[userid]['email']]
+                    infos = [groupid,
+                             userid,
+                             users[userid]['name'],
+                             users[userid]['email']]
                     if title:
                         infos.insert(1, groups[groupid]['title'])
+                    if ignored_global_roles != '*':
+                        infos.append(' '.join(groups[groupid]['roles']))  # group global roles before groups global roles
+                        infos.append(' '.join(users[userid]['roles']))
                     out.append(separator.join(infos))
                 else:
-                    out.append('&emsp;&emsp;&rArr; %s, fullname: %s, email: %s' % (userid, users[userid]['name'],
-                               users[userid]['email']))
+                    outstr = "&emsp;&emsp;&rArr; %s, fullname: %s, email: %s" % \
+                             (userid, users[userid]['name'], users[userid]['email'])
+                    if ignored_global_roles != '*':
+                        outstr += ", global roles: %s" % (', '.join(users[userid]['roles']))
+
+                    out.append(outstr)
     return lf.join(out)
 
 ###############################################################################
@@ -2927,7 +2965,7 @@ def removeZFT(self):
 ###############################################################################
 
 
-def order_folder(self, key='title', reverse='', verbose=''):
+def order_folder(self, key='title', reverse='', verbose='1'):
     """
         Order items in a folder
     """
