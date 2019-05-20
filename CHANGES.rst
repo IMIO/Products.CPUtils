@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.14 (unreleased)
+1.14 (2019-05-20)
 -----------------
 
 - Added function to construct link to object
