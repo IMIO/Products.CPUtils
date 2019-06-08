@@ -5,8 +5,8 @@ Changelog
 1.15 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- The list_users method returns also global roles of groups/users.
+  [odelaere]
 
 1.14 (2019-05-20)
 -----------------
