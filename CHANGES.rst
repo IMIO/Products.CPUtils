@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.15 (unreleased)
+1.15 (2019-06-08)
 -----------------
 
 - The list_users method returns also global roles of groups/users.
