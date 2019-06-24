@@ -893,10 +893,13 @@ def list_users(self, output='csv', sort='users', gtitle='1', separator=';',
         for groupid in groupids:
             if not groupid in groups:
                 grp = pg.getGroupById(groupid)
-                roles = [role for role in grp.getRoles() if role not in ignored_global_roles]
-                groups[groupid] = {'title': pg.getGroupInfo(groupid) and pg.getGroupInfo(groupid)['title'] or '',
-                                   'roles': roles,
-                                   'users': []}
+                if grp is not None:
+                    roles = [role for role in grp.getRoles() if role not in ignored_global_roles]
+                    groups[groupid] = {'title': pg.getGroupInfo(groupid) and pg.getGroupInfo(groupid)['title'] or '',
+                                       'roles': roles,
+                                       'users': []}
+                else:
+                    groups[groupid] = {'title': '', 'roles': [], 'users': []}
             groups[groupid]['users'].append(userid)
 
     if output == 'csv':
@@ -919,7 +922,7 @@ def list_users(self, output='csv', sort='users', gtitle='1', separator=';',
                 outstr = "- userid: %s, fullname: %s, email: %s" % \
                          (userid, users[userid]['name'], users[userid]['email'])
                 if ignored_global_roles != '*':
-                    outstr += ", global roles: %s" % (', '.join(users[userid]['roles']))
+                    outstr += ", global roles: %s" % (','.join(users[userid]['roles']))
 
                 out.append(outstr)
 
@@ -932,15 +935,15 @@ def list_users(self, output='csv', sort='users', gtitle='1', separator=';',
                     if title:
                         infos.insert(2, groups[groupid]['title'])
                     if ignored_global_roles != '*':
-                        infos.append(' '.join(users[userid]['roles']))  # user global roles before groups global roles
-                        infos.append(' '.join(groups[groupid]['roles']))
+                        infos.append(','.join(users[userid]['roles']))  # user global roles before groups global roles
+                        infos.append(','.join(groups[groupid]['roles']))
                     out.append(separator.join(infos))
                 else:
                     outstr = '&emsp;&emsp;&rArr; %s' % (groupid)
                     if title:
                         outstr += ', %s' % (groups[groupid]['title'])
                     if ignored_global_roles != '*':
-                        outstr += ", global roles: %s" % (', '.join(groups[groupid]['roles']))
+                        outstr += ", global roles: %s" % (','.join(groups[groupid]['roles']))
                     out.append(outstr)
     elif sort == 'groups':
         for groupid in sorted(groups.keys()):
@@ -949,7 +952,7 @@ def list_users(self, output='csv', sort='users', gtitle='1', separator=';',
                 if title:
                     outstr += ', %s' % (groups[groupid]['title'])
                 if ignored_global_roles != '*':
-                    outstr += ", global roles: %s" % (', '.join(groups[groupid]['roles']))
+                    outstr += ", global roles: %s" % (','.join(groups[groupid]['roles']))
                 out.append(outstr)
 
             for userid in groups[groupid]['users']:
@@ -961,14 +964,14 @@ def list_users(self, output='csv', sort='users', gtitle='1', separator=';',
                     if title:
                         infos.insert(1, groups[groupid]['title'])
                     if ignored_global_roles != '*':
-                        infos.append(' '.join(groups[groupid]['roles']))  # group global roles before groups global roles
-                        infos.append(' '.join(users[userid]['roles']))
+                        infos.append(','.join(groups[groupid]['roles']))  # group global roles before groups global roles
+                        infos.append(','.join(users[userid]['roles']))
                     out.append(separator.join(infos))
                 else:
                     outstr = "&emsp;&emsp;&rArr; %s, fullname: %s, email: %s" % \
                              (userid, users[userid]['name'], users[userid]['email'])
                     if ignored_global_roles != '*':
-                        outstr += ", global roles: %s" % (', '.join(users[userid]['roles']))
+                        outstr += ", global roles: %s" % (','.join(users[userid]['roles']))
 
                     out.append(outstr)
     return lf.join(out)
