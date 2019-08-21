@@ -138,10 +138,17 @@ def log_list(lst, line, logger=None, level='info'):
     lst.append(line)
 
 
-def object_link(obj, view='view'):
+def object_link(obj, view='view', attribute='Title', content=''):
+    """ Returns an html link for the given object """
     from Products.CMFPlone.utils import safe_unicode
     href = view and "%s/%s" % (obj.absolute_url(), view) or obj.absolute_url()
-    return u'<a href="%s">%s</a>' % (href, safe_unicode(obj.Title()))
+    if not content:
+        if not hasattr(obj, attribute):
+            attribute = 'Title'
+        content = getattr(obj, attribute)
+        if callable(content):
+            content = content()
+    return u'<a href="%s">%s</a>' % (href, safe_unicode(content))
 
 ###############################################################################
 
