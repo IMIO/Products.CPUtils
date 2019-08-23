@@ -5,8 +5,10 @@ Changelog
 1.16 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Corrected list_users.
+  [sgeulette]
+- Improved object_link function.
+  [sgeulette]
 
 1.15 (2019-06-08)
 -----------------
