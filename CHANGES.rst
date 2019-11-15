@@ -5,8 +5,8 @@ Changelog
 1.17 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Added redirect after order.
+  [sgeulette]
 
 1.16 (2019-08-23)
 -----------------

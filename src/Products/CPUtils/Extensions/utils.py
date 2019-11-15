@@ -3001,6 +3001,8 @@ def order_folder(self, key='title', reverse='', verbose=''):
 
     if do_print:
         return '<br />\n'.join(out)
+    else:
+        return self.REQUEST.RESPONSE.redirect(self.absolute_url())
 
 ###############################################################################
 
