@@ -5,6 +5,8 @@ Changelog
 1.17 (unreleased)
 -----------------
 
+- Add a function to cleanup documentviewer generated previews
+  [mpeeters]
 - Added redirect after order.
   [sgeulette]
 

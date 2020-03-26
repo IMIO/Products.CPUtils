@@ -3897,3 +3897,21 @@ def check_relations(self):
     if len(out) == 1:
         out.append('No problem found')
     return '\n'.join(out)
+
+
+###############################################################################
+
+def batch_remove_generated_previews(objs):
+    """ Remove document viewer generated previews for a list of objects or brains """
+    for obj in objs:
+        remove_generated_previews(obj)
+
+
+def remove_generated_previews(obj):
+    """ Remove document viewer generated previews for an object or brain """
+    from zope.annotation import IAnnotations
+    if hasattr(obj, "getObject"):
+        obj = obj.getObject()
+    annotations = IAnnotations(obj)
+    if "collective.documentviewer" in annotations:
+        annotations.pop('collective.documentviewer', {})
