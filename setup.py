@@ -7,12 +7,12 @@ from setuptools import setup
 
 long_description = (
     open('README.rst').read()
-    + '\n' +
+    + '\n\n' +
     'Contributors\n'
     '============\n'
-    + '\n' +
+    + '\n\n' +
     open('CONTRIBUTORS.rst').read()
-    + '\n' +
+    + '\n\n' +
     open('CHANGES.rst').read()
     + '\n')
 
