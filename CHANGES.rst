@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.17 (unreleased)
+1.17 (2020-04-02)
 -----------------
 
 - Add a function to cleanup documentviewer generated previews
