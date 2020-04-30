@@ -755,6 +755,12 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
                "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
                "['NumberedList','BulletedList'],\n['Table','SpecialChar','Link','Unlink'],\n['Format'],\n['Maximize', "
                "'ShowBlocks', 'Source']\n]",
+               'pst':
+               u"[\n['AjaxSave'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
+               "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
+               "['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter',"
+               "'JustifyRight','JustifyBlock'],\n['Table','SpecialChar','Link','Unlink'],\n'/',\n['Styles'],"
+               "\n['Maximize', 'ShowBlocks', 'Source']\n]",
                'site':
                u"[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n"
                "['Undo','Redo','-','Find','Replace','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike','-',"
