@@ -5,7 +5,8 @@ Changelog
 1.18 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Fix for password validation that was validating the hash
+  [bleybaert]
 
 
 1.17 (2020-04-02)
