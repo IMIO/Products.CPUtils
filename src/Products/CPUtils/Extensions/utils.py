@@ -173,7 +173,7 @@ def install(self):
                    'objects_stats', 'order_folder', 'recreate_users_groups',
                    'reftooltoobjects', 'removeStep', 'rename_long_ids',
                    'resources_order', 'send_adminMail', 'set_attr', 'store_user_properties',
-                   'sync_properties', 'unlock_webdav_objects', 'zmi'
+                   'sync_properties', 'uid', 'unlock_webdav_objects', 'zmi'
                    ):
         method_name = 'cputils_' + method
         if not base_hasattr(self, method_name):
@@ -3876,6 +3876,17 @@ def set_attr(self, attr='', value='', typ='str'):
     out.append("Attr '%s' set to '%s'" % (attr, new_val))
     return sep.join(out)
 
+
+###############################################################################
+
+def uid(self):
+    """ Display uid value """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    try:
+        return self.UID()
+    except Exception, msg:
+        return msg
 
 ###############################################################################
 
