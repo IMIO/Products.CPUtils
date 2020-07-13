@@ -4,6 +4,8 @@ Changelog
 
 1.18 (unreleased)
 -----------------
+- Added Check all catalog intids for registration method
+  [fngaha]
 
 - Fix for password validation that was validating the hash
   [bleybaert]
