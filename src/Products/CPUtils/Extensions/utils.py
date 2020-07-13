@@ -3605,6 +3605,46 @@ def register_intid(self, dochange=''):
 ###############################################################################
 
 
+def check_all_catalog_intids(self, dochange=''):
+    """
+        Check all catalog intids for registration.
+    """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    from zope.component import getUtility
+    from zope.intid.interfaces import IIntIds
+    out = ["Check all catalog intids for registration."]
+    intids = getUtility(IIntIds)
+    portal_types = []
+    number_of_cataloged_objects = 0
+    number_of_registered_intid = 0
+    number_of_missing_intid = 0
+    for brain in self.portal_catalog():
+        number_of_cataloged_objects += 1
+        obj = brain.getObject()
+        try:
+            out.append("obj already registered with intid {}".format(intids.getId(obj)))
+            number_of_registered_intid += 1
+        except KeyError:
+            number_of_missing_intid += 1
+            portal_type = obj.portal_type
+            if portal_type not in portal_types:
+                portal_types.append(portal_type)
+            out.append(
+                "!! Missing intid !! portal_type : {}, absolute_url : {}".format(portal_type, obj.absolute_url())
+            )
+            if dochange == '1':
+                intids.register(obj)
+                out.append("obj now registered with intid '%s'" % intids.getId(obj))
+    resume = "<br />number of cataloged objects : {}; number of registered intid : {}; number of missing intid : {};"\
+             "\n<br />portal_types : {}".format(
+                 number_of_cataloged_objects, number_of_registered_intid, number_of_missing_intid, portal_types)
+    return resume + "\n<br />".join(out)
+
+
+###############################################################################
+
+
 def check_blobs(self, delete=''):
     """
         Check blobs for poskeyerrors, limited to cataloged object
