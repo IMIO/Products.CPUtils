@@ -5,8 +5,10 @@ Changelog
 1.18 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Fix for password validation that was validating the hash
+  [bleybaert]
+- Added uid method to display current uid
+  [sgeulette]
 
 1.17 (2020-04-02)
 -----------------

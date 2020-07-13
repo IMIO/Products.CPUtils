@@ -173,7 +173,7 @@ def install(self):
                    'objects_stats', 'order_folder', 'recreate_users_groups',
                    'reftooltoobjects', 'removeStep', 'rename_long_ids',
                    'resources_order', 'send_adminMail', 'set_attr', 'store_user_properties',
-                   'sync_properties', 'unlock_webdav_objects', 'zmi'
+                   'sync_properties', 'uid', 'unlock_webdav_objects', 'zmi'
                    ):
         method_name = 'cputils_' + method
         if not base_hasattr(self, method_name):
@@ -1072,6 +1072,15 @@ def recreate_users_groups(self, only_users=False, only_groups=False, dochange=''
         users = old_acl.getUsers()
         #thanks http://blog.kagesenshi.org/2008/05/exporting-plone30-memberdata-and.html
         passwords = old_acl.source_users._user_passwords
+        # Check if password validation is activated, if so deactivate it
+        # This is necessary because it will try to validate the hash instead of the real password
+        val_deact = False
+        plugins = acl.plugins
+        val_plugins = plugins.getAllPlugins(plugin_type='IValidationPlugin')
+        if 'password_strength_plugin' in val_plugins['active']:
+            from Products.PluggableAuthService.interfaces.plugins import IValidationPlugin
+            plugins.deactivatePlugin(IValidationPlugin, 'password_strength_plugin')
+            val_deact = True
         for user in users:
             if user.getUserId() not in [ud['userid'] for ud in acl.searchUsers()]:
                 if change:
@@ -1091,6 +1100,9 @@ def recreate_users_groups(self, only_users=False, only_groups=False, dochange=''
                         out.append("    -> Added in group '%s'" % groupid)
             else:
                 out.append("User '%s' already exists" % user.getUserId())
+        # Reactivate password validation plugin, only if we deactivated it
+        if val_deact:
+            plugins.activatePlugin(IValidationPlugin, 'password_strength_plugin')
     return lf.join(out)
 
 ###############################################################################
@@ -3904,6 +3916,17 @@ def set_attr(self, attr='', value='', typ='str'):
     out.append("Attr '%s' set to '%s'" % (attr, new_val))
     return sep.join(out)
 
+
+###############################################################################
+
+def uid(self):
+    """ Display uid value """
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    try:
+        return self.UID()
+    except Exception, msg:
+        return msg
 
 ###############################################################################
 
