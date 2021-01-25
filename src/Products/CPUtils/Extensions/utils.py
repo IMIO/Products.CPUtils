@@ -751,7 +751,7 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
                u"['Maximize','ShowBlocks','Source']\n"
                u"]\n",
                'ged':
-               u"[\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
+               u"[\n['Templates'], \n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
                "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
                "['NumberedList','BulletedList'],\n['Table','SpecialChar','Link','Unlink'],\n['Format'],\n['Maximize', "
                "'ShowBlocks', 'Source']\n]",

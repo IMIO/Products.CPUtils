@@ -6,10 +6,11 @@ Changelog
 -----------------
 - Added Check all catalog intids for registration method
   [fngaha]
-
 - Fix for password validation that was validating the hash
   [bleybaert]
 - Added uid method to display current uid
+  [sgeulette]
+- Modified ged ckeditor configuration
   [sgeulette]
 
 1.17 (2020-04-02)
