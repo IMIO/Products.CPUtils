@@ -724,7 +724,8 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
 ###############################################################################
 
 
-def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTextPaste=1, scayt=1, skin='moono-lisa'):
+def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTextPaste=1, scayt=1, skin='moono-lisa',
+                       filtering=''):
     """
         configure collective.ckeditor with default parameters.
         This method can be called as an external method, with the following parameters: ...?default=1&alluser=0&custom=0
@@ -770,14 +771,13 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
                "['Maximize', 'ShowBlocks', 'Source']\n]"
                }
 
-    out = []
-    out.append("Call the script followed by possible parameters:")
-    out.append("-> default=... : set as default editor (default 1)")
-    out.append("-> allusers=... : set ckeditor for all users (default 1)")
-    out.append("-> rmTiny=... : remove Tiny from available editors (default 1)")
-    out.append("-> forceTextPaste=... : set force paste as plain text (default 1)")
-    out.append("-> skin=... : set skin (default moono-lisa)")
-    out.append("-> custom=%s : set custom toolbar (default None)'\n" % '|'.join(customs.keys()))
+    out = ["Call the script followed by possible parameters:",
+           "-> default=... : set as default editor (default 1)",
+           "-> allusers=... : set ckeditor for all users (default 1)",
+           "-> rmTiny=... : remove Tiny from available editors (default 1)",
+           "-> forceTextPaste=... : set force paste as plain text (default 1)",
+           "-> skin=... : set skin (default moono-lisa)",
+           "-> custom=%s : set custom toolbar (default None)'\n" % '|'.join(customs.keys())]
 
     from Products.CMFCore.utils import getToolByName
     portal = getToolByName(self, "portal_url").getPortalObject()
@@ -792,20 +792,20 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
     sp = portal.portal_properties.site_properties
     ckp = portal.portal_properties.ckeditor_properties
 
-    #setting default editor to ckeditor
+    # setting default editor to ckeditor
     if default:
         portal.portal_memberdata.manage_changeProperties(wysiwyg_editor='CKeditor')
         sp.manage_changeProperties(default_editor='CKeditor')
         out.append("Set ckeditor as default editor")
 
-    #remove FCKeditor from available editor
+    # remove FCKeditor from available editor
     availables = list(sp.available_editors)
     if 'FCKeditor' in availables:
         availables.remove('FCKeditor')
     sp.manage_changeProperties(available_editors=availables)
     out.append("Removed FCKeditor from available editors")
 
-    #remove Tiny from available editor
+    # remove Tiny from available editor
     if rmTiny:
         availables = list(sp.available_editors)
         if 'TinyMCE' in availables:
@@ -826,14 +826,14 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
         disable_resource(portal.portal_css, names=['++resource++tinymce.stylesheets/tinymce.css'])
         disable_resource(portal.portal_javascripts, names=['jquery.tinymce.js', 'tiny_mce_gzip.js'])
 
-    #changing editor for all users
+    # changing editor for all users
     if allusers:
         change_user_properties(portal, kw='wysiwyg_editor:CKeditor', dochange=1)
         out.append("Set ckeditor as editor for all users")
 
-    #setting custom toolbar
+    # setting custom toolbar
     if custom:
-        if not custom in customs:
+        if custom not in customs:
             return "custom parameter '%s' not defined in available custom toolbars" % custom
         ckp = portal.portal_properties.ckeditor_properties
         if ckp.getProperty('toolbar') != 'Custom':
@@ -841,7 +841,7 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
             ckp.manage_changeProperties(toolbar_Custom=customs[custom])
         out.append("Set '%s' toolbar" % custom)
 
-    #force text paste
+    # force text paste
     if forceTextPaste:
         ckp.manage_changeProperties(forcePasteAsPlainText=True)
         out.append("Set forcePasteAsPlainText to True")
@@ -849,6 +849,12 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
     # activate scayt
     if scayt:
         ckp.enableScaytOnStartup = True
+        out.append("Set enableScaytOnStartup to True")
+
+    # change filtering
+    if filtering and filtering in ('default', 'custom', 'disabled'):
+        ckp.manage_changeProperties(filtering=filtering)
+        out.append("Set filtering to '{}'".format(filtering))
 
     if ckp.hasProperty('skin'):
         ckp.manage_changeProperties(skin=skin)

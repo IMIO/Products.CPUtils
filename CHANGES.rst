@@ -12,6 +12,8 @@ Changelog
   [sgeulette]
 - Modified ged ckeditor configuration
   [sgeulette]
+- Added `filtering` option in `configure_ckeditor` method
+  [sgeulette]
 
 1.17 (2020-04-02)
 -----------------
