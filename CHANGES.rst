@@ -14,6 +14,8 @@ Changelog
   [sgeulette]
 - Added `filtering` option in `configure_ckeditor` method
   [sgeulette]
+- Added `target` option in `object_link`
+  [sgeulette]
 
 1.17 (2020-04-02)
 -----------------
