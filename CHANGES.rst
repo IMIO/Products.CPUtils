@@ -16,6 +16,8 @@ Changelog
   [sgeulette]
 - Added `target` option in `object_link`
   [sgeulette]
+- Added `show_object_relations` method to display zc relations
+  [sgeulette]
 
 1.17 (2020-04-02)
 -----------------

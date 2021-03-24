@@ -174,7 +174,7 @@ def install(self):
                    'move_copy_objects', 'move_item', 'object_info',
                    'objects_stats', 'order_folder', 'recreate_users_groups',
                    'reftooltoobjects', 'removeStep', 'rename_long_ids',
-                   'resources_order', 'send_adminMail', 'set_attr', 'store_user_properties',
+                   'resources_order', 'send_adminMail', 'set_attr', 'show_object_relations', 'store_user_properties',
                    'sync_properties', 'uid', 'unlock_webdav_objects', 'zmi'
                    ):
         method_name = 'cputils_' + method
@@ -3973,6 +3973,24 @@ def check_relations(self):
             log_list(out, "Missing to_object %s" % relation_infos(rel))
     if len(out) == 1:
         out.append('No problem found')
+    return '\n'.join(out)
+
+
+def show_object_relations(self):
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    from zope.component import queryUtility
+    from zc.relation.interfaces import ICatalog  # noqa
+    from zope.intid.interfaces import IIntIds
+    intids = queryUtility(IIntIds)
+    catalog = queryUtility(ICatalog)
+    out = []
+    for way in ('from', 'to'):
+        out.append('Way = {}'.format(way))
+        query = {'{}_id'.format(way): intids.getId(self)}
+        rels = list(catalog.findRelations(query))
+        for rel in rels:
+            out.append(str(relation_infos(rel)))
     return '\n'.join(out)
 
 
