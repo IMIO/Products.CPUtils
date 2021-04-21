@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.18 (unreleased)
+1.18 (2021-04-21)
 -----------------
 - Added Check all catalog intids for registration method
   [fngaha]
