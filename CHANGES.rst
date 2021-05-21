@@ -5,8 +5,8 @@ Changelog
 1.19 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Added `del_object` to bypass link integrity check.
+  [sgeulette]
 
 1.18 (2021-04-21)
 -----------------

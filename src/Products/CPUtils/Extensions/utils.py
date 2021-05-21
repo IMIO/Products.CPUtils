@@ -167,7 +167,7 @@ def install(self):
     for method in ('add_subject', 'audit_catalog', 'change_authentication_plugins',
                    'change_user_properties', 'check_users', 'clean_provides_for', 'clean_utilities_for',
                    'configure_ckeditor', 'copy_image_attribute', 'cpdb', 'creators',
-                   'del_bad_portlet', 'del_objects', 'desactivate_base2dom', 'export_subscribers_csv',
+                   'del_bad_portlet', 'del_object', 'del_objects', 'desactivate_base2dom', 'export_subscribers_csv',
                    'install_plone_product', 'list_context_portlets_by_name', 'list_local_roles',
                    'list_newsletter_users', 'list_objects', 'list_portlets',
                    'list_used_views', 'list_users', 'load_user_properties',
@@ -3866,6 +3866,28 @@ def del_objects(self, doit='', types='', linki='1'):
 
     if livalue != lk:
         pp.site_properties.enable_link_integrity_checks = livalue
+    return sep.join(out)
+
+
+###############################################################################
+
+
+def del_object(self, doit='', linki='1'):
+    from plone import api
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    out = ['<strong>Object deletion</strong>']
+    out.append("You can/must call the script with following parameters:")
+    out.append("-> linki=''  : link integrity check. Default=1")
+    out.append("-> doit=''  : apply changes if 1. Default=empty")
+    out.append("ie. cputils_del_objects?linki=0&doit=1")
+    out.append('')
+    sep = '\n<br />'
+    for brain in api.content.find(context=self, sort_on='path'):
+        obj = brain.getObject()
+        out.append(u"<span>{}</span>, {}".format(brain.getPath(), object_link(obj)))
+        if doit == '1':
+            api.content.delete(obj=self, check_linkintegrity=(linki == '1'))
     return sep.join(out)
 
 
