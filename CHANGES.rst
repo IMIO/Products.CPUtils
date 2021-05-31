@@ -7,6 +7,8 @@ Changelog
 
 - Added `del_object` to bypass link integrity check.
   [sgeulette]
+- Improved `set_attr` to set a None value
+  [sgeulette]
 
 1.18 (2021-04-21)
 -----------------

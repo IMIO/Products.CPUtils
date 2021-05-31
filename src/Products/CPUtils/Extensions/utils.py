@@ -3903,7 +3903,7 @@ def set_attr(self, attr='', value='', typ='str'):
         return "You must be a zope manager to run this script"
     from Products.CMFPlone.utils import safe_hasattr
 
-    good_types = ['str', 'int', 'DateTime', 'unicode', 'datetime']
+    good_types = ['str', 'int', 'DateTime', 'unicode', 'datetime', 'None']
 
     sep = '\n<br />'
     out = ["<h2>You can/must call the script with following parameters:</h2>"]
@@ -3937,6 +3937,8 @@ def set_attr(self, attr='', value='', typ='str'):
             import re
             dt = map(int, filter(None, re.split("[\- /\\:]+", value)))
             new_val = datetime(*dt)  # example '2017-10-13 9:00'
+        elif typ == 'None':
+            new_val = None
     except Exception, msg:
         out.append("Cannot cast value type to '%s': '%s'" % (typ, msg))
         return sep.join(out)
