@@ -3883,6 +3883,7 @@ def del_object(self, doit='', linki='1'):
     out.append("ie. cputils_del_objects?linki=0&doit=1")
     out.append('')
     sep = '\n<br />'
+    # TODO add option to by pass subscribers with container._delObject(id, suppress_events=True)
     for brain in api.content.find(context=self, sort_on='path'):
         obj = brain.getObject()
         out.append(u"<span>{}</span>, {}".format(brain.getPath(), object_link(obj)))
