@@ -9,6 +9,8 @@ Changelog
   [sgeulette]
 - Improved `set_attr` to set a None value
   [sgeulette]
+- Added `get_user_pwd_hash` and `set_user_pwd_hash` methods
+  [sgeulette]
 
 1.18 (2021-04-21)
 -----------------

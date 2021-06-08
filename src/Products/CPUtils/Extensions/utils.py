@@ -1116,6 +1116,32 @@ def recreate_users_groups(self, only_users=False, only_groups=False, dochange=''
 ###############################################################################
 
 
+def get_user_pwd_hash(self, userid=''):
+    """Get a user password as hash"""
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    passwords = self.acl_users.source_users._user_passwords
+    import ipdb; ipdb.set_trace()
+    if userid in passwords:
+        return "'{}' = '{}'".format(userid, passwords[userid])
+    else:
+        return "Cannot find password for userid '{}'".format(userid)
+
+
+def set_user_pwd_hash(self, userid='', pwd=''):
+    """Set a hashed user password in source_users"""
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    passwords = self.acl_users.source_users._user_passwords
+    if userid not in passwords:
+        return "Cannot find userid '{}' in passwords".format(userid)
+    if not pwd.startswith('{SSHA}'):
+        return "Password not hashed !"
+    passwords[userid] = pwd
+
+###############################################################################
+
+
 def checkPOSKey(self):
     """
         Call a method from the script checks to check the dbs
