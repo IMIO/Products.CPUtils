@@ -1121,7 +1121,6 @@ def get_user_pwd_hash(self, userid=''):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     passwords = self.acl_users.source_users._user_passwords
-    import ipdb; ipdb.set_trace()
     if userid in passwords:
         return "'{}' = '{}'".format(userid, passwords[userid])
     else:
