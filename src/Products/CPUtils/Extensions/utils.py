@@ -1127,16 +1127,25 @@ def get_user_pwd_hash(self, userid=''):
         return "Cannot find password for userid '{}'".format(userid)
 
 
-def set_user_pwd_hash(self, userid='', pwd=''):
+def set_user_pwd_hash(self, userid='', pwd='', doit=''):
     """Set a hashed user password in source_users"""
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
+    out = ['call the script followed by needed parameters:', "-> userid=...", "-> pwd=...", "-> doit=0",
+           'Special characters must be escaped ! See https://www.w3schools.com/tags/ref_urlencode.ASP', '']
     passwords = self.acl_users.source_users._user_passwords
     if userid not in passwords:
-        return "Cannot find userid '{}' in passwords".format(userid)
+        out.append("Cannot find userid '{}' in passwords".format(userid))
+        return '\n'.join(out)
     if not pwd.startswith('{SSHA}'):
-        return "Password not hashed !"
-    passwords[userid] = pwd
+        out.append("Password not hashed !")
+        return '\n'.join(out)
+    if doit == '1':
+        passwords[userid] = pwd
+        out.append("'{}' passwd is replaced with '{}'".format(userid, pwd))
+    else:
+        out.append("'{}' passwd WILL be replaced with '{}'. Check if what's displayed is correct !".format(userid, pwd))
+    return '\n'.join(out)
 
 ###############################################################################
 
