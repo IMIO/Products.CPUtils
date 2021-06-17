@@ -11,6 +11,8 @@ Changelog
   [sgeulette]
 - Added `get_user_pwd_hash` and `set_user_pwd_hash` methods
   [sgeulette]
+- Added `check_groups_users` method
+  [sgeulette]
 
 1.18 (2021-04-21)
 -----------------

@@ -1000,6 +1000,122 @@ def list_users(self, output='csv', sort='users', gtitle='1', separator=';',
 ###############################################################################
 
 
+def check_groups_users(self, app='docs'):
+    if not check_role(self):
+        return "You must have a manager role to run this script"
+    lf = '<br />\n'
+    out = ['<h2>Groups and users checks</h2>', 'You can call the script with the following parameters:',
+           "-> app=xxx => configuration to use (Default: docs){}".format(lf)]
+    from collective.contact.plonegroup.config import get_registry_organizations, get_registry_functions
+    from collective.wfadaptations.api import get_applied_adaptations
+    from datetime import datetime
+    from plone import api
+    from zope.component import getUtility
+    from zope.schema.interfaces import IVocabularyFactory
+    out.append("{}T0={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    all_groups = {g.id: g for g in api.group.get_groups()}
+    all_users = get_users(self)
+    out.append('Total of groups: {}'.format(len(all_groups)))
+    out.append('Total of users: {}'.format(len(all_users)))
+    # out.append("{}T all ={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    # Functions check
+    ge = (api.portal.get_registry_record('imio.dms.mail.browser.settings.IImioDmsMailConfig.imail_group_encoder') or
+          api.portal.get_registry_record('imio.dms.mail.browser.settings.IImioDmsMailConfig.omail_group_encoder') or
+          api.portal.get_registry_record('imio.dms.mail.browser.settings.IImioDmsMailConfig.contact_group_encoder'))
+    wfa = [dic['adaptation'] for dic in get_applied_adaptations()]
+    right_fcts = {'docs': {'encodeur': True, 'lecteur': True, 'editeur': True,
+                           'n_plus_1': (len([wf for wf in wfa
+                                             if wf == 'imio.dms.mail.wfadaptations.IMServiceValidation']) >= 1 or
+                                        'imio.dms.mail.wfadaptations.OMServiceValidation' in wfa or
+                                        'imio.dms.mail.wfadaptations.TaskServiceValidation' in wfa),
+                           'n_plus_2': (len([wf for wf in wfa
+                                             if wf == 'imio.dms.mail.wfadaptations.IMServiceValidation']) >= 2),
+                           'n_plus_3': (len([wf for wf in wfa
+                                             if wf == 'imio.dms.mail.wfadaptations.IMServiceValidation']) >= 3),
+                           'n_plus_4': (len([wf for wf in wfa
+                                             if wf == 'imio.dms.mail.wfadaptations.IMServiceValidation']) >= 4),
+                           'n_plus_5': (len([wf for wf in wfa
+                                             if wf == 'imio.dms.mail.wfadaptations.IMServiceValidation']) >= 5),
+                           'group_encoder': ge,
+                           'contacts_part': api.portal.get_registry_record('imio.dms.mail.browser.settings.'
+                                                                           'IImioDmsMailConfig.contact_group_encoder'),
+    }}
+    # out.append("{}T={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    groups = {}
+    all_orgs = get_registry_organizations()
+    all_fcts = get_registry_functions()
+    voc_inst = getUtility(IVocabularyFactory, u'collective.contact.plonegroup.organization_services')
+    full_orgs = {t.value: t.title for t in voc_inst(self)}
+    # out.append("{}T orgs ={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    out.append('Total of functions: {}'.format(len(all_fcts)))
+    out.append('Total of activated orgs: {}'.format(len(all_orgs)))
+    out.append('Total of inactive orgs: {}{}'.format(len(full_orgs)-len(all_orgs), lf))
+    for fct in all_fcts:
+        if fct['fct_id'] not in right_fcts[app]:
+            out.append("!! manual function '{}' added".format(fct['fct_id']))
+        elif not right_fcts[app][fct['fct_id']]:
+            out.append("!! useless function '{}' found".format(fct['fct_id']))
+        if not fct['enabled']:
+            out.append("!! function '{}' disabled".format(fct['fct_id']))
+        if fct['fct_orgs']:
+            groups.update({'{}_{}'.format(org, fct['fct_id']): {'s': 'missing', 'u': []} for org in fct['fct_orgs']})
+        else:
+            groups.update({'{}_{}'.format(org, fct['fct_id']): {'s': 'missing', 'u': []} for org in all_orgs})
+    # Orgs-functions groups check
+    # out.append("{}T1={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    for group in groups:
+        if group not in all_groups:
+            out.append("!! function group '{}' not found".format(group))
+            continue
+        groups[group]['s'] = 'activated'
+        groups[group]['u'] = api.user.get_users(groupname=group)
+    all_fcts_ids = [f['fct_id'] for f in all_fcts]
+    app_groups = {'docs': ['dir_general', 'encodeurs', 'expedition', 'lecteurs_globaux_cs', 'lecteurs_globaux_ce']}
+    global_groups = ['AuthenticatedUsers', 'Administrators', 'Reviewers', 'Site Administrators'] + app_groups[app]
+    # Other groups check
+    # out.append("{}T={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    for group in all_groups:
+        if group not in groups:
+            parts = group.split('_')
+            org = parts[:1][0]
+            suffix = '_'.join(parts[1:])
+            if suffix and org in full_orgs and suffix in all_fcts_ids:
+                groups.setdefault(group, {})['s'] = 'inactive'
+                groups[group]['u'] = api.user.get_users(groupname=group)
+                out.append("!! group '{}' on inactive org '{}'".format(group, full_orgs[group]))
+            elif group in global_groups:
+                groups.setdefault(group, {})['s'] = 'global'
+                groups[group]['u'] = api.user.get_users(groupname=group)
+            else:
+                groups.setdefault(group, {})['s'] = 'manual'
+                groups[group]['u'] = api.user.get_users(groupname=group)
+                out.append("!! global group '{}' added".format(group))
+    # Groups stats
+    stats = {}
+    users = {}
+    for group in groups:
+        if groups[group]['s'] not in stats:
+            stats[groups[group]['s']] = 0
+        stats[groups[group]['s']] += 1
+        for user in groups[group]['u']:
+            users.setdefault(user, []).append(group)
+    for status in stats:
+        out.append("Group status '{}' : {}".format(status, stats[status]))
+    # Display first 3 highest groups
+    out.append("{}3 highest users number groups".format(lf))
+    for i, tup in enumerate(sorted(groups.items(), key=lambda tp: len(tp[1]['u']), reverse=True)[0:3]):
+        out.append(" > {}: '{}'".format(all_groups[tup[0]].getProperty('title'), len(tup[1]['u'])))
+    # Display first 3 highest users
+    out.append("{}3 highest groups number users".format(lf))
+    for i, tup in enumerate(sorted(users.items(), key=lambda tp: len(tp[1]), reverse=True)[0:3]):
+        out.append(" > {}: '{}'".format(tup[0].id, len(tup[1])))
+
+    out.append("{}T end={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    return lf.join(out)
+
+###############################################################################
+
+
 def check_users(self):
     if not check_role(self):
         return "You must have a manager role to run this script"
