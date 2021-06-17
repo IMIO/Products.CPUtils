@@ -1121,8 +1121,33 @@ def check_groups_users(self, app='docs'):
             for h_fct in u_attr[u_fct]:
                 res = set(groups[u_grp]['u']).intersection(set(groups.get('{}_{}'.format(org, h_fct), {}).get('u', [])))
                 if res:
-                    out.append("'{} ({})' can be cleaned of '{}' users; already in '{}'".format(
+                    out.append(" > '{} ({})' can be cleaned of '{}' users; already in '{}'".format(
                         full_orgs[org].encode('utf8'), u_fct, ','.join(sorted(res)), h_fct))
+
+    # Check useless function: difference between target users and source users
+    out.append("{}Useless function ?".format(lf))
+    useless_fcts = {'docs': {'n_plus_1': 'editeur'}}
+    u_fcts = useless_fcts[app]
+    for u_fct in u_fcts:
+        if u_fct not in all_fcts_ids:
+            continue
+        for org in all_orgs:
+            s_grp = set(groups.get('{}_{}'.format(org, u_fct), {}).get('u', []))
+            t_grp = set(groups.get('{}_{}'.format(org, u_fcts[u_fct]), {}).get('u', []))
+            if not s_grp and not t_grp:
+                continue
+            if s_grp == t_grp:
+                out.append(" > '{} ({})' and '{}': same users '{}'".format(
+                    full_orgs[org].encode('utf8'), u_fct, u_fcts[u_fct], ','.join(sorted(s_grp))))
+            else:
+                res = t_grp.difference(s_grp)
+                if res:
+                    out.append(" > '{} ({})' and '{}': more users '{}' in the 2".format(
+                        full_orgs[org].encode('utf8'), u_fct, u_fcts[u_fct], ','.join(sorted(res))))
+                res = s_grp.difference(t_grp)
+                if res:
+                    out.append(" > '{} ({})' and '{}': more users '{}' in the 1".format(
+                        full_orgs[org].encode('utf8'), u_fct, u_fcts[u_fct], ','.join(sorted(res))))
     out.append("{}T end={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
     return lf.join(out)
 
