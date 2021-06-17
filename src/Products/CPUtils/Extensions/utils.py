@@ -1014,7 +1014,7 @@ def check_groups_users(self, app='docs'):
     from zope.schema.interfaces import IVocabularyFactory
     out.append("{}T0={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
     all_groups = {g.id: g for g in api.group.get_groups()}
-    all_users = get_users(self)
+    all_users = get_users(self, obj=False)
     out.append('Total of groups: {}'.format(len(all_groups)))
     out.append('Total of users: {}'.format(len(all_users)))
     # out.append("{}T all ={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
@@ -1046,6 +1046,7 @@ def check_groups_users(self, app='docs'):
     all_fcts = get_registry_functions()
     voc_inst = getUtility(IVocabularyFactory, u'collective.contact.plonegroup.organization_services')
     full_orgs = {t.value: t.title for t in voc_inst(self)}
+    all_orgs = sorted(all_orgs, key=lambda o: full_orgs.get(o))
     # out.append("{}T orgs ={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
     out.append('Total of functions: {}'.format(len(all_fcts)))
     out.append('Total of activated orgs: {}'.format(len(all_orgs)))
@@ -1068,7 +1069,7 @@ def check_groups_users(self, app='docs'):
             out.append("!! function group '{}' not found".format(group))
             continue
         groups[group]['s'] = 'activated'
-        groups[group]['u'] = api.user.get_users(groupname=group)
+        groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
     all_fcts_ids = [f['fct_id'] for f in all_fcts]
     app_groups = {'docs': ['dir_general', 'encodeurs', 'expedition', 'lecteurs_globaux_cs', 'lecteurs_globaux_ce']}
     global_groups = ['AuthenticatedUsers', 'Administrators', 'Reviewers', 'Site Administrators'] + app_groups[app]
@@ -1081,14 +1082,14 @@ def check_groups_users(self, app='docs'):
             suffix = '_'.join(parts[1:])
             if suffix and org in full_orgs and suffix in all_fcts_ids:
                 groups.setdefault(group, {})['s'] = 'inactive'
-                groups[group]['u'] = api.user.get_users(groupname=group)
-                out.append("!! group '{}' on inactive org '{}'".format(group, full_orgs[group]))
+                groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
+                out.append("!! group '{}' on inactive org '{}'".format(group, full_orgs[group].encode('utf8')))
             elif group in global_groups:
                 groups.setdefault(group, {})['s'] = 'global'
-                groups[group]['u'] = api.user.get_users(groupname=group)
+                groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
             else:
                 groups.setdefault(group, {})['s'] = 'manual'
-                groups[group]['u'] = api.user.get_users(groupname=group)
+                groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
                 out.append("!! global group '{}' added".format(group))
     # Groups stats
     stats = {}
@@ -1108,8 +1109,20 @@ def check_groups_users(self, app='docs'):
     # Display first 3 highest users
     out.append("{}3 highest groups number users".format(lf))
     for i, tup in enumerate(sorted(users.items(), key=lambda tp: len(tp[1]), reverse=True)[0:3]):
-        out.append(" > {}: '{}'".format(tup[0].id, len(tup[1])))
+        out.append(" > {}: '{}'".format(tup[0], len(tup[1])))
 
+    # Check useless group assignment following function
+    out.append("{}Useless group attributions".format(lf))
+    useless_attr = {'docs': {'lecteur': ['editeur', 'n_plus_1', 'n_plus_2'], 'editeur': ['n_plus_1', 'n_plus_2']}}
+    u_attr = useless_attr[app]
+    for org in all_orgs:
+        for u_fct in u_attr:
+            u_grp = '{}_{}'.format(org, u_fct)
+            for h_fct in u_attr[u_fct]:
+                res = set(groups[u_grp]['u']).intersection(set(groups.get('{}_{}'.format(org, h_fct), {}).get('u', [])))
+                if res:
+                    out.append("'{} ({})' can be cleaned of '{}' users; already in '{}'".format(
+                        full_orgs[org].encode('utf8'), u_fct, ','.join(sorted(res)), h_fct))
     out.append("{}T end={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
     return lf.join(out)
 
