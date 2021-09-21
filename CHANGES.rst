@@ -13,6 +13,9 @@ Changelog
   [sgeulette]
 - Added `check_groups_users` method
   [sgeulette]
+- Do not break when generating output log in `utils.change_user_properties`,
+  in some cases, like when using an LDAP, a `UnicodeDecodeError` may be raised.
+  [gbastien]
 
 1.18 (2021-04-21)
 -----------------

@@ -492,7 +492,18 @@ def change_user_properties(self, kw='', dochange='', filter=''):
         out[out.index('<h2>Users</h2>')] = '<h2>Users : total=%d, filtered=%d</h2>' % (total, filtered)
     except:
         pass
-    return '<br/>'.join(out)
+
+    # in some case like using a LDAP, this will break
+    # try in unicode, else pass...
+    result = ''
+    try:
+        result = '<br/>'.join(out)
+    except:
+        try:
+            result = u'<br/>'.join(out)
+        except:
+            pass
+    return result
 
 ###############################################################################
 
