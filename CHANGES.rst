@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.19 (unreleased)
+1.19 (2021-09-28)
 -----------------
 
 - Added `del_object` to bypass link integrity check.
