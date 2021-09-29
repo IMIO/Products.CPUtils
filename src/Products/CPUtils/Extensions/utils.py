@@ -235,7 +235,9 @@ def object_info(self):
 #        out.append("portal path='%s'" % purl.getPortalPath())
         out.append("current object path='/%s'" % '/'.join(purl.getRelativeContentPath(self)))
         out.append("current object id='%s'" % self.getId())
-        out.append("current object portal type/class='%s'/'%s'" % (self.getPortalTypeName(), self.meta_type))
+        out.append("current object UID='%s'" % self.UID())
+        out.append("current object portal_type/meta_type/class='%s'/'%s'/'%s'" % (
+            self.getPortalTypeName(), self.meta_type, self.__class__.__name__))
         out.append("is folderish='%s'" % self.isPrincipiaFolderish)
         out.append("creator='%s'" % self.Creator())
         workflow = False

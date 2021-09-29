@@ -5,8 +5,9 @@ Changelog
 1.20 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Completed `object_info`, display `UID` and class name
+  (as `meta_type` is not more relevant with `DX`).
+  [gbastien]
 
 1.19 (2021-09-28)
 -----------------
