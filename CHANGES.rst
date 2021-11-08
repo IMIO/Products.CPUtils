@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.20 (unreleased)
+1.20 (2021-11-08)
 -----------------
 
 - Completed `object_info`, display `UID` and class name
