@@ -5,7 +5,8 @@ Changelog
 1.21 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Fix Python 3 incompatibility
+  [fngaha]
 
 
 1.20 (2021-11-08)
