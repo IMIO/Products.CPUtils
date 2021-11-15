@@ -48,7 +48,7 @@ except:
 from Products.CMFCore import DirectoryView
 #from Products.Archetypes.atapi import *
 #from Products.Archetypes import listTypes
-from config import product_globals, PLONE_VERSION
+from Products.CPUtils.config import product_globals, PLONE_VERSION
 
 DirectoryView.registerDirectory('skins', product_globals)
 DirectoryView.registerDirectory('skins/CPUtils', product_globals)
