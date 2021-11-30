@@ -14,7 +14,7 @@ from utils import *
 
 buildout_inst_type = None #True for buildout, False for manual instance
 tempdir = ''
-now = datetime(1973,02,12).now()
+now = datetime(1973, 0o2, 12).now()
 pfolders = {}
 temp_added = False
 

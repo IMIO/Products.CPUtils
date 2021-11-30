@@ -5,8 +5,9 @@ Changelog
 1.21 (unreleased)
 -----------------
 
+- Fix Py3 errors
+  [fngaha]
 - Fix ModuleNotFoundError by adding Products.validation in install requirements
-- Fix Python 3 incompatibility
   [fngaha]
 
 

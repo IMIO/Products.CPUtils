@@ -11,13 +11,13 @@ from datetime import datetime, timedelta
 TRACE = False
 
 def verbose(*messages):
-    print '>>', ' '.join(messages)
+    print('>>', ' '.join(messages))
 def error(*messages):
-    print '!!', (' '.join(messages))
+    print('!!', (' '.join(messages)))
 def trace(*messages):
     if not TRACE:
         return
-    print 'TRACE:', ' '.join(messages)
+    print('TRACE:', ' '.join(messages))
 
 #------------------------------------------------------------------------------
 
@@ -150,13 +150,13 @@ def packdb(port, db, days, method, module, function, user_, pwd_):
 #                                error("Problem during compression of %s"%db)
 #                                log.debug(ret_html) 
                         verbose("\t%s"%ret_html)
-                    except IOError, msg:
+                    except IOError as msg:
                         error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
-            except Exception, msg:
+            except Exception as msg:
                 error("! Cannot open URL %s, aborting : %s" % (url_em, msg))
         else:
             verbose("\t%s"%ret_html)
-    except IOError, msg:
+    except IOError as msg:
         error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
     verbose("\t\t-> elapsed time %s"%(datetime.now()-start))
            
@@ -224,6 +224,6 @@ def CreateAndCallExternalMethod(port, user_, pwd_, ext_method, ext_filename,func
         #verbose("callAndCreateExternalMethod : \n%s"%ret_html)
         if ret_html:
             verbose('%s'%ret_html)
-    except Exception, msg:
+    except Exception as msg:
         error("Cannot open URL %s, aborting: '%s'" % (current_url,msg))
         sys.exit(1)

@@ -125,7 +125,7 @@ def sendmail(self, mfrom='', to='', body='', subject='', cc='', bcc=''):
             return mail_host.send(mailMsg, mto=to, mfrom=mfrom, subject=subject)
         else:
             return mail_host.secureSend(mailMsg, to, mfrom, subject=subject)
-    except Exception, msg:
+    except Exception as msg:
         return msg
 
 
@@ -134,7 +134,7 @@ def log_list(lst, line, logger=None, level='info'):
     if logger:
         getattr(logger, level)(line)
     else:
-        print "%s %s" % (levels[level], line)
+        print("%s %s" % (levels[level], line))
     lst.append(line)
 
 
@@ -284,7 +284,7 @@ def object_info(self):
                 out.append("\t%s '%s' has roles '%s'" % (pType, principalId, ';'.join(lr)))
         else:
             out.append('> inherited local roles : none !')
-    except Exception, msg:
+    except Exception as msg:
         out.append("! EXCEPTION !:%s" % msg)
     return '\n'.join(out)
 
@@ -707,7 +707,7 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
         pqi = getToolByName(self, 'portal_quickinstaller')
         if not pqi.isProductInstalled('FCKeditor'):
             pqi.installProduct('FCKeditor')
-    except Exception, msg:
+    except Exception as msg:
         return "FCKeditor cannot be installed: '%s'" % msg
 
     #setting default editor to FCKeditor
@@ -801,7 +801,7 @@ def configure_ckeditor(self, default=1, allusers=1, custom='', rmTiny=1, forceTe
         pqi = getToolByName(self, 'portal_quickinstaller')
         if not pqi.isProductInstalled('collective.ckeditor'):
             pqi.installProduct('collective.ckeditor')
-    except Exception, msg:
+    except Exception as msg:
         return "collective.ckeditor cannot be installed: '%s'" % msg
 
     sp = portal.portal_properties.site_properties
@@ -1025,7 +1025,7 @@ def check_groups_users(self, app='docs'):
     from plone import api
     from zope.component import getUtility
     from zope.schema.interfaces import IVocabularyFactory
-    out.append("{}T0={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    out.append("{}T0={}".format(lf, datetime(1973, 0o2, 12).now().strftime("%H:%M:%S.%f")))
     all_groups = {g.id: g for g in api.group.get_groups()}
     all_users = get_users(self, obj=False)
     out.append('Total of groups: {}'.format(len(all_groups)))
@@ -1161,7 +1161,7 @@ def check_groups_users(self, app='docs'):
                 if res:
                     out.append(" > '{} ({})' and '{}': more users '{}' in the 1".format(
                         full_orgs[org].encode('utf8'), u_fct, u_fcts[u_fct], ','.join(sorted(res))))
-    out.append("{}T end={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    out.append("{}T end={}".format(lf, datetime(1973, 0o2, 12).now().strftime("%H:%M:%S.%f")))
     return lf.join(out)
 
 ###############################################################################
@@ -1262,7 +1262,7 @@ def recreate_users_groups(self, only_users=False, only_groups=False, dochange=''
                     try:
                         prg.addMember(user.getUserId(), passwords[user.getUserId()], roles=user.getRoles(),
                                       domains=user.getDomains())
-                    except ValueError, error:
+                    except ValueError as error:
                         out.append("Problem creating user '%s': %s" % (user.getUserId(), error))
                         continue
                 out.append("User '%s' is added" % user.getUserId())
@@ -1583,7 +1583,7 @@ def correct_language(self, default='', search='all', onlycurrentfolder=0, dochan
                           (brain.Title, brain.getURL(), brain.getPath()))
             current_lang = 'AttributeError'
             continue
-        except KeyError, msg:
+        except KeyError as msg:
             # es-es not found in deletable language
             errors.append("<div>Language '%s' not in deletable lang: '%s' at url '<a href=\"%s\">%s</a>'</div>" %
                           (msg, brain.Title, brain.getURL(), brain.getPath()))
@@ -1808,7 +1808,7 @@ def desactivate_base2dom(self):
                 if js.getEnabled():
                     js.setEnabled(False)
                     out.append("Disabled ++resource++base2-dom-fp.js for %s" % sitePath)
-    except Exception, message:
+    except Exception as message:
         out.append("!! error when disabling base2dom: %s" % (message))
     return '\n'.join(out)
 
@@ -1849,7 +1849,7 @@ def unregister_adapter(self, unregister=''):
                 out.append("Adapter '%s' unregistered" % unregister)
             else:
                 out.append("Adapter '%s' not unregistered !" % unregister)
-        except Exception, msg:
+        except Exception as msg:
             out.append("Adapter '%s' not unregistered : %s" % (unregister, msg))
 
     return lf.join(out)
@@ -2147,7 +2147,7 @@ def checkInstance(self, isProductInstance='', instdir=''):
                         out.append("!! %s >>> cache setup isn't installed" % (objPath + objid))
             #out.append("")
         return '\n'.join(out)
-    except Exception, message:
+    except Exception as message:
         out.append("!! error in checkinstance %s" % str(message))
         return '\n'.join(out)
 
@@ -3246,7 +3246,7 @@ def move_item(self, delta=-1):
     oldpos = folder.getObjectPosition(eid)
     folder.moveObjectsByDelta(eid, int(delta))
     newpos = folder.getObjectPosition(eid)
-    print "%d => %d" % (oldpos, newpos)
+    print("%d => %d" % (oldpos, newpos))
 
 ###############################################################################
 
@@ -3315,7 +3315,7 @@ def move_copy_objects(self, action='move', dest='', doit='', types='', by=50):
     by = int(by)
     try:
         dest_folder = portal.unrestrictedTraverse(dest)
-    except KeyError, e:
+    except KeyError as e:
         out.append("!! The dest path '%s' isn't correct: %s" % (dest, e))
         return '<br />\n'.join(out)
     if not self.plone_utils.isStructuralFolder(dest_folder):
@@ -3437,7 +3437,7 @@ def mark_last_version(self, product=''):
             return "Product version set in pqi: '%s' from '%s' to '%s'" % (product, i_v, s_v)
         else:
             return "Product version in pqi already at last: '%s' '%s'" % (product, i_v)
-    except AttributeError, e:
+    except AttributeError as e:
         return "Cannot get product '%s' from portal_quickinstaller: %s" % (product, e)
 
 
@@ -3549,7 +3549,7 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
         out.append("collective.documentviewer not found")
         return '\n'.join(out)
     from datetime import datetime
-    start = datetime(1973, 02, 12).now()
+    start = datetime(1973, 0o2, 12).now()
     import logging
     logger = logging.getLogger('CPUtils dv_conversion')
     commit = int(batch)
@@ -3618,7 +3618,7 @@ def dv_conversion(self, pt='dmsmainfile,dmsommainfile,dmsappendixfile', fmt='jpg
         log_list(out, 'TOTAL,=somme(B2:B{0})/1048576,=somme(C2:C{0})/1048576,=somme(D2:D{0})/1048576,'
                       '=somme(E2:E{0})/1048576,=somme(F2:F{0})/1048576,,=somme(H2:H{0})'.format(bl+1))
 
-    end = datetime(1973, 02, 12).now()
+    end = datetime(1973, 0o2, 12).now()
     delta = end - start
     log_list(out, "Finishing dv_conversion, duration %s" % delta, logger)
     log_list(out, "Files: '%d', To convert: '%d', Converted: '%d', Already: '%d', PDF: '%s', "
@@ -3889,7 +3889,7 @@ def check_blobs(self, delete=''):
     from plone.dexterity.content import DexterityContent
 
     portal = getToolByName(self, "portal_url").getPortalObject()
-    log_list(ret, "Starting check_blobs at %s" % datetime(1973, 02, 12).now())
+    log_list(ret, "Starting check_blobs at %s" % datetime(1973, 0o2, 12).now())
 
     blob_attrs = {}
     # get all files attributes
@@ -3935,7 +3935,7 @@ def check_blobs(self, delete=''):
                     log_list(ret, "  => will be deleted")
                     parent.manage_delObjects([obj.getId()])
 
-    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 02, 12).now())
+    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 0o2, 12).now())
     return '\n'.join(ret)
 
 
@@ -3964,7 +3964,7 @@ def check_blobs_slow(self, delete=''):
     from plone.dexterity.content import DexterityContent
 
     portal = getToolByName(self, "portal_url").getPortalObject()
-    start = datetime(1973, 02, 12).now()
+    start = datetime(1973, 0o2, 12).now()
     log_list(ret, "Starting check_blobs at %s" % start)
 
     def check_at_blobs(context):
@@ -4021,7 +4021,7 @@ def check_blobs_slow(self, delete=''):
                 recurse(child, delete=delete)
 
     recurse(portal, delete=delt)
-    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 02, 12).now())
+    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 0o2, 12).now())
     return '\n'.join(ret)
 
 
@@ -4141,7 +4141,7 @@ def set_attr(self, attr='', value='', typ='str'):
             new_val = datetime(*dt)  # example '2017-10-13 9:00'
         elif typ == 'None':
             new_val = None
-    except Exception, msg:
+    except Exception as msg:
         out.append("Cannot cast value type to '%s': '%s'" % (typ, msg))
         return sep.join(out)
 
@@ -4159,7 +4159,7 @@ def uid(self):
         return "You must have a manager role to run this script"
     try:
         return self.UID()
-    except Exception, msg:
+    except Exception as msg:
         return msg
 
 ###############################################################################

@@ -10,14 +10,14 @@ import sys
 import shutil
 
 def verbose(*messages):
-    print '>>', ' '.join(messages)
+    print('>>', ' '.join(messages))
 def error(*messages):
 #    print >>sys.stderr, '!!', (' '.join(messages))
-    print '!!', (' '.join(messages))
+    print('!!', (' '.join(messages)))
 def debug(*messages):
     if not TRACE:
         return
-    print 'TRACE:', ' '.join(messages)
+    print('TRACE:', ' '.join(messages))
 #------------------------------------------------------------------------------
 
 #CONF_DIR = '/etc/awstats'
@@ -142,7 +142,7 @@ def main():
                         try:
                             shutil.copyfile(logfilepath, destination)
                             verbose( "\t'%s' copied to '%s'" % (logfilepath, destination))
-                        except Exception, errmsg:
+                        except Exception as errmsg:
                             error( "'%s' NOT COPIED to '%s'" % (logfilepath, destination))
                             error(str(errmsg))
                         command = "%s -f %s"%(gunzip, destination)

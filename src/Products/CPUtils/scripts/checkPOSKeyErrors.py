@@ -15,7 +15,7 @@ from utils import *
 
 buildout_inst_type = None #True for buildout, False for manual instance
 tempdir = ''
-now = datetime(1973,02,12).now()
+now = datetime(1973, 0o2, 12).now()
 pfolders = {}
 temp_added = False
 
@@ -84,7 +84,7 @@ def _checkAttributes(obj, errors, context=None):
             try:
                 data = [repr(val) for val in v.values()]
                 data = [repr(val) for val in v.keys()]
-            except POSKeyError, ex:
+            except POSKeyError as ex:
                 if hasattr(obj, 'getPhysicalPath'):
                     path= '/'.join(obj.getPhysicalPath())
                 elif context:
@@ -100,7 +100,7 @@ def _checkAttributes(obj, errors, context=None):
         if hasattr(v, 'append'):
             try:
                 data = [val for val in v]
-            except POSKeyError, ex:
+            except POSKeyError as ex:
                 error('Error %s on LIST-LIKE attribute %s (%s)' \
                      % (str(ex), k, '/'.join(obj.getPhysicalPath())))
                 errors.append('Error %s on LIST-LIKE attribute %s (%s)' \
@@ -118,7 +118,7 @@ def _sub(master, errors):
                     for util_tup in getUtilitiesFor(interface, context=master):
                         utility = util_tup[1]
                         _checkAttributes(utility, errors, context=master)
-                except TypeError, msg:
+                except TypeError as msg:
                     error("Cannot get utilities for interface '%s' : %s"%(str(interface), msg))
         
 
@@ -151,7 +151,7 @@ def _sub(master, errors):
 
                             _checkAttributes(index, errors)
 
-                        except POSKeyError, ex:
+                        except POSKeyError as ex:
                             error('Error %s on INDEX %s (%s)' % (str(ex), idxid, '/'.join(obj.getPhysicalPath())))
                             errors.append('Error %s on INDEX %s (%s)' % (str(ex), idxid, '/'.join(obj.getPhysicalPath())))
 
@@ -159,7 +159,7 @@ def _sub(master, errors):
                     for lexid in obj.objectIds():
                         _checkAttributes(getattr(obj, lexid), errors)
 
-        except POSKeyError, ex:
+        except POSKeyError as ex:
             error('Error %s on %s (%s)' % (str(ex), oid, '/'.join(master.getPhysicalPath())))
             errors.append('Error %s on %s (%s)' % (str(ex), oid, '/'.join(master.getPhysicalPath())))
 

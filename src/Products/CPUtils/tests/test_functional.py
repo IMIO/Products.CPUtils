@@ -54,7 +54,7 @@ OPTIONFLAGS = (doctest.REPORT_ONLY_FIRST_FAILURE |
 
 def list_doctests():
     home = package_home(globals())
-    print home
+    print(home)
     return [filename for filename in
             glob.glob(os.path.sep.join([home, '*.txt']))]
 
