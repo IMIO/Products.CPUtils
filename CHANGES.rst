@@ -5,6 +5,8 @@ Changelog
 1.21 (unreleased)
 -----------------
 
+- Fix `TypeError` <lambda>() missing 1 required positional argument: 'y'
+  [fngaha]
 - Fix Py3 errors
   [fngaha]
 - Fix ModuleNotFoundError by adding Products.validation in install requirements

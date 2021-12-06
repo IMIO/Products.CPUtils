@@ -25,6 +25,9 @@ __author__ = """Stephan GEULETTE <stephan.geulette@uvcw.be>"""
 __docformat__ = 'plaintext'
 
 import logging
+
+from past.builtins import cmp
+
 logger = logging.getLogger('CPUtils')
 logger.info('Installing Product')
 
@@ -321,8 +324,7 @@ def listInstallableProducts434(self, skipInstalled=True):
                         'hasError': p.hasError()})
         else:
             res.append({'id': r, 'title': name, 'status': 'new', 'hasError': False})
-    res.sort(lambda x, y: cmp(x.get('title', x.get('id', None)),
-                              y.get('title', y.get('id', None))))
+    res.sort(key=lambda x: x.get('title', x.get('id', None)))
     return res
 
 
