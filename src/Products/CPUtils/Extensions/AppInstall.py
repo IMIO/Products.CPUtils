@@ -26,9 +26,10 @@ __author__ = """Stephan GEULETTE <stephan.geulette@uvcw.be>, Gauthier BASTIEN <g
 __docformat__ = 'plaintext'
 
 from Products.CMFCore.utils import getToolByName
-
 from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
+
 import logging
+
 
 logger = logging.getLogger('CPUtils')
 

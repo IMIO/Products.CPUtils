@@ -28,22 +28,24 @@ __author__ = """Stephan GEULETTE <stephan.geulette@uvcw.be>"""
 __docformat__ = 'plaintext'
 
 
-import os.path
-import sys
-from StringIO import StringIO
-from sets import Set
 from App.Common import package_home
+from Products.Archetypes.atapi import listTypes
+from Products.Archetypes.config import TOOL_NAME as ARCHETYPETOOLNAME
+from Products.Archetypes.Extensions.utils import install_subskin
+from Products.Archetypes.Extensions.utils import installTypes
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.utils import manage_addTool
-from Products.ExternalMethod.ExternalMethod import ExternalMethod
-from zExceptions import NotFound, BadRequest
-
-from Products.Archetypes.Extensions.utils import installTypes
-from Products.Archetypes.Extensions.utils import install_subskin
-from Products.Archetypes.config import TOOL_NAME as ARCHETYPETOOLNAME
-from Products.Archetypes.atapi import listTypes
-from Products.CPUtils.config import PROJECTNAME
 from Products.CPUtils.config import product_globals as GLOBALS
+from Products.CPUtils.config import PROJECTNAME
+from Products.ExternalMethod.ExternalMethod import ExternalMethod
+from sets import Set
+from StringIO import StringIO
+from zExceptions import BadRequest
+from zExceptions import NotFound
+
+import os.path
+import sys
+
 
 def install(self, reinstall=False):
     """ External Method to install CPUtils """

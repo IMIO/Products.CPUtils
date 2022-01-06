@@ -6,11 +6,15 @@
 # From original script "recover.py" ()
 #
 
-import os, sys
-import urllib
-from datetime import datetime, timedelta
-import socket
+from datetime import datetime
+from datetime import timedelta
 from utils import *
+
+import os
+import socket
+import sys
+import urllib
+
 
 buildout_inst_type = None #True for buildout, False for manual instance
 tempdir = ''

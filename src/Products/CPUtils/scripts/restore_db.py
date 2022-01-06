@@ -6,10 +6,14 @@
     Zope must be installed exactly at the same place on the main server and backup server
 """
 
-import sys, urllib, os
+from datetime import datetime
+
 import datetime
+import os
 import shutil
-from datetime import datetime 
+import sys
+import urllib
+
 
 buildout_inst_type = None #True for buildout, False for manual instance
 BACKUP_DIR = '/srv/backups/zope'

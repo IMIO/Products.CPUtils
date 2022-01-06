@@ -4,9 +4,13 @@
 # André NUYENS <andre.nuyens@uvcw.be>, UVCW
 #
 
-import os, sys
+from datetime import datetime
+from datetime import timedelta
+
+import os
+import sys
 import urllib
-from datetime import datetime, timedelta
+
 
 TRACE = False
 

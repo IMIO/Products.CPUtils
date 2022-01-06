@@ -4,10 +4,14 @@
     Test of zope fs file.
 """
 
-import sys, urllib, os
+from datetime import datetime
+
 import datetime
+import os
 import shutil
-from datetime import datetime 
+import sys
+import urllib
+
 
 buildout_inst_type = None #True for buildout, False for manual instance
 FSTEST = True

@@ -1,9 +1,11 @@
 #!/usr/bin/python
 #
 
-import sys, os
 import datetime
+import os
 import shutil
+import sys
+
 
 buildout_inst_type = None #True for buildout, False for manual instance
 zeo_type = False #True for zeo

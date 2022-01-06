@@ -4,10 +4,11 @@
     This script reads awstats conf files and updates stats with all apache log files (archived too).
 """
 
-import os
 import datetime
-import sys
+import os
 import shutil
+import sys
+
 
 def verbose(*messages):
     print '>>', ' '.join(messages)

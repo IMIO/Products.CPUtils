@@ -29,20 +29,24 @@
 __author__ = """Stephan Geulette <stephan.geulette@uvcw.be>"""
 __docformat__ = 'plaintext'
 
-import os, sys
+import os
+import sys
+
 
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-import glob
-from zope.testing import doctest
-import unittest
 from Globals import package_home
-from Testing.ZopeTestCase import FunctionalDocTestSuite
-from Testing.ZopeTestCase import FunctionalDocFileSuite as Suite
 from Products.CMFPlone.tests import PloneTestCase
-from Testing import ZopeTestCase
 from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
+from Testing import ZopeTestCase
+from Testing.ZopeTestCase import FunctionalDocFileSuite as Suite
+from Testing.ZopeTestCase import FunctionalDocTestSuite
+from zope.testing import doctest
+
+import glob
+import unittest
+
 
 PACKAGE = 'Products.CPUtils.tests'
 

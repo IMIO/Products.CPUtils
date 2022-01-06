@@ -4,9 +4,10 @@
     This script reads the log file of all scripts and send a mail with the day content.
 """
 
-import os
 import datetime
+import os
 import sys
+
 
 def verbose(*messages):
     print '>>', ' '.join(messages)

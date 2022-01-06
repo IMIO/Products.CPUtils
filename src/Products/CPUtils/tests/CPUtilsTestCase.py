@@ -31,19 +31,24 @@ __docformat__ = 'plaintext'
 # Base TestCase for contacts
 #
 
-import os, sys, code
+import code
+import os
+import sys
+
+
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
 ##code-section module-header #fill in your manual code here
 from Products.CMFCore.utils import getToolByName
 from Products.CPUtils.config import *
+from Products.PloneTestCase import PloneTestCase
 from sets import Set
+from Testing import ZopeTestCase
+
 
 ##/code-section module-header
 
-from Testing import ZopeTestCase
-from Products.PloneTestCase import PloneTestCase
 ZopeTestCase.installProduct(PROJECTNAME)
 
 PRODUCTS = list()
@@ -131,7 +136,8 @@ Note: You have the same locals available as in your test-case.
 
 
 def test_suite():
-    from unittest import TestSuite, makeSuite
+    from unittest import makeSuite
+    from unittest import TestSuite
     suite = TestSuite()
     suite.addTest(makeSuite(CPUtilsTestCase))
     return suite

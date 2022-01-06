@@ -6,12 +6,16 @@
 # From original script "recover.py" ()
 #
 
-import os, sys
 from datetime import datetime
-from zope.component import getSiteManager, getUtilitiesFor
 from OFS.Application import Application
-import socket
 from utils import *
+from zope.component import getSiteManager
+from zope.component import getUtilitiesFor
+
+import os
+import socket
+import sys
+
 
 buildout_inst_type = None #True for buildout, False for manual instance
 tempdir = ''
@@ -77,6 +81,7 @@ def main():
 
 def _checkAttributes(obj, errors, context=None):
     from ZODB.POSException import POSKeyError
+
     # very dumb checks for list and dict (like) attributes
     # is very slow but ensures that all attributes are checked
     for k,v in obj.__dict__.items():

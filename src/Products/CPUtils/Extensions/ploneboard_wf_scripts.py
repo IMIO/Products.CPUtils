@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.permissions import ModifyPortalContent
+from Products.CMFCore.utils import getToolByName
 from Products.CPUtils.Extensions.utils import sendmail
+
 
 #def notifyManagerByMail(self, state_change, **kw):
     #""" WF script used for ploneboard_conversation_workflow """

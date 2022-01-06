@@ -1,6 +1,9 @@
-import sys, os
-
 from optparse import OptionParser
+
+import os
+import sys
+
+
 parser = OptionParser()
 parser.add_option("-c", "--cache", action="store", type="string", dest="cache")
 parser.add_option("-i", "--instance", action="store", type="string", dest="instance")
@@ -34,6 +37,7 @@ password = None
 
 
 import plone.recipe.zope2zeoserver.pack
+
 
 if __name__ == '__main__':
     plone.recipe.zope2zeoserver.pack.main(host, port, unix, days, username, password, realm, blob_dir, storage)

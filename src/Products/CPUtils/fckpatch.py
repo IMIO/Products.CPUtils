@@ -1,5 +1,8 @@
-import re
 from Products.FCKeditor.config import RUID_URL_PATTERN
+
+import re
+
+
 IMG = '<img title="broken image" alt="broken image" src="" />'
 
 

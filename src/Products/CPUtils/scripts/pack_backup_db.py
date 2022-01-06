@@ -6,11 +6,15 @@
     * backuping with repozo each fs file
 """
 
-import sys, urllib, os
-import datetime
-import shutil
-from datetime import datetime 
+from datetime import datetime
 from utils import *
+
+import datetime
+import os
+import shutil
+import sys
+import urllib
+
 
 buildout_inst_type = None #True for buildout, False for manual instance
 zeo_type = False #True for zeo

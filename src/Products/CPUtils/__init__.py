@@ -1,37 +1,14 @@
-# -*- coding: utf-8 -*-
-#
-# File: CPUtils.py
-#
-# Copyright (c) 2008 by CommunesPlone
-# GNU General Public License (GPL)
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-# 02110-1301, USA.
-#
-
-__author__ = """Stephan GEULETTE <stephan.geulette@uvcw.be>"""
-__docformat__ = 'plaintext'
+from Acquisition import aq_base
+from Products.CMFCore.utils import getToolByName
+from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
+from ZPublisher.HTTPRequest import FileUpload
 
 import logging
+
+
 logger = logging.getLogger('CPUtils')
 logger.info('Installing Product')
 
-from Acquisition import aq_base
-from ZPublisher.HTTPRequest import FileUpload
-from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
-from Products.CMFCore.utils import getToolByName
 try:
     from Products.validation.i18n import PloneMessageFactory as _
     from Products.validation.i18n import recursiveTranslate
@@ -40,15 +17,19 @@ except:
     pass
 from Products.validation.validators.SupplValidators import MaxSizeValidator
 
+
 try:
     from Products.CMFQuickInstallerTool.utils import get_packages
 except:
     pass
 
-from Products.CMFCore import DirectoryView
+
 #from Products.Archetypes.atapi import *
 #from Products.Archetypes import listTypes
-from config import product_globals, PLONE_VERSION
+from config import PLONE_VERSION
+from config import product_globals
+from Products.CMFCore import DirectoryView
+
 
 DirectoryView.registerDirectory('skins', product_globals)
 DirectoryView.registerDirectory('skins/CPUtils', product_globals)
@@ -78,6 +59,7 @@ def listInstallableProducts25(self, skipInstalled=1):
     """
     try:
         from zpi.zope import not_installed
+
         #print 'Packman support(hotplug) installed'
     except ImportError:
         def not_installed(s):

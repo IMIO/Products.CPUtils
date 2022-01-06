@@ -1,10 +1,12 @@
 from Products.CMFCore.utils import getToolByName
-
 from zope.i18nmessageid import MessageFactory
+
+
 _ = MessageFactory('CPUtils')
 
 from Products.CMFPlone.utils import base_hasattr
 from Products.CPUtils.config import *
+
 
 def setRobots(context):
     """

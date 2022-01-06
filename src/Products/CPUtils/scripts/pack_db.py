@@ -1,10 +1,14 @@
 #!/usr/bin/python
 #
 
-import sys, urllib, os
-import datetime
-import shutil
 from utils import *
+
+import datetime
+import os
+import shutil
+import sys
+import urllib
+
 
 buildout_inst_type = None #True for buildout, False for manual instance
 

@@ -81,6 +81,8 @@ JAVASCRIPTS = []
 
 ##code-section config-bottom #fill in your manual code here
 import os
+
+
 PRODUCT_FOLDER = os.path.dirname(__file__)
 FILES_FOLDER = os.path.join(PRODUCT_FOLDER, 'data')
 

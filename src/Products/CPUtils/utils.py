@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os
-import collections
 from functools import partial
+
+import collections
+import os
 
 
 def verbose(*messages):

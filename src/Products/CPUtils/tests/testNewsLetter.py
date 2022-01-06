@@ -27,28 +27,36 @@
 __author__ = """Stephan Geulette <stephan.geulette@uvcw.be>"""
 __docformat__ = 'plaintext'
 
-import os, sys
-from zExceptions import NotFound
 from Products.ExternalMethod.ExternalMethod import ExternalMethod
+from zExceptions import NotFound
+
+import os
+import sys
+
+
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
+from AccessControl import ClassSecurityInfo
+from AccessControl import getSecurityManager
+from AccessControl.SecurityManagement import newSecurityManager
+from AccessControl.SecurityManagement import setSecurityManager
+from Products.CPUtils.config import *
+from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
+##code-section module-beforeclass #fill in your manual code here
+from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
+from Products.PloneTestCase import PloneTestCase
+from Testing import ZopeTestCase
+
 import transaction
-from AccessControl import getSecurityManager, ClassSecurityInfo
-from AccessControl.SecurityManagement import newSecurityManager, setSecurityManager
+
 
 #
 # Test-cases for class(es) 
 #
 
-from Testing import ZopeTestCase
-from Products.PloneTestCase import PloneTestCase
-from Products.CPUtils.config import *
-from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
 
 # Import the tested classes
 
-##code-section module-beforeclass #fill in your manual code here
-from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
 ##/code-section module-beforeclass
 ZopeTestCase.installProduct(PROJECTNAME)
 
@@ -120,7 +128,8 @@ class testNewsLetter(CPUtilsTestCase):
 
 
 def test_suite():
-    from unittest import TestSuite, makeSuite
+    from unittest import makeSuite
+    from unittest import TestSuite
     suite = TestSuite()
     suite.addTest(makeSuite(testNewsLetter))
     return suite
