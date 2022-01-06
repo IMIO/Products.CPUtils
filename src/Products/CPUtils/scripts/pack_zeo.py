@@ -1,6 +1,6 @@
 from optparse import OptionParser
 
-import os
+import plone.recipe.zope2zeoserver.pack
 import sys
 
 
@@ -18,14 +18,14 @@ storage = options.storage
 days = options.days
 port = options.port
 
-                
+
 sys.path[0:0] = [
-    cache + '/eggs/plone.recipe.zope2zeoserver-1.4-py2.4.egg',
-    cache + '/eggs/zc.recipe.egg-1.2.2-py2.4.egg',
-    cache + '/eggs/setuptools-0.6c11-py2.4.egg',
-    cache + '/eggs/zc.buildout-1.4.4-py2.4.egg',
-    instance + '/parts/zope2/lib/python',
-  ]
+    cache + "/eggs/plone.recipe.zope2zeoserver-1.4-py2.4.egg",
+    cache + "/eggs/zc.recipe.egg-1.2.2-py2.4.egg",
+    cache + "/eggs/setuptools-0.6c11-py2.4.egg",
+    cache + "/eggs/zc.buildout-1.4.4-py2.4.egg",
+    instance + "/parts/zope2/lib/python",
+]
 
 username = None
 blob_dir = None
@@ -35,10 +35,7 @@ host = "127.0.0.1"
 password = None
 
 
-
-import plone.recipe.zope2zeoserver.pack
-
-
-if __name__ == '__main__':
-    plone.recipe.zope2zeoserver.pack.main(host, port, unix, days, username, password, realm, blob_dir, storage)
-    
+if __name__ == "__main__":
+    plone.recipe.zope2zeoserver.pack.main(
+        host, port, unix, days, username, password, realm, blob_dir, storage
+    )
