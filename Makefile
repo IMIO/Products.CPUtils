@@ -1,7 +1,7 @@
 
 .PHONY: cleanall
 cleanall:
-	rm -rf bin develop-eggs include lib parts .installed.cfg .mr.developer.cfg
+	rm -rf bin develop-eggs include lib parts .installed.cfg .mr.developer.cfg pyvenv.cfg
 
 .PHONY: buildout
 buildout:

@@ -16,3 +16,4 @@ src/*
 !src/Products
 var/
 .idea/
+pyvenv.cfg
