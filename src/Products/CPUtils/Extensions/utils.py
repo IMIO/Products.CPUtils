@@ -4029,6 +4029,7 @@ def check_blobs_slow(self, delete=''):
 
 
 def del_objects(self, doit='', types='', linki='1'):
+    from datetime import datetime
     from plone import api
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
@@ -4059,7 +4060,10 @@ def del_objects(self, doit='', types='', linki='1'):
     if livalue != lk:
         pp.site_properties.enable_link_integrity_checks = lk
 
-    for brain in api.content.find(context=self, portal_type=ptypes, sort_on='path', sort_order='descending'):
+    crit = {'portal_type': ptypes}
+    # crit.update({'created': {'query': datetime.strptime('20211213', '%Y%m%d'), 'range': 'min'}})
+    for brain in api.content.find(context=self, sort_on='path', sort_order='ascending', **crit):
+        # if brain.internal_reference_no <= 'E13123': continue
         obj = brain.getObject()
         out.append('<a href="%s">%s &nbsp;=>&nbsp; "%s"</a>' % (brain.getURL(), brain.getPath(), brain.Title))
         if doit == '1':
