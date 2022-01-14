@@ -165,8 +165,8 @@ def install(self):
         return "You must be a zope manager to run this script"
     methods = []
     for method in ('add_subject', 'audit_catalog', 'change_authentication_plugins',
-                   'change_user_properties', 'check_users', 'clean_provides_for', 'clean_utilities_for',
-                   'configure_ckeditor', 'copy_image_attribute', 'cpdb', 'creators',
+                   'change_user_properties', 'check_groups_users', 'check_users', 'clean_provides_for',
+                   'clean_utilities_for', 'configure_ckeditor', 'copy_image_attribute', 'cpdb', 'creators',
                    'del_bad_portlet', 'del_object', 'del_objects', 'desactivate_base2dom', 'export_subscribers_csv',
                    'install_plone_product', 'list_context_portlets_by_name', 'list_local_roles',
                    'list_newsletter_users', 'list_objects', 'list_portlets',
@@ -1084,7 +1084,8 @@ def check_groups_users(self, app='docs'):
         groups[group]['s'] = 'activated'
         groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
     all_fcts_ids = [f['fct_id'] for f in all_fcts]
-    app_groups = {'docs': ['dir_general', 'encodeurs', 'expedition', 'lecteurs_globaux_cs', 'lecteurs_globaux_ce']}
+    app_groups = {'docs': ['createurs_dossier', 'dir_general', 'encodeurs', 'expedition', 'lecteurs_globaux_cs',
+                           'lecteurs_globaux_ce']}
     global_groups = ['AuthenticatedUsers', 'Administrators', 'Reviewers', 'Site Administrators'] + app_groups[app]
     # Other groups check
     # out.append("{}T={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
@@ -1096,7 +1097,7 @@ def check_groups_users(self, app='docs'):
             if suffix and org in full_orgs and suffix in all_fcts_ids:
                 groups.setdefault(group, {})['s'] = 'inactive'
                 groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
-                out.append("!! group '{}' on inactive org '{}'".format(group, full_orgs[group].encode('utf8')))
+                out.append("!! group '{}' on inactive org '{}'".format(group, full_orgs[org].encode('utf8')))
             elif group in global_groups:
                 groups.setdefault(group, {})['s'] = 'global'
                 groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
