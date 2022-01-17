@@ -1153,6 +1153,12 @@ def check_groups_users(self, app='docs'):
             if s_grp == t_grp:
                 out.append(" > '{} ({})' and '{}': same users '{}'".format(
                     full_orgs[org].encode('utf8'), u_fct, u_fcts[u_fct], ','.join(sorted(s_grp))))
+            elif not s_grp:
+                out.append(" > '{} ({})' and '{}': no users in the 1".format(
+                    full_orgs[org].encode('utf8'), u_fct, u_fcts[u_fct]))
+            elif not t_grp:
+                out.append(" > '{} ({})' and '{}': no users in the 2".format(
+                    full_orgs[org].encode('utf8'), u_fct, u_fcts[u_fct]))
             else:
                 res = t_grp.difference(s_grp)
                 if res:
