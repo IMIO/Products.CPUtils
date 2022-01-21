@@ -25,7 +25,7 @@
 #
 
 __author__ = """Stephan GEULETTE <stephan.geulette@uvcw.be>"""
-__docformat__ = 'plaintext'
+__docformat__ = "plaintext"
 
 
 # Product configuration.
@@ -36,6 +36,8 @@ __docformat__ = 'plaintext'
 # If you wish to perform custom configuration, you may put a file
 # AppConfig.py in your product's root directory. This will be included
 # in this file if found.
+import os
+
 
 try:  # New CMF
     from Products.CMFCore.permissions import setDefaultRoles
@@ -43,23 +45,11 @@ except ImportError:  # Old CMF
     from Products.CMFCore.CMFCorePermissions import setDefaultRoles
 
 
-##code-section config-head #fill in your manual code here
-##/code-section config-head
-
-
 PROJECTNAME = "CPUtils"
-
-# Check for Plone 2.1
-try:
-    from Products.CMFPlone.migrations import v2_1
-except ImportError:
-    HAS_PLONE21 = False
-else:
-    HAS_PLONE21 = True
 
 # Permissions
 DEFAULT_ADD_CONTENT_PERMISSION = "Add portal content"
-setDefaultRoles(DEFAULT_ADD_CONTENT_PERMISSION, ('Manager', 'Owner'))
+setDefaultRoles(DEFAULT_ADD_CONTENT_PERMISSION, ("Manager", "Owner"))
 
 product_globals = globals()
 
@@ -79,35 +69,27 @@ PRODUCT_DEPENDENCIES = []
 STYLESHEETS = []
 JAVASCRIPTS = []
 
-##code-section config-bottom #fill in your manual code here
-import os
 PRODUCT_FOLDER = os.path.dirname(__file__)
-FILES_FOLDER = os.path.join(PRODUCT_FOLDER, 'data')
+FILES_FOLDER = os.path.join(PRODUCT_FOLDER, "data")
 
 
 def getPloneVersion():
     import Products.CMFPlone as cmfp
+
     plonedir = cmfp.__path__[0]
     # 2.5, 3 version
     if os.path.exists(plonedir):
-        for name in ('version.txt', 'VERSION.txt', 'VERSION.TXT'):
+        for name in ("version.txt", "VERSION.txt", "VERSION.TXT"):
             versionfile = os.path.join(plonedir, name)
             if os.path.exists(versionfile):
-                file = open(versionfile, 'r')
+                file = open(versionfile, "r")
                 data = file.readline()
                 file.close()
                 return data.strip()
     # 4 version
     import pkg_resources
-    return pkg_resources.get_distribution('Products.CMFPlone').version
+
+    return pkg_resources.get_distribution("Products.CMFPlone").version
+
 
 PLONE_VERSION = getPloneVersion()
-
-##/code-section config-bottom
-
-
-# Load custom configuration not managed by ArchGenXML
-try:
-    from Products.CPUtils.AppConfig import *
-except ImportError:
-    pass
