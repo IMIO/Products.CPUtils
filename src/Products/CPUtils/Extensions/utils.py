@@ -105,12 +105,12 @@ def sendmail(self, mfrom="", to="", body="", subject="", cc="", bcc=""):
     """
         send a mail
     """
-    from email.Header import Header
     from Products.CMFCore.utils import getToolByName
-    from Products.CMFPlone.utils import safe_unicode
     from Products.CPUtils.config import PLONE_VERSION
-
+    from Products.CMFPlone.utils import safe_unicode
+    import email.Message
     import email.Utils
+    from email.Header import Header
 
     portal = getToolByName(self, "portal_url").getPortalObject()
 
@@ -165,8 +165,8 @@ def install(self):
     """
         Install cputils methods where the user is (root of zope?)
     """
-    from Products.CMFPlone.utils import base_hasattr
     from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
+    from Products.CMFPlone.utils import base_hasattr
 
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
@@ -176,6 +176,7 @@ def install(self):
         "audit_catalog",
         "change_authentication_plugins",
         "change_user_properties",
+        "check_groups_users",
         "check_users",
         "clean_provides_for",
         "clean_utilities_for",
@@ -228,6 +229,9 @@ def pack_db(self, days=0):
         pack a db of the zope instance
     """
     out = []
+    # The user running this via urllib is not manager !!!!
+    #    if not check_role(self):
+    #        return "You must have a manager role to run this script"
     import time
 
     t = time.time() - days * 86400
@@ -1190,8 +1194,10 @@ def check_groups_users(self, app="docs"):
         "You can call the script with the following parameters:",
         "-> app=xxx => configuration to use (Default: docs){}".format(lf),
     ]
-    from collective.contact.plonegroup.config import get_registry_functions
-    from collective.contact.plonegroup.config import get_registry_organizations
+    from collective.contact.plonegroup.config import (
+        get_registry_organizations,
+        get_registry_functions,
+    )
     from collective.wfadaptations.api import get_applied_adaptations
     from datetime import datetime
     from plone import api
@@ -1284,7 +1290,6 @@ def check_groups_users(self, app="docs"):
         }
     }
     # out.append("{}T={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
-    groups = {}
     all_orgs = get_registry_organizations()
     all_fcts = get_registry_functions()
     voc_inst = getUtility(
@@ -1298,6 +1303,7 @@ def check_groups_users(self, app="docs"):
     out.append(
         "Total of inactive orgs: {}{}".format(len(full_orgs) - len(all_orgs), lf)
     )
+    groups = {}  # all possible groups created following functions
     for fct in all_fcts:
         if fct["fct_id"] not in right_fcts[app]:
             out.append("!! manual function '{}' added".format(fct["fct_id"]))
@@ -1330,6 +1336,7 @@ def check_groups_users(self, app="docs"):
     all_fcts_ids = [f["fct_id"] for f in all_fcts]
     app_groups = {
         "docs": [
+            "createurs_dossier",
             "dir_general",
             "encodeurs",
             "expedition",
@@ -1354,8 +1361,8 @@ def check_groups_users(self, app="docs"):
                 groups.setdefault(group, {})["s"] = "inactive"
                 groups[group]["u"] = [u.id for u in api.user.get_users(groupname=group)]
                 out.append(
-                    "!! group '{}' on inactive org '{}'".format(
-                        group, full_orgs[group].encode("utf8")
+                    "!! group '{}' on inactive org '{}' with {} users".format(
+                        group, full_orgs[org].encode("utf8"), len(groups[group]["u"])
                     )
                 )
             elif group in global_groups:
@@ -1364,7 +1371,11 @@ def check_groups_users(self, app="docs"):
             else:
                 groups.setdefault(group, {})["s"] = "manual"
                 groups[group]["u"] = [u.id for u in api.user.get_users(groupname=group)]
-                out.append("!! global group '{}' added".format(group))
+                out.append(
+                    "!! global group '{}' added with {} users".format(
+                        group, len(groups[group]["u"])
+                    )
+                )
     # Groups stats
     stats = {}
     users = {}
@@ -1438,6 +1449,18 @@ def check_groups_users(self, app="docs"):
                         u_fct,
                         u_fcts[u_fct],
                         ",".join(sorted(s_grp)),
+                    )
+                )
+            elif not s_grp:
+                out.append(
+                    " > '{} ({})' and '{}': no users in the 1".format(
+                        full_orgs[org].encode("utf8"), u_fct, u_fcts[u_fct]
+                    )
+                )
+            elif not t_grp:
+                out.append(
+                    " > '{} ({})' and '{}': no users in the 2".format(
+                        full_orgs[org].encode("utf8"), u_fct, u_fcts[u_fct]
                     )
                 )
             else:
@@ -1563,7 +1586,9 @@ def recreate_users_groups(self, only_users=False, only_groups=False, dochange=""
         plugins = acl.plugins
         val_plugins = plugins.getAllPlugins(plugin_type="IValidationPlugin")
         if "password_strength_plugin" in val_plugins["active"]:
-            from Products.PluggableAuthService.interfaces.plugins import IValidationPlugin
+            from Products.PluggableAuthService.interfaces.plugins import (
+                IValidationPlugin,
+            )
 
             plugins.deactivatePlugin(IValidationPlugin, "password_strength_plugin")
             val_deact = True
@@ -1662,8 +1687,8 @@ def correctPOSKey(self, dochange=""):
         Correct a DICT like attribute.
         Must be called on site context
     """
-    from Products.CMFCore.utils import getToolByName
     from ZODB.POSException import POSKeyError
+    from Products.CMFCore.utils import getToolByName
 
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
@@ -2212,8 +2237,8 @@ def copy_image_attribute(self):
             checkPermission("Copy or Move", object) and checkPermission("Add portal content", object) and
             not globals_view.isPortalOrPortalDefaultPage() and not object.isCanonical()
     """
-    from collective.contentleadimage.config import IMAGE_FIELD_NAME
     from collective.contentleadimage.utils import hasContentLeadImage
+    from collective.contentleadimage.config import IMAGE_FIELD_NAME
 
     canonical_obj = self.getCanonical()
     if not canonical_obj or (self == self.getCanonical()):
@@ -2264,8 +2289,8 @@ def unregister_adapter(self, unregister=""):
         "list all adapters)<br />"
     )
 
-    from Products.CMFCore.utils import getToolByName
     from zope.component import getSiteManager
+    from Products.CMFCore.utils import getToolByName
 
     portal = getToolByName(self, "portal_url").getPortalObject()
 
@@ -2658,12 +2683,11 @@ def list_context_portlets_by_name(self, portlet_name=""):
             "If you want to see every portlets of this site, use '*' as portlet_name"
         )
 
-    from plone.portlets.interfaces import ILocalPortletAssignable
-    from plone.portlets.interfaces import IPortletAssignmentMapping
+    from zope.component import getUtility, getMultiAdapter
     from plone.portlets.interfaces import IPortletManager
+    from plone.portlets.interfaces import IPortletAssignmentMapping
+    from plone.portlets.interfaces import ILocalPortletAssignable
     from Products.CMFCore.utils import getToolByName
-    from zope.component import getMultiAdapter
-    from zope.component import getUtility
 
     out = ['<table><tr style="nth-child(odd): background-color: #000000;">']
     left_column = getUtility(IPortletManager, name=u"plone.leftcolumn")
@@ -2751,9 +2775,8 @@ def rename_long_ids(self, length="255", dochange="", fromfile=""):
         1) run on orig site first, writing correspondences in output file
         2) renames as orig filenames from correspondences file
     """
-    from Acquisition import aq_base
     from Products.CMFCore.utils import getToolByName
-
+    from Acquisition import aq_base
     import os.path
 
     if not check_role(self):
@@ -3096,9 +3119,6 @@ def removeRegisteredTool(self, tool=""):
     return "<br />\n".join(out)
 
 
-###############################################################################
-
-
 def subscribers(self):
     """
         Display subscribers on context (Products.PloneboardSubscription)
@@ -3117,9 +3137,6 @@ def subscribers(self):
             "\n".join(sorted(pb_tool.subscribers[path])),
         )
     return "No subscriber on %s" % path
-
-
-###############################################################################
 
 
 def subscribe_forums(
@@ -3269,9 +3286,6 @@ def subscribe_forums(
     return "<br />\n".join(out)
 
 
-###############################################################################
-
-
 def list_used_views(self, specific_view=None):
     """
         List used views of the plone site
@@ -3329,9 +3343,6 @@ def list_used_views(self, specific_view=None):
     return "\n".join(out)
 
 
-###############################################################################
-
-
 def list_local_roles(self):
     """
         List defined local roles on the site
@@ -3376,9 +3387,6 @@ def list_local_roles(self):
     return "<br />\n".join(out)
 
 
-###############################################################################
-
-
 def unlock_webdav_objects(self, dochange=""):
     """
         unlock webdav locked objects
@@ -3419,9 +3427,6 @@ def unlock_webdav_objects(self, dochange=""):
         unlock_obj(self)
     walk_dir(self)
     return "<br />\n".join(out)
-
-
-###############################################################################
 
 
 def objects_stats(self, csv=""):
@@ -3466,9 +3471,6 @@ def objects_stats(self, csv=""):
     return sep.join(out)
 
 
-###############################################################################
-
-
 def list_objects(self, type):
     if not check_role(self):
         return "You must have a manager role to run this script"
@@ -3481,9 +3483,6 @@ def list_objects(self, type):
         info = "&nbsp;<a href= " + url + "/cputils_object_info>(more info)</a>"
         out.append("%s %s %s %s %s %s" % ("<a href= ", url, ">", url, "</a>", info))
     return "<br/>".join(out)
-
-
-###############################################################################
 
 
 def reftooltoobjects(self, dochange=""):
@@ -3572,9 +3571,6 @@ def reftooltoobjects(self, dochange=""):
     return "<br />\n".join(out)
 
 
-###############################################################################
-
-
 def del_bad_portlet(self, dochange="", column="left", portlet=""):
     """
         Delete a Plone3 portlet that cannot more be edited.
@@ -3587,7 +3583,6 @@ def del_bad_portlet(self, dochange="", column="left", portlet=""):
 
     logger = logging.getLogger("CPUtils")
     from zope.annotation.interfaces import IAnnotations
-
     import cgi
 
     out = ["<h1>Deleting a portlet and displaying some attributes</h1>"]
@@ -3636,9 +3631,6 @@ def del_bad_portlet(self, dochange="", column="left", portlet=""):
     return "<br />\n".join(out)
 
 
-###############################################################################
-
-
 def clean_provides_for(self, interface_name=None):
     """
         Removed given interface_name from every object providing it...
@@ -3656,8 +3648,8 @@ def clean_provides_for(self, interface_name=None):
     if not brains:
         return "No elements provides '%s'" % interface_name
 
-    from zope.component.interface import getInterface
     from zope.interface import noLongerProvides
+    from zope.component.interface import getInterface
 
     out = []
     interface = getInterface("", interface_name)
@@ -3676,9 +3668,6 @@ def clean_provides_for(self, interface_name=None):
     transaction.commit()
 
     return "\n".join(out)
-
-
-###############################################################################
 
 
 def clean_utilities_for(self, interface_name=None):
@@ -3734,9 +3723,6 @@ def clean_utilities_for(self, interface_name=None):
     return "\n".join(out)
 
 
-###############################################################################
-
-
 def add_subject(self, dochange="", path="", type="", subject=""):
     """
         Search for objects regarding type, path, ... and add the subject.
@@ -3748,7 +3734,6 @@ def add_subject(self, dochange="", path="", type="", subject=""):
 
     logger = logging.getLogger("CPUtils")
     from Products.CMFCore.utils import getToolByName
-
     import os
 
     purl = getToolByName(self, "portal_url")
@@ -3811,16 +3796,10 @@ def add_subject(self, dochange="", path="", type="", subject=""):
     return "<br />\n".join(out)
 
 
-###############################################################################
-
-
 def list_for_generator(self, tree):
     # Avoiding "Unauthorized: The container has no security assertions." in ZMI Python scripts
     # on LOBTreeItems
     return [elem for elem in tree]
-
-
-###############################################################################
 
 
 def removeZFT(self):
@@ -3831,8 +3810,10 @@ def removeZFT(self):
     except ImportError:
         from zope.component.hooks import setSite
 
-    from collective.zipfiletransport.utilities.interfaces import IZipFileTransportUtility
     from zope.component import getSiteManager
+    from collective.zipfiletransport.utilities.interfaces import (
+        IZipFileTransportUtility,
+    )
 
     setSite(self)
     sm = getSiteManager()
@@ -3875,9 +3856,6 @@ def removeZFT(self):
     transaction.commit()
 
 
-###############################################################################
-
-
 def order_folder(self, key="title", reverse="", verbose=""):
     """
         Order items in a folder
@@ -3910,9 +3888,6 @@ def order_folder(self, key="title", reverse="", verbose=""):
         return self.REQUEST.RESPONSE.redirect(self.absolute_url())
 
 
-###############################################################################
-
-
 def move_item(self, delta=-1):
     """
         move an item in an ordered container
@@ -3926,9 +3901,6 @@ def move_item(self, delta=-1):
     folder.moveObjectsByDelta(eid, int(delta))
     newpos = folder.getObjectPosition(eid)
     print "%d => %d" % (oldpos, newpos)
-
-
-###############################################################################
 
 
 def search_users_by_name(self, filter_login="", filter_name="", filter_mail=""):
@@ -3982,9 +3954,6 @@ def search_users_by_name(self, filter_login="", filter_name="", filter_mail=""):
                     )
                     break
     return "<br />\n".join(out)
-
-
-###############################################################################
 
 
 def move_copy_objects(self, action="move", dest="", doit="", types="", by=50):
@@ -4052,9 +4021,6 @@ def move_copy_objects(self, action="move", dest="", doit="", types="", by=50):
     return "\n".join(out)
 
 
-###############################################################################
-
-
 def reset_passwords(self, not_for_ids="siteadmin", dochange=""):
     """
         Reset all users passwords
@@ -4097,9 +4063,6 @@ def reset_passwords(self, not_for_ids="siteadmin", dochange=""):
     return "\n".join(out)
 
 
-###############################################################################
-
-
 def reindex_relations(self):
     """
         Clear the relation catalog (zc.relation.catalog) to fix issues with interfaces that don't
@@ -4120,9 +4083,6 @@ def reindex_relations(self):
     for brain in brains:
         obj = brain.getObject()
         updateRelations(obj, None)
-
-
-###############################################################################
 
 
 def mark_last_version(self, product=""):
@@ -4152,9 +4112,6 @@ def mark_last_version(self, product=""):
             return "Product version in pqi already at last: '%s' '%s'" % (product, i_v)
     except AttributeError, e:
         return "Cannot get product '%s' from portal_quickinstaller: %s" % (product, e)
-
-
-###############################################################################
 
 
 def resources_order(self, tool="css", output="xml"):
@@ -4193,9 +4150,6 @@ def resources_order(self, tool="css", output="xml"):
     return "\n".join(out)
 
 
-###############################################################################
-
-
 def load_site(self, duration="15"):
     """
         Load the site during a specified duration
@@ -4216,16 +4170,12 @@ def load_site(self, duration="15"):
                 break
 
 
-###############################################################################
-
-
 def dv_images_size(self):
     """
         Return size of documentviewer files
     """
-    from plone.app.blob.utils import openBlob
     from zope.annotation.interfaces import IAnnotations
-
+    from plone.app.blob.utils import openBlob
     import os
 
     sizes = {"large": 0, "normal": 0, "small": 0, "text": 0, "pages": 0, "fmt": ""}
@@ -4250,9 +4200,6 @@ def dv_images_size(self):
     sizes["fmt"] = iformat
     sizes["pages"] = annot["num_pages"]
     return sizes
-
-
-###############################################################################
 
 
 def dv_conversion(
@@ -4421,9 +4368,6 @@ def dv_conversion(
     return "\n".join(out)
 
 
-###############################################################################
-
-
 def remove_empty_related_items(self):
     """
         Remove related items which do not exists anymore (bugs with plone.app.contenttypes on Plone 4.3)
@@ -4439,9 +4383,6 @@ def remove_empty_related_items(self):
     return "This object has now {0} related items (before: {1}".format(
         new_related, old_related
     )
-
-
-###############################################################################
 
 
 def creators(self, value="", replace="1", add="-1", recursive="", dochange=""):
@@ -4522,20 +4463,15 @@ def creators(self, value="", replace="1", add="-1", recursive="", dochange=""):
     return sep.join(out)
 
 
-###############################################################################
-
-
 def change_uuid(self, recursive="", dochange=""):
     """
         Change uuid values.
     """
     if not check_role(self):
         return "You must have a manager role to run this script"
-    from plone.uuid.interfaces import ATTRIBUTE_NAME
-    from plone.uuid.interfaces import IUUID
-    from plone.uuid.interfaces import IUUIDGenerator
-    from Products.CMFPlone.utils import base_hasattr
     from zope.component import getUtility
+    from Products.CMFPlone.utils import base_hasattr
+    from plone.uuid.interfaces import IUUIDGenerator, ATTRIBUTE_NAME, IUUID
 
     generator = getUtility(IUUIDGenerator)
 
@@ -4572,9 +4508,6 @@ def change_uuid(self, recursive="", dochange=""):
         set_uuid(self)
 
     return sep.join(out)
-
-
-###############################################################################
 
 
 def correct_intids(self, dochange=""):
@@ -4620,9 +4553,6 @@ def correct_intids(self, dochange=""):
     )
 
 
-###############################################################################
-
-
 def register_intid(self, dochange=""):
     """
         Register intid if object is not well registered.
@@ -4642,9 +4572,6 @@ def register_intid(self, dochange=""):
             intids.register(self)
             out.append("obj now registered with intid '%s'" % intids.getId(self))
     return "\n<br />".join(out)
-
-
-###############################################################################
 
 
 def check_all_catalog_intids(self, dochange=""):
@@ -4693,9 +4620,6 @@ def check_all_catalog_intids(self, dochange=""):
     return resume + "\n<br />".join(out)
 
 
-###############################################################################
-
-
 def check_blobs(self, delete=""):
     """
         Check blobs for poskeyerrors, limited to cataloged object
@@ -4709,14 +4633,14 @@ def check_blobs(self, delete=""):
     ret = []
 
     from datetime import datetime
-    from plone.app.blob.subtypes.file import ExtensionBlobField
-    from plone.dexterity.content import DexterityContent
-    from plone.namedfile.interfaces import INamedFile
-    from Products.Archetypes.Field import FileField
-    from Products.Archetypes.interfaces import IBaseContent
+    from ZODB.POSException import POSKeyError
     from Products.CMFCore.utils import getToolByName
     from Products.CMFPlone.utils import base_hasattr
-    from ZODB.POSException import POSKeyError
+    from Products.Archetypes.Field import FileField
+    from Products.Archetypes.interfaces import IBaseContent
+    from plone.app.blob.subtypes.file import ExtensionBlobField
+    from plone.namedfile.interfaces import INamedFile
+    from plone.dexterity.content import DexterityContent
 
     portal = getToolByName(self, "portal_url").getPortalObject()
     log_list(ret, "Starting check_blobs at %s" % datetime(1973, 02, 12).now())
@@ -4773,9 +4697,6 @@ def check_blobs(self, delete=""):
     return "\n".join(ret)
 
 
-###############################################################################
-
-
 def check_blobs_slow(self, delete=""):
     """
         Check blobs for poskeyerrors
@@ -4789,13 +4710,13 @@ def check_blobs_slow(self, delete=""):
     ret = []
 
     from datetime import datetime
-    from plone.dexterity.content import DexterityContent
-    from plone.namedfile.interfaces import INamedFile
-    from Products.Archetypes.Field import FileField
-    from Products.Archetypes.interfaces import IBaseContent
+    from ZODB.POSException import POSKeyError
     from Products.CMFCore.interfaces import IFolderish
     from Products.CMFCore.utils import getToolByName
-    from ZODB.POSException import POSKeyError
+    from Products.Archetypes.Field import FileField
+    from Products.Archetypes.interfaces import IBaseContent
+    from plone.namedfile.interfaces import INamedFile
+    from plone.dexterity.content import DexterityContent
 
     portal = getToolByName(self, "portal_url").getPortalObject()
     start = datetime(1973, 02, 12).now()
@@ -4866,9 +4787,6 @@ def check_blobs_slow(self, delete=""):
     return "\n".join(ret)
 
 
-###############################################################################
-
-
 def del_objects(self, doit="", types="", linki="1"):
     from plone import api
 
@@ -4903,9 +4821,12 @@ def del_objects(self, doit="", types="", linki="1"):
     if livalue != lk:
         pp.site_properties.enable_link_integrity_checks = lk
 
+    crit = {"portal_type": ptypes}
+    # crit.update({'created': {'query': datetime.strptime('20211213', '%Y%m%d'), 'range': 'min'}})
     for brain in api.content.find(
-        context=self, portal_type=ptypes, sort_on="path", sort_order="descending"
+        context=self, sort_on="path", sort_order="ascending", **crit
     ):
+        # if brain.internal_reference_no <= 'E13123': continue
         obj = brain.getObject()
         out.append(
             '<a href="%s">%s &nbsp;=>&nbsp; "%s"</a>'
@@ -4917,9 +4838,6 @@ def del_objects(self, doit="", types="", linki="1"):
     if livalue != lk:
         pp.site_properties.enable_link_integrity_checks = livalue
     return sep.join(out)
-
-
-###############################################################################
 
 
 def del_object(self, doit="", linki="1"):
@@ -4941,9 +4859,6 @@ def del_object(self, doit="", linki="1"):
         if doit == "1":
             api.content.delete(obj=self, check_linkintegrity=(linki == "1"))
     return sep.join(out)
-
-
-###############################################################################
 
 
 def set_attr(self, attr="", value="", typ="str"):
@@ -4993,7 +4908,6 @@ def set_attr(self, attr="", value="", typ="str"):
             new_val = DateTime(value)  # example '2017-10-13 9:00 GMT%2B1'  %2B = '+'
         elif typ == "datetime":
             from datetime import datetime
-
             import re
 
             dt = map(int, filter(None, re.split(r"[\- /\\:]+", value)))
@@ -5010,9 +4924,6 @@ def set_attr(self, attr="", value="", typ="str"):
     return sep.join(out)
 
 
-###############################################################################
-
-
 def uid(self):
     """ Display uid value """
     if not check_role(self):
@@ -5021,9 +4932,6 @@ def uid(self):
         return self.UID()
     except Exception, msg:
         return msg
-
-
-###############################################################################
 
 
 def relation_infos(rel):
@@ -5075,8 +4983,8 @@ def check_relations(self):
 def show_object_relations(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    from zc.relation.interfaces import ICatalog  # noqa
     from zope.component import queryUtility
+    from zc.relation.interfaces import ICatalog  # noqa
     from zope.intid.interfaces import IIntIds
 
     intids = queryUtility(IIntIds)
@@ -5089,9 +4997,6 @@ def show_object_relations(self):
         for rel in rels:
             out.append(str(relation_infos(rel)))
     return "\n".join(out)
-
-
-###############################################################################
 
 
 def batch_remove_generated_previews(objs):

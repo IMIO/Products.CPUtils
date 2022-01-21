@@ -5,8 +5,8 @@ Changelog
 1.21 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Modified del_objects.
+  [sgeulette]
 
 1.20 (2021-11-08)
 -----------------
