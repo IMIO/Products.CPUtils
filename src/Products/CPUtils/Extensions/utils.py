@@ -1054,7 +1054,6 @@ def check_groups_users(self, app='docs'):
                                                                            'IImioDmsMailConfig.contact_group_encoder'),
     }}
     # out.append("{}T={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
-    groups = {}
     all_orgs = get_registry_organizations()
     all_fcts = get_registry_functions()
     voc_inst = getUtility(IVocabularyFactory, u'collective.contact.plonegroup.organization_services')
@@ -1064,6 +1063,7 @@ def check_groups_users(self, app='docs'):
     out.append('Total of functions: {}'.format(len(all_fcts)))
     out.append('Total of activated orgs: {}'.format(len(all_orgs)))
     out.append('Total of inactive orgs: {}{}'.format(len(full_orgs)-len(all_orgs), lf))
+    groups = {}  # all possible groups created following functions
     for fct in all_fcts:
         if fct['fct_id'] not in right_fcts[app]:
             out.append("!! manual function '{}' added".format(fct['fct_id']))
@@ -1097,14 +1097,15 @@ def check_groups_users(self, app='docs'):
             if suffix and org in full_orgs and suffix in all_fcts_ids:
                 groups.setdefault(group, {})['s'] = 'inactive'
                 groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
-                out.append("!! group '{}' on inactive org '{}'".format(group, full_orgs[org].encode('utf8')))
+                out.append("!! group '{}' on inactive org '{}' with {} users".format(group,
+                           full_orgs[org].encode('utf8'), len(groups[group]['u'])))
             elif group in global_groups:
                 groups.setdefault(group, {})['s'] = 'global'
                 groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
             else:
                 groups.setdefault(group, {})['s'] = 'manual'
                 groups[group]['u'] = [u.id for u in api.user.get_users(groupname=group)]
-                out.append("!! global group '{}' added".format(group))
+                out.append("!! global group '{}' added with {} users".format(group, len(groups[group]['u'])))
     # Groups stats
     stats = {}
     users = {}
