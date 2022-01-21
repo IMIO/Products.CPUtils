@@ -1,0 +1,6 @@
+[report]
+include =
+    src/Products/CPUtils/*
+omit =
+    */test*
+    */__init__.py
