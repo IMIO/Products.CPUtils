@@ -15,4 +15,6 @@ recursive-include src *.zcml
 recursive-include buildout.d *.cfg
 recursive-include docs *.GPL
 recursive-include docs *.rst
-
+include *.txt
+include .coveragerc
+include Makefile

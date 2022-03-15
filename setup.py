@@ -24,13 +24,15 @@ setup(
     long_description=long_description,
     # Get more from http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
+        "Development Status :: 6 - Mature",
         "Environment :: Web Environment",
         "Framework :: Plone",
         "Framework :: Plone :: 4.3",
+        "License :: OSI Approved :: GNU General Public License (GPL)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
     ],
-    keywords='',
+    keywords='plone imio utils',
     author='Stephan Geulette',
     author_email='s.geulette@imio.be',
     url='http://pypi.python.org/pypi/Products.CPUtils',
