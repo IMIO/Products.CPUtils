@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.21 (unreleased)
+1.21 (2022-03-15)
 -----------------
 
 - Modified del_objects.
