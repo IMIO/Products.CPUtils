@@ -844,6 +844,7 @@ def configure_ckeditor(
     rmTiny=1,
     forceTextPaste=1,
     scayt=1,
+    removeWsc=1,
     skin="moono-lisa",
     filtering="",
 ):
@@ -978,6 +979,14 @@ def configure_ckeditor(
     if scayt:
         ckp.enableScaytOnStartup = True
         out.append("Set enableScaytOnStartup to True")
+
+    # disable the 'wsc' plugin, removing the wsc plugin will remove the
+    # "Check spell" option from Scayt menu that is broken
+    if removeWsc:
+        removePlugins = ckp.removePlugins
+        if u'wsc' not in removePlugins:
+            removePlugins += (u'wsc',)
+            ckp.removePlugins = removePlugins
 
     # change filtering
     if filtering and filtering in ("default", "custom", "disabled"):

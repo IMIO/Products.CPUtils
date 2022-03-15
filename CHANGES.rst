@@ -7,6 +7,9 @@ Changelog
 
 - Modified del_objects.
   [sgeulette]
+- Added parameter `removeWsc=1` to `utils.configure_ckeditor`, this will disable
+  the WSC link (Spellcheck) in the scayt menu of CKeditor as it is broken for years.
+  [gbastien]
 
 1.20 (2021-11-08)
 -----------------
