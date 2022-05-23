@@ -4879,7 +4879,7 @@ def set_attr(self, attr="", value="", typ="str"):
         return "You must be a zope manager to run this script"
     from Products.CMFPlone.utils import safe_hasattr
 
-    good_types = ["str", "int", "DateTime", "unicode", "datetime", "None"]
+    good_types = ["str", "int", "list", "DateTime", "unicode", "datetime", "None"]
 
     sep = "\n<br />"
     out = ["<h2>You can/must call the script with following parameters:</h2>"]
@@ -4907,18 +4907,18 @@ def set_attr(self, attr="", value="", typ="str"):
     try:
         if typ == "int":
             new_val = int(value)
+        elif typ == "list":
+            import json
+            new_val = json.loads(value)
         elif typ == "unicode":
             from Products.CMFPlone.utils import safe_unicode
-
             new_val = safe_unicode(value)
         elif typ == "DateTime":
             from DateTime import DateTime
-
             new_val = DateTime(value)  # example '2017-10-13 9:00 GMT%2B1'  %2B = '+'
         elif typ == "datetime":
             from datetime import datetime
             import re
-
             dt = map(int, filter(None, re.split(r"[\- /\\:]+", value)))
             new_val = datetime(*dt)  # example '2017-10-13 9:00'
         elif typ == "None":
@@ -4927,9 +4927,10 @@ def set_attr(self, attr="", value="", typ="str"):
         out.append("Cannot cast value type to '%s': '%s'" % (typ, msg))
         return sep.join(out)
 
+    old_val = getattr(self, attr)
     setattr(self, attr, new_val)
     self.reindexObject()
-    out.append("Attr '%s' set to '%s'" % (attr, new_val))
+    out.append("Attr '%s' set to '%s' (from '%s')" % (attr, new_val, old_val))
     return sep.join(out)
 
 
