@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
-from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
 
 import os
 import sys
@@ -19,10 +18,6 @@ class testMethods(CPUtilsTestCase):
         CPUtilsTestCase.afterSetup(self)
 
         self.loginAsPortalOwner()
-        method = "install"
-        method_name = "cputils_" + method
-        manage_addExternalMethod(self.app, method_name, "", "CPUtils.utils", method)
-        self.app.cputils_install()
 
     # Manually created methods
 
