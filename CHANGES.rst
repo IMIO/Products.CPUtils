@@ -5,7 +5,8 @@ Changelog
 1.22 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Automatically install External methods at the root of Zope app.
+  [odelaere]
 
 
 1.21 (2022-03-15)

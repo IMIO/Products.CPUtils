@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<import-steps>
+ <import-step id="installCPUtils" version="20080501-01"
+              handler="Products.CPUtils.setuphandlers.install"
+              title="Install CPUtils.">
+  Install Products.CPUtils.
+ </import-step>
+</import-steps>
