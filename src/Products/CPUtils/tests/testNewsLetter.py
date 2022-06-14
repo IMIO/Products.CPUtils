@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from Products.CPUtils.config import PROJECTNAME
 from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
-from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
 from Products.PloneTestCase import PloneTestCase
 from Testing import ZopeTestCase
 
@@ -31,12 +30,7 @@ class testNewsLetter(CPUtilsTestCase):
         """
         """
         CPUtilsTestCase.afterSetup(self)
-
         self.loginAsPortalOwner()
-        method = "install"
-        method_name = "cputils_" + method
-        manage_addExternalMethod(self.app, method_name, "", "CPUtils.utils", method)
-        self.app.cputils_install()
 
         """from Products.Five import zcml
         from Products.Five import fiveconfigure
