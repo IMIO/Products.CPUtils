@@ -5024,3 +5024,20 @@ def remove_generated_previews(obj):
     annotations = IAnnotations(obj)
     if "collective.documentviewer" in annotations:
         annotations.pop("collective.documentviewer", {})
+
+
+def clear_completed_async_jobs(self):
+    """ Remove plone.app.async jobs that are completed, i.e. success or failure.
+        Does not remove jobs still in flight """
+    from zope.component import getUtility
+    from Products.CMFCore.interfaces import ISiteRoot
+    from plone.app.async.interfaces import IAsyncDatabase
+    from zc.async.interfaces import KEY
+
+    db = getUtility(IAsyncDatabase)
+    main_conn = getUtility(ISiteRoot)._p_jar
+    async_conn = main_conn.get_connection(db.database_name)
+    queue = async_conn.root()[KEY]['']
+    for da in queue.dispatchers.values():
+        for agent in da.values():
+            agent.completed.clear()
