@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.22 (unreleased)
+1.22 (2022-09-19)
 -----------------
 
 - Automatically install External methods at the root of Zope app.
