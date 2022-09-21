@@ -1132,7 +1132,7 @@ def list_users(
                         userid,
                         groupid,
                         users[userid]["name"],
-                        users[userid]["email"],
+                        users[userid]["email"] or '',  # correction for ldap
                     ]
                     if title:
                         infos.insert(2, groups[groupid]["title"])
