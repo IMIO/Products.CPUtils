@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 # utilities
 
+from plone.registry.interfaces import IRegistry
+from zope.component import getUtility
+
 
 def get_users(self, obj=True):
     from Products.CMFCore.utils import getToolByName
@@ -847,6 +850,7 @@ def configure_ckeditor(
     removeWsc=1,
     skin="moono-lisa",
     filtering="",
+    use_registry=False
 ):
     """
         configure collective.ckeditor with default parameters.
@@ -912,7 +916,11 @@ def configure_ckeditor(
         return "collective.ckeditor cannot be installed: '%s'" % msg
 
     sp = portal.portal_properties.site_properties
-    ckp = portal.portal_properties.ckeditor_properties
+    if use_registry:
+        registry = getUtility(IRegistry)
+        ck_prefix = "collective.ckeditor.browser.ckeditorsettings.ICKEditorSchema.%s"
+    else:
+        ckp = portal.portal_properties.ckeditor_properties
 
     # setting default editor to ckeditor
     if default:
@@ -964,37 +972,60 @@ def configure_ckeditor(
                 "custom parameter '%s' not defined in available custom toolbars"
                 % custom
             )
-        ckp = portal.portal_properties.ckeditor_properties
-        if ckp.getProperty("toolbar") != "Custom":
-            ckp.manage_changeProperties(toolbar="Custom")
-            ckp.manage_changeProperties(toolbar_Custom=customs[custom])
+        if use_registry:
+            if registry.get(ck_prefix % "toolbar") != "Custom":
+                registry[ck_prefix % "toolbar"] = "Custom"
+                registry[ck_prefix % "toolbar_Custom"] = customs[custom]
+        else:
+            if ckp.getProperty("toolbar") != "Custom":
+                ckp.manage_changeProperties(toolbar="Custom")
+                ckp.manage_changeProperties(toolbar_Custom=customs[custom])
         out.append("Set '%s' toolbar" % custom)
 
     # force text paste
     if forceTextPaste:
-        ckp.manage_changeProperties(forcePasteAsPlainText=True)
+        if use_registry:
+            registry[ck_prefix % "forcePasteAsPlainText"] = True
+        else:
+            ckp.manage_changeProperties(forcePasteAsPlainText=True)
         out.append("Set forcePasteAsPlainText to True")
 
     # activate scayt
     if scayt:
-        ckp.enableScaytOnStartup = True
+        if use_registry:
+            registry[ck_prefix % "enableScaytOnStartup"] = True
+        else:
+            ckp.enableScaytOnStartup = True
         out.append("Set enableScaytOnStartup to True")
 
     # disable the 'wsc' plugin, removing the wsc plugin will remove the
     # "Check spell" option from Scayt menu that is broken
     if removeWsc:
-        removePlugins = ckp.removePlugins
-        if u'wsc' not in removePlugins:
-            removePlugins += (u'wsc',)
-            ckp.removePlugins = removePlugins
+        if use_registry:
+            removePlugins = registry.get(ck_prefix % "removePlugins")
+            if u'wsc' not in removePlugins:
+                removePlugins += (u'wsc',)
+                registry[ck_prefix % "removePlugins"] = removePlugins
+        else:
+            removePlugins = ckp.removePlugins
+            if u'wsc' not in removePlugins:
+                removePlugins += (u'wsc',)
+                ckp.removePlugins = removePlugins
 
     # change filtering
     if filtering and filtering in ("default", "custom", "disabled"):
-        ckp.manage_changeProperties(filtering=filtering)
+        if use_registry:
+            registry[ck_prefix % "filtering"] = filtering
+        else:
+            ckp.manage_changeProperties(filtering=filtering)
         out.append("Set filtering to '{}'".format(filtering))
 
-    if ckp.hasProperty("skin"):
-        ckp.manage_changeProperties(skin=skin)
+    # skin
+    if skin:
+        if use_registry:
+            registry[ck_prefix % "skin"] = skin
+        else:
+            ckp.manage_changeProperties(skin=skin)
 
     return "\n".join(out)
 

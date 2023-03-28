@@ -5,8 +5,11 @@ Changelog
 1.23 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Added parameter `use_registry=False` to `configure_ckeditor`, set it to `True`
+  with `collective.ckeditor 4.11+`.
+  [gbastien]
+- Removed file `CONTRIBUTORS.rst`.
+  [gbastien]
 
 1.22 (2022-09-19)
 -----------------
