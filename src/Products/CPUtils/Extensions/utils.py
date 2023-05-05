@@ -4721,10 +4721,11 @@ def check_blobs(self, delete=""):
                 try:
                     if blob_attrs[typ]["t"] == "dx":
                         val = getattr(obj, attr)
+                        val.data
                     else:
                         val = obj.getField(attr).get(obj)
-                    val.getSize()
-                except POSKeyError:
+                        val.getSize()
+                except (POSKeyError, SystemError):
                     log_list(
                         ret, "Found damaged object %s on %s" % (typ, obj.absolute_url())
                     )
