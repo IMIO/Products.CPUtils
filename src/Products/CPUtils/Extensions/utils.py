@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # utilities
 
+from imio.helpers.content import safe_encode
 from plone.registry.interfaces import IRegistry
 from zope.component import getUtility
 
@@ -975,7 +976,7 @@ def configure_ckeditor(
         if use_registry:
             if registry.get(ck_prefix % "toolbar") != "Custom":
                 registry[ck_prefix % "toolbar"] = "Custom"
-                registry[ck_prefix % "toolbar_Custom"] = customs[custom]
+                registry[ck_prefix % "toolbar_Custom"] = safe_encode(customs[custom])
         else:
             if ckp.getProperty("toolbar") != "Custom":
                 ckp.manage_changeProperties(toolbar="Custom")
@@ -1003,8 +1004,8 @@ def configure_ckeditor(
     if removeWsc:
         if use_registry:
             removePlugins = registry.get(ck_prefix % "removePlugins")
-            if u'wsc' not in removePlugins:
-                removePlugins += (u'wsc',)
+            if 'wsc' not in removePlugins:
+                removePlugins += ('wsc',)
                 registry[ck_prefix % "removePlugins"] = removePlugins
         else:
             removePlugins = ckp.removePlugins
