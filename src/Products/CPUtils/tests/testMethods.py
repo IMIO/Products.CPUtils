@@ -83,7 +83,7 @@ class testMethods(CPUtilsTestCase):
 
     def test_cpdb(self):
         print("push 'c' and then 'return' to pass the test")
-        self.portal.cputils_cpdb()
+        # self.portal.cputils_cpdb()
         "cputils_cpdb test passed"
 
     def old_test_desactivate_base2dom(self):

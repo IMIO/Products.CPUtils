@@ -12,6 +12,8 @@ Changelog
   [gbastien]
 - `utils.check_zope_admin` has been moved to `imio.helpers.security`.
   [gbastien]
+- Removed `utils.safe_encode` as already imported from `imio.helpers.content`.
+  [gbastien]
 
 1.22 (2022-09-19)
 -----------------
