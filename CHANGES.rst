@@ -10,6 +10,8 @@ Changelog
   [gbastien]
 - Removed file `CONTRIBUTORS.rst`.
   [gbastien]
+- `utils.check_zope_admin` has been moved to `imio.helpers.security`.
+  [gbastien]
 
 1.22 (2022-09-19)
 -----------------

@@ -2,6 +2,7 @@
 # utilities
 
 from imio.helpers.content import safe_encode
+from imio.helpers.security import check_zope_admin
 from plone.registry.interfaces import IRegistry
 from zope.component import getUtility
 
@@ -25,19 +26,6 @@ def check_role(self, role="Manager", context=None):
 
     pms = getToolByName(self, "portal_membership")
     return pms.getAuthenticatedMember().has_role(role, context)
-
-
-def check_zope_admin():
-    from AccessControl.SecurityManagement import getSecurityManager
-
-    user = getSecurityManager().getUser()
-    if user.has_role("Manager") and user.__module__ in (
-        "Products.PluggableAuthService.PropertiedUser",
-        "AccessControl.users",
-        "AccessControl.User",
-    ):
-        return True
-    return False
 
 
 def fileSize(nb, as_size="", decimal="", rm_sz=False):
