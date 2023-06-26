@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.23 (unreleased)
+1.23 (2023-06-26)
 -----------------
 
 - Added parameter `use_registry=False` to `configure_ckeditor`, set it to `True`
