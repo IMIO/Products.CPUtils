@@ -4890,6 +4890,7 @@ def set_attr(self, attr="", value="", typ="str"):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     from Products.CMFPlone.utils import safe_hasattr
+    from cgi import escape
 
     good_types = ["str", "int", "list", "DateTime", "unicode", "datetime", "None"]
 
@@ -4905,11 +4906,16 @@ def set_attr(self, attr="", value="", typ="str"):
         "-> Example: ?attr=creation_date&value=2017-10-13 9:00 GMT%2B1&typ=DateTime<br />"
     )
 
-    if not attr or not value:
-        out.append("attr and value parameters are mandatory !")
+    if not attr:
+        out.append("attr parameter is mandatory !")
         return sep.join(out)
     if not safe_hasattr(self, attr):
         out.append("Attr '%s' doesn't exist !" % attr)
+        return sep.join(out)
+    if not value:
+        old_val = getattr(self, attr)
+        out.append(u"Current value type={}, value='{}'".format(escape(str(type(old_val))), old_val))
+        out.append("value parameter is mandatory !")
         return sep.join(out)
     if typ not in good_types:
         out.append("Given typ '%s' not in good types !" % typ)
@@ -4935,7 +4941,7 @@ def set_attr(self, attr="", value="", typ="str"):
             new_val = datetime(*dt)  # example '2017-10-13 9:00'
         elif typ == "None":
             new_val = None
-    except Exception, msg:
+    except Exception as msg:
         out.append("Cannot cast value type to '%s': '%s'" % (typ, msg))
         return sep.join(out)
 

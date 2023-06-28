@@ -5,8 +5,8 @@ Changelog
 1.24 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Improved `set_attr`.
+  [sgeulette]
 
 1.23 (2023-06-26)
 -----------------
