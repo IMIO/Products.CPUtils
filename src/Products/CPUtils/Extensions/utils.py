@@ -3,6 +3,7 @@
 
 from imio.helpers.content import safe_encode
 from imio.helpers.security import check_zope_admin
+from plone.app.uuid.utils import uuidToObject
 from plone.registry.interfaces import IRegistry
 from zope.component import getUtility
 
@@ -183,6 +184,7 @@ def install(self):
         "load_user_properties",
         "move_copy_objects",
         "move_item",
+        "obj_from_uid",
         "object_info",
         "objects_stats",
         "order_folder",
@@ -4960,6 +4962,18 @@ def uid(self):
         return self.UID()
     except Exception, msg:
         return msg
+
+
+def obj_from_uid(self, uid=''):
+    """ Get object from uid value """
+    if not check_zope_admin():
+        return "You must be a zope manager to run this script"
+    if not uid:
+        return "uid parameter is mandatory !"
+    obj = uuidToObject(uid)
+    if obj is None:
+        return "No object found for uid '%s'" % uid
+    return object_link(obj)
 
 
 def relation_infos(rel):

@@ -7,6 +7,8 @@ Changelog
 
 - Improved `set_attr`.
   [sgeulette]
+- Added `obj_from_uid`
+  [sgeulette]
 
 1.23 (2023-06-26)
 -----------------
