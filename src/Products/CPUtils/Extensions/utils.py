@@ -4897,17 +4897,12 @@ def set_attr(self, attr="", value="", typ="str"):
     good_types = ["str", "int", "list", "DateTime", "unicode", "datetime", "None"]
 
     sep = "\n<br />"
-    out = ["<h2>You can/must call the script with following parameters:</h2>"]
-    out.append("-> attr=''  : attribute name.")
-    out.append("-> value=''  : value to set.")
-    out.append(
-        "-> typ=''  : value type. Can be %s. Default='str'"
-        % ", ".join(["'%s'" % t for t in good_types])
-    )
-    out.append(
-        "-> Example: ?attr=creation_date&value=2017-10-13 9:00 GMT%2B1&typ=DateTime<br />"
-    )
-
+    out = ["<h2>You can/must call the script with following parameters:</h2>",
+           "-> attr=''  : attribute name.",
+           "-> value=''  : value to set.",
+           "-> typ=''  : value type. Can be %s. Default='str'" % ", ".join(["'%s'" % t for t in good_types]),
+           "-> Example: ?attr=creation_date&value=2017-10-13 9:00 GMT%2B1&typ=DateTime<br />"
+    ]
     if not attr:
         out.append("attr parameter is mandatory !")
         return sep.join(out)
