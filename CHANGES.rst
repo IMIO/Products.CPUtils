@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.24 (unreleased)
+1.24 (2024-02-12)
 -----------------
 
 - Improved `set_attr`.
