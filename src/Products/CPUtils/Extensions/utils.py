@@ -4902,6 +4902,7 @@ def set_attr(self, attr="", value="", typ="str"):
            "-> value=''  : value to set.",
            "-> typ=''  : value type. Can be %s. Default='str'" % ", ".join(["'%s'" % t for t in good_types]),
            "-> Example: ?attr=creation_date&value=2017-10-13 9:00 GMT%2B1&typ=DateTime<br />"
+           "-> Example: ?attr=_plone.uuid&value=xxx<br />"
     ]
     if not attr:
         out.append("attr parameter is mandatory !")
