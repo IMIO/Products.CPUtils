@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # utilities
 
-from imio.helpers.content import safe_encode
 from imio.helpers.security import check_zope_admin
+from imio.pyutils.utils import safe_encode
 from plone.app.uuid.utils import uuidToObject
 from plone.registry.interfaces import IRegistry
 from zope.component import getUtility
@@ -89,12 +89,13 @@ def sendmail(self, mfrom="", to="", body="", subject="", cc="", bcc=""):
     """
         send a mail
     """
+    from email.Header import Header
     from Products.CMFCore.utils import getToolByName
-    from Products.CPUtils.config import PLONE_VERSION
     from Products.CMFPlone.utils import safe_unicode
+    from Products.CPUtils.config import PLONE_VERSION
+
     import email.Message
     import email.Utils
-    from email.Header import Header
 
     portal = getToolByName(self, "portal_url").getPortalObject()
 
@@ -149,8 +150,8 @@ def install(self):
     """
         Install cputils methods where the user is (root of zope?)
     """
-    from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
     from Products.CMFPlone.utils import base_hasattr
+    from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
 
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
@@ -1216,10 +1217,8 @@ def check_groups_users(self, app="docs"):
         "You can call the script with the following parameters:",
         "-> app=xxx => configuration to use (Default: docs){}".format(lf),
     ]
-    from collective.contact.plonegroup.config import (
-        get_registry_organizations,
-        get_registry_functions,
-    )
+    from collective.contact.plonegroup.config import get_registry_functions
+    from collective.contact.plonegroup.config import get_registry_organizations
     from collective.wfadaptations.api import get_applied_adaptations
     from datetime import datetime
     from plone import api
@@ -1608,9 +1607,7 @@ def recreate_users_groups(self, only_users=False, only_groups=False, dochange=""
         plugins = acl.plugins
         val_plugins = plugins.getAllPlugins(plugin_type="IValidationPlugin")
         if "password_strength_plugin" in val_plugins["active"]:
-            from Products.PluggableAuthService.interfaces.plugins import (
-                IValidationPlugin,
-            )
+            from Products.PluggableAuthService.interfaces.plugins import IValidationPlugin
 
             plugins.deactivatePlugin(IValidationPlugin, "password_strength_plugin")
             val_deact = True
@@ -1709,8 +1706,8 @@ def correctPOSKey(self, dochange=""):
         Correct a DICT like attribute.
         Must be called on site context
     """
-    from ZODB.POSException import POSKeyError
     from Products.CMFCore.utils import getToolByName
+    from ZODB.POSException import POSKeyError
 
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
@@ -2259,8 +2256,8 @@ def copy_image_attribute(self):
             checkPermission("Copy or Move", object) and checkPermission("Add portal content", object) and
             not globals_view.isPortalOrPortalDefaultPage() and not object.isCanonical()
     """
-    from collective.contentleadimage.utils import hasContentLeadImage
     from collective.contentleadimage.config import IMAGE_FIELD_NAME
+    from collective.contentleadimage.utils import hasContentLeadImage
 
     canonical_obj = self.getCanonical()
     if not canonical_obj or (self == self.getCanonical()):
@@ -2311,8 +2308,8 @@ def unregister_adapter(self, unregister=""):
         "list all adapters)<br />"
     )
 
-    from zope.component import getSiteManager
     from Products.CMFCore.utils import getToolByName
+    from zope.component import getSiteManager
 
     portal = getToolByName(self, "portal_url").getPortalObject()
 
@@ -2705,11 +2702,12 @@ def list_context_portlets_by_name(self, portlet_name=""):
             "If you want to see every portlets of this site, use '*' as portlet_name"
         )
 
-    from zope.component import getUtility, getMultiAdapter
-    from plone.portlets.interfaces import IPortletManager
-    from plone.portlets.interfaces import IPortletAssignmentMapping
     from plone.portlets.interfaces import ILocalPortletAssignable
+    from plone.portlets.interfaces import IPortletAssignmentMapping
+    from plone.portlets.interfaces import IPortletManager
     from Products.CMFCore.utils import getToolByName
+    from zope.component import getMultiAdapter
+    from zope.component import getUtility
 
     out = ['<table><tr style="nth-child(odd): background-color: #000000;">']
     left_column = getUtility(IPortletManager, name=u"plone.leftcolumn")
@@ -2797,8 +2795,9 @@ def rename_long_ids(self, length="255", dochange="", fromfile=""):
         1) run on orig site first, writing correspondences in output file
         2) renames as orig filenames from correspondences file
     """
-    from Products.CMFCore.utils import getToolByName
     from Acquisition import aq_base
+    from Products.CMFCore.utils import getToolByName
+
     import os.path
 
     if not check_role(self):
@@ -3605,6 +3604,7 @@ def del_bad_portlet(self, dochange="", column="left", portlet=""):
 
     logger = logging.getLogger("CPUtils")
     from zope.annotation.interfaces import IAnnotations
+
     import cgi
 
     out = ["<h1>Deleting a portlet and displaying some attributes</h1>"]
@@ -3670,8 +3670,8 @@ def clean_provides_for(self, interface_name=None):
     if not brains:
         return "No elements provides '%s'" % interface_name
 
-    from zope.interface import noLongerProvides
     from zope.component.interface import getInterface
+    from zope.interface import noLongerProvides
 
     out = []
     interface = getInterface("", interface_name)
@@ -3756,6 +3756,7 @@ def add_subject(self, dochange="", path="", type="", subject=""):
 
     logger = logging.getLogger("CPUtils")
     from Products.CMFCore.utils import getToolByName
+
     import os
 
     purl = getToolByName(self, "portal_url")
@@ -3832,10 +3833,8 @@ def removeZFT(self):
     except ImportError:
         from zope.component.hooks import setSite
 
+    from collective.zipfiletransport.utilities.interfaces import IZipFileTransportUtility
     from zope.component import getSiteManager
-    from collective.zipfiletransport.utilities.interfaces import (
-        IZipFileTransportUtility,
-    )
 
     setSite(self)
     sm = getSiteManager()
@@ -4196,8 +4195,9 @@ def dv_images_size(self):
     """
         Return size of documentviewer files
     """
-    from zope.annotation.interfaces import IAnnotations
     from plone.app.blob.utils import openBlob
+    from zope.annotation.interfaces import IAnnotations
+
     import os
 
     sizes = {"large": 0, "normal": 0, "small": 0, "text": 0, "pages": 0, "fmt": ""}
@@ -4491,9 +4491,11 @@ def change_uuid(self, recursive="", dochange=""):
     """
     if not check_role(self):
         return "You must have a manager role to run this script"
-    from zope.component import getUtility
+    from plone.uuid.interfaces import ATTRIBUTE_NAME
+    from plone.uuid.interfaces import IUUID
+    from plone.uuid.interfaces import IUUIDGenerator
     from Products.CMFPlone.utils import base_hasattr
-    from plone.uuid.interfaces import IUUIDGenerator, ATTRIBUTE_NAME, IUUID
+    from zope.component import getUtility
 
     generator = getUtility(IUUIDGenerator)
 
@@ -4655,14 +4657,14 @@ def check_blobs(self, delete=""):
     ret = []
 
     from datetime import datetime
-    from ZODB.POSException import POSKeyError
-    from Products.CMFCore.utils import getToolByName
-    from Products.CMFPlone.utils import base_hasattr
+    from plone.app.blob.subtypes.file import ExtensionBlobField
+    from plone.dexterity.content import DexterityContent
+    from plone.namedfile.interfaces import INamedFile
     from Products.Archetypes.Field import FileField
     from Products.Archetypes.interfaces import IBaseContent
-    from plone.app.blob.subtypes.file import ExtensionBlobField
-    from plone.namedfile.interfaces import INamedFile
-    from plone.dexterity.content import DexterityContent
+    from Products.CMFCore.utils import getToolByName
+    from Products.CMFPlone.utils import base_hasattr
+    from ZODB.POSException import POSKeyError
 
     portal = getToolByName(self, "portal_url").getPortalObject()
     log_list(ret, "Starting check_blobs at %s" % datetime(1973, 02, 12).now())
@@ -4733,13 +4735,13 @@ def check_blobs_slow(self, delete=""):
     ret = []
 
     from datetime import datetime
-    from ZODB.POSException import POSKeyError
-    from Products.CMFCore.interfaces import IFolderish
-    from Products.CMFCore.utils import getToolByName
+    from plone.dexterity.content import DexterityContent
+    from plone.namedfile.interfaces import INamedFile
     from Products.Archetypes.Field import FileField
     from Products.Archetypes.interfaces import IBaseContent
-    from plone.namedfile.interfaces import INamedFile
-    from plone.dexterity.content import DexterityContent
+    from Products.CMFCore.interfaces import IFolderish
+    from Products.CMFCore.utils import getToolByName
+    from ZODB.POSException import POSKeyError
 
     portal = getToolByName(self, "portal_url").getPortalObject()
     start = datetime(1973, 02, 12).now()
@@ -4891,8 +4893,8 @@ def set_attr(self, attr="", value="", typ="str"):
     """
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    from Products.CMFPlone.utils import safe_hasattr
     from cgi import escape
+    from Products.CMFPlone.utils import safe_hasattr
 
     good_types = ["str", "int", "list", "DateTime", "unicode", "datetime", "None"]
 
@@ -4934,6 +4936,7 @@ def set_attr(self, attr="", value="", typ="str"):
             new_val = DateTime(value)  # example '2017-10-13 9:00 GMT%2B1'  %2B = '+'
         elif typ == "datetime":
             from datetime import datetime
+
             import re
             dt = map(int, filter(None, re.split(r"[\- /\\:]+", value)))
             new_val = datetime(*dt)  # example '2017-10-13 9:00'
@@ -5021,8 +5024,8 @@ def check_relations(self):
 def show_object_relations(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    from zope.component import queryUtility
     from zc.relation.interfaces import ICatalog  # noqa
+    from zope.component import queryUtility
     from zope.intid.interfaces import IIntIds
 
     intids = queryUtility(IIntIds)
@@ -5057,10 +5060,10 @@ def remove_generated_previews(obj):
 def clear_completed_async_jobs(self):
     """ Remove plone.app.async jobs that are completed, i.e. success or failure.
         Does not remove jobs still in flight """
-    from zope.component import getUtility
-    from Products.CMFCore.interfaces import ISiteRoot
     from plone.app.async.interfaces import IAsyncDatabase
+    from Products.CMFCore.interfaces import ISiteRoot
     from zc.async.interfaces import KEY
+    from zope.component import getUtility
 
     db = getUtility(IAsyncDatabase)
     main_conn = getUtility(ISiteRoot)._p_jar

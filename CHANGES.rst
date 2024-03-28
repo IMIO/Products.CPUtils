@@ -5,8 +5,8 @@ Changelog
 1.25 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Imported `safe_encode` from imio.pyutils.
+  [sgeulette]
 
 1.24 (2024-02-12)
 -----------------
