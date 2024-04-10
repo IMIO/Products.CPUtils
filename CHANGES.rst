@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.25 (unreleased)
+1.25 (2024-04-10)
 -----------------
 
 - Imported `safe_encode` from imio.pyutils.
