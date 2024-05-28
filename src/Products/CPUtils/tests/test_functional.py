@@ -11,7 +11,7 @@ import unittest
 
 
 if __name__ == "__main__":
-    execfile(os.path.join(sys.path[0], "framework.py"))
+    exec(compile(open(os.path.join(sys.path[0], "framework.py"), "rb").read(), os.path.join(sys.path[0], "framework.py"), 'exec'))
 
 PACKAGE = "Products.CPUtils.tests"
 
@@ -24,7 +24,7 @@ OPTIONFLAGS = (
 
 def list_doctests():
     home = package_home(globals())
-    print home
+    print(home)
     return [filename for filename in glob.glob(os.path.sep.join([home, "*.txt"]))]
 
 
@@ -73,5 +73,5 @@ def test_suite():
 
 
 if __name__ == "__main__":
-    import framework
+    from . import framework
     framework()

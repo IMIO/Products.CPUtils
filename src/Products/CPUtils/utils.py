@@ -7,12 +7,12 @@ import os
 
 
 def verbose(*messages):
-    print ">>", " ".join(messages)
+    print(">>", " ".join(messages))
 
 
 def error(*messages):
     #    print >>sys.stderr, '!!', (' '.join(messages))
-    print "!!", (" ".join(messages))
+    print("!!", (" ".join(messages)))
 
 
 # ------------------------------------------------------------------------------
@@ -54,11 +54,11 @@ def writeTo(filepath, data, replace=True):
     if isinstance(data, list):
         for line in data:
             ofile.write(
-                "%s\n" % (isinstance(line, unicode) and line.encode("utf8") or line)
+                "%s\n" % (isinstance(line, str) and line.encode("utf8") or line)
             )
     elif isinstance(data, str):
         ofile.write(data)
-    elif isinstance(data, unicode):
+    elif isinstance(data, str):
         ofile.write(data.encode("utf8"))
     ofile.close()
 
@@ -70,13 +70,13 @@ def encodeData(data, encoding="utf8"):
     """
         Encode any data to the specified encoding
     """
-    if isinstance(data, unicode):
+    if isinstance(data, str):
         return data.encode(encoding)
     elif isinstance(data, collections.Mapping):
         mapfunc = partial(encodeData, encoding=encoding)
-        return dict(map(mapfunc, data.iteritems()))
+        return dict(list(map(mapfunc, iter(data.items()))))
     elif isinstance(data, collections.Iterable):
         mapfunc = partial(encodeData, encoding=encoding)
-        return type(data)(map(mapfunc, data))
+        return type(data)(list(map(mapfunc, data)))
     else:
         return data

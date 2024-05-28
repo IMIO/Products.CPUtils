@@ -40,6 +40,7 @@ setup(
     install_requires=[
         'imio.helpers',
         'imio.pyutils>=1.0.0',
+        'Products.validation',
         'plone.api',
         'setuptools',
     ],

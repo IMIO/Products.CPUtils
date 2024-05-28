@@ -69,12 +69,12 @@ if "Testing" not in sys.modules:
             break
         p, d = s and ("", "") or os.path.split(p)
     else:
-        print "Unable to locate Testing package.",
-        print "You might need to set SOFTWARE_HOME."
+        print("Unable to locate Testing package.", end=' ')
+        print("You might need to set SOFTWARE_HOME.")
         sys.exit(1)
 
 
-execfile(os.path.join(os.path.dirname(Testing.__file__), "common.py"))
+exec(compile(open(os.path.join(os.path.dirname(Testing.__file__), "common.py"), "rb").read(), os.path.join(os.path.dirname(Testing.__file__), "common.py"), 'exec'))
 
 # Include ZopeTestCase support
 #
@@ -83,8 +83,8 @@ if 1:  # Create a new scope
     p = os.path.join(os.path.dirname(Testing.__file__), "ZopeTestCase")
 
     if not os.path.isdir(p):
-        print "Unable to locate ZopeTestCase package.",
-        print "You might need to install ZopeTestCase."
+        print("Unable to locate ZopeTestCase package.", end=' ')
+        print("You might need to install ZopeTestCase.")
         sys.exit(1)
 
     ztc_common = "ztc_common.py"
@@ -92,18 +92,18 @@ if 1:  # Create a new scope
 
     f = 0
     if os.path.exists(ztc_common_global):
-        execfile(ztc_common_global)
+        exec(compile(open(ztc_common_global, "rb").read(), ztc_common_global, 'exec'))
         f = 1
     if os.path.exists(ztc_common):
-        execfile(ztc_common)
+        exec(compile(open(ztc_common, "rb").read(), ztc_common, 'exec'))
         f = 1
 
     if not f:
-        print "Unable to locate %s." % ztc_common
+        print("Unable to locate %s." % ztc_common)
         sys.exit(1)
 
 # Debug
 #
-print "SOFTWARE_HOME: %s" % os.environ.get("SOFTWARE_HOME", "Not set")
-print "INSTANCE_HOME: %s" % os.environ.get("INSTANCE_HOME", "Not set")
+print("SOFTWARE_HOME: %s" % os.environ.get("SOFTWARE_HOME", "Not set"))
+print("INSTANCE_HOME: %s" % os.environ.get("INSTANCE_HOME", "Not set"))
 sys.stdout.flush()

@@ -37,7 +37,7 @@ def fileSize(nb, as_size="", decimal="", rm_sz=False):
         rm_sz : remove letter size
     """
     sizeletter = {1: "k", 2: "M", 3: "G", 4: "T"}
-    if as_size and as_size not in sizeletter.values():
+    if as_size and as_size not in list(sizeletter.values()):
         as_size = ""
     if rm_sz and not as_size:
         rm_sz = False
@@ -126,7 +126,7 @@ def log_list(lst, line, logger=None, level="info"):
     if logger:
         getattr(logger, level)(line)
     else:
-        print "%s %s" % (levels[level], line)
+        print("%s %s" % (levels[level], line))
     lst.append(line)
 
 
@@ -143,7 +143,7 @@ def object_link(obj, view="view", attribute="Title", content="", target=""):
             content = content()
     if target:
         target = ' target="{}"'.format(target)
-    return u'<a href="%s"%s>%s</a>' % (href, target, safe_unicode(content))
+    return '<a href="%s"%s>%s</a>' % (href, target, safe_unicode(content))
 
 
 def install(self):
@@ -320,7 +320,7 @@ def object_info(self):
                 )
         else:
             out.append("> inherited local roles : none !")
-    except Exception, msg:
+    except Exception as msg:
         out.append("! EXCEPTION !:%s" % msg)
     return "\n".join(out)
 
@@ -464,7 +464,7 @@ def change_user_properties(self, kw="", dochange="", filter=""):
 
     def return_properties(dic, member):
         ret = ""
-        for key in dic.keys():
+        for key in list(dic.keys()):
             if member.hasProperty(key):
                 ret += "%s='%s'," % (key, member.getProperty(key))
             else:
@@ -516,7 +516,7 @@ def change_user_properties(self, kw="", dochange="", filter=""):
     change_property = False
     if dochange not in ("", "0", "False", "false"):
         change_property = True
-    newvaluestring = ",".join(["%s='%s'" % (key, dic[key]) for key in dic.keys()])
+    newvaluestring = ",".join(["%s='%s'" % (key, dic[key]) for key in list(dic.keys())])
     total = filtered = 0
     for member in get_users(self):
         total += 1
@@ -566,7 +566,7 @@ def change_user_properties(self, kw="", dochange="", filter=""):
         result = "<br/>".join(out)
     except BaseException:
         try:
-            result = u"<br/>".join(out)
+            result = "<br/>".join(out)
         except BaseException:
             pass
     return result
@@ -594,7 +594,7 @@ def store_user_properties(self):
             % "/".join(target_dir.getPhysicalPath())
         )
 
-    properties_names = dict(portal.portal_memberdata.propertyItems()).keys()
+    properties_names = list(dict(portal.portal_memberdata.propertyItems()).keys())
     properties_names.sort()
     #    skipped_properties = ['description', ]
     #    properties_names = [name for name in properties_names if name not in skipped_properties]
@@ -791,7 +791,7 @@ def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
         pqi = getToolByName(self, "portal_quickinstaller")
         if not pqi.isProductInstalled("FCKeditor"):
             pqi.installProduct("FCKeditor")
-    except Exception, msg:
+    except Exception as msg:
         return "FCKeditor cannot be installed: '%s'" % msg
 
     # setting default editor to FCKeditor
@@ -844,32 +844,32 @@ def configure_ckeditor(
         return "You must have a manager role to run this script"
 
     customs = {
-        "urban": u"[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
+        "urban": "[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
         "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
         "['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter',"
         "'JustifyRight','JustifyBlock'],\n['Table','SpecialChar','Link','Unlink'],\n'/',\n['Styles','Format'],"
         "\n['Maximize', 'ShowBlocks', 'Source']\n]",
-        "plonemeeting": u"[\n"
-        u"['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n"
-        u"['Undo','Redo','-','RemoveFormat'],\n"
-        u"['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],\n"
-        u"['NumberedList','BulletedList','-','Outdent','Indent'],\n"
-        u"['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n"
-        u"['Table','SpecialChar','Link','Unlink','Image'],\n"
-        u"'/',\n"
-        u"['Styles','NbSpace','NbHyphen'],\n"
-        u"['Maximize','ShowBlocks','Source']\n"
-        u"]\n",
-        "ged": u"[\n['Templates'], \n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
+        "plonemeeting": "[\n"
+        "['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n"
+        "['Undo','Redo','-','RemoveFormat'],\n"
+        "['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],\n"
+        "['NumberedList','BulletedList','-','Outdent','Indent'],\n"
+        "['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n"
+        "['Table','SpecialChar','Link','Unlink','Image'],\n"
+        "'/',\n"
+        "['Styles','NbSpace','NbHyphen'],\n"
+        "['Maximize','ShowBlocks','Source']\n"
+        "]\n",
+        "ged": "[\n['Templates'], \n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
         "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
         "['NumberedList','BulletedList'],\n['Table','SpecialChar','Link','Unlink'],\n['Format'],\n['Maximize', "
         "'ShowBlocks', 'Source']\n]",
-        "pst": u"[\n['AjaxSave'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
+        "pst": "[\n['AjaxSave'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
         "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
         "['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter',"
         "'JustifyRight','JustifyBlock'],\n['Table','SpecialChar','Link','Unlink'],\n'/',\n['Styles'],"
         "\n['Maximize', 'ShowBlocks', 'Source']\n]",
-        "site": u"[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n"
+        "site": "[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n"
         "['Undo','Redo','-','Find','Replace','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike','-',"
         "'Subscript','Superscript'],\n['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n"
         "['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n['Link','Unlink','Anchor'],\n'/',"
@@ -885,7 +885,7 @@ def configure_ckeditor(
         "-> forceTextPaste=... : set force paste as plain text (default 1)",
         "-> skin=... : set skin (default moono-lisa)",
         "-> custom=%s : set custom toolbar (default None)'\n"
-        % "|".join(customs.keys()),
+        % "|".join(list(customs.keys())),
     ]
 
     from Products.CMFCore.utils import getToolByName
@@ -896,7 +896,7 @@ def configure_ckeditor(
         pqi = getToolByName(self, "portal_quickinstaller")
         if not pqi.isProductInstalled("collective.ckeditor"):
             pqi.installProduct("collective.ckeditor")
-    except Exception, msg:
+    except Exception as msg:
         return "collective.ckeditor cannot be installed: '%s'" % msg
 
     sp = portal.portal_properties.site_properties
@@ -992,8 +992,8 @@ def configure_ckeditor(
                 registry[ck_prefix % "removePlugins"] = removePlugins
         else:
             removePlugins = ckp.removePlugins
-            if u'wsc' not in removePlugins:
-                removePlugins += (u'wsc',)
+            if 'wsc' not in removePlugins:
+                removePlugins += ('wsc',)
                 ckp.removePlugins = removePlugins
 
     # change filtering
@@ -1233,7 +1233,7 @@ def check_groups_users(self, app="docs"):
     all_users = get_users(self, obj=False)
     out.append("Total of groups: {}".format(len(all_groups)))
     out.append("Total of users: {}".format(len(all_users)))
-    # out.append("{}T all ={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    # out.append("{}T all ={}".format(lf, datetime(1973, 2, 12).now().strftime("%H:%M:%S.%f")))
     # Functions check
     ge = (
         api.portal.get_registry_record(
@@ -1311,15 +1311,15 @@ def check_groups_users(self, app="docs"):
             ),
         }
     }
-    # out.append("{}T={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    # out.append("{}T={}".format(lf, datetime(1973, 2, 12).now().strftime("%H:%M:%S.%f")))
     all_orgs = get_registry_organizations()
     all_fcts = get_registry_functions()
     voc_inst = getUtility(
-        IVocabularyFactory, u"collective.contact.plonegroup.organization_services"
+        IVocabularyFactory, "collective.contact.plonegroup.organization_services"
     )
     full_orgs = {t.value: t.title for t in voc_inst(self)}
     all_orgs = sorted(all_orgs, key=lambda o: full_orgs.get(o))
-    # out.append("{}T orgs ={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    # out.append("{}T orgs ={}".format(lf, datetime(1973, 2, 12).now().strftime("%H:%M:%S.%f")))
     out.append("Total of functions: {}".format(len(all_fcts)))
     out.append("Total of activated orgs: {}".format(len(all_orgs)))
     out.append(
@@ -1348,7 +1348,7 @@ def check_groups_users(self, app="docs"):
                 }
             )
     # Orgs-functions groups check
-    # out.append("{}T1={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    # out.append("{}T1={}".format(lf, datetime(1973, 2, 12).now().strftime("%H:%M:%S.%f")))
     for group in groups:
         if group not in all_groups:
             out.append("!! function group '{}' not found".format(group))
@@ -1373,7 +1373,7 @@ def check_groups_users(self, app="docs"):
         "Site Administrators",
     ] + app_groups[app]
     # Other groups check
-    # out.append("{}T={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f")))
+    # out.append("{}T={}".format(lf, datetime(1973, 2, 12).now().strftime("%H:%M:%S.%f")))
     for group in all_groups:
         if group not in groups:
             parts = group.split("_")
@@ -1412,7 +1412,7 @@ def check_groups_users(self, app="docs"):
     # Display first 3 highest groups
     out.append("{}3 highest users number groups".format(lf))
     for i, tup in enumerate(
-        sorted(groups.items(), key=lambda tp: len(tp[1]["u"]), reverse=True)[0:3]
+        sorted(list(groups.items()), key=lambda tp: len(tp[1]["u"]), reverse=True)[0:3]
     ):
         out.append(
             " > {}: '{}'".format(
@@ -1422,7 +1422,7 @@ def check_groups_users(self, app="docs"):
     # Display first 3 highest users
     out.append("{}3 highest groups number users".format(lf))
     for i, tup in enumerate(
-        sorted(users.items(), key=lambda tp: len(tp[1]), reverse=True)[0:3]
+        sorted(list(users.items()), key=lambda tp: len(tp[1]), reverse=True)[0:3]
     ):
         out.append(" > {}: '{}'".format(tup[0], len(tup[1])))
 
@@ -1622,7 +1622,7 @@ def recreate_users_groups(self, only_users=False, only_groups=False, dochange=""
                             roles=user.getRoles(),
                             domains=user.getDomains(),
                         )
-                    except ValueError, error:
+                    except ValueError as error:
                         out.append(
                             "Problem creating user '%s': %s" % (user.getUserId(), error)
                         )
@@ -1728,7 +1728,7 @@ def correctPOSKey(self, dochange=""):
 
     def correctDicValues(dic, out):
         out.append("Len of dic: %d keys<br />" % len(dic))
-        for key in dic.keys():
+        for key in list(dic.keys()):
             try:
                 repr(dic[key])
             except POSKeyError:
@@ -1835,7 +1835,7 @@ def sync_properties(self, base="", update="", dochange=""):
     out.append("</tr></thead><tbody>")
 
     base_dic = dict(base_obj.propertyItems())
-    base_keys = base_dic.keys()
+    base_keys = list(base_dic.keys())
     base_keys.sort()
     update_dic = dict(update_obj.propertyItems())
 
@@ -1867,7 +1867,7 @@ def sync_properties(self, base="", update="", dochange=""):
                 "<tr><td>%s</td><td class='red'>del</td><td>%s</td><td>%s</td><td>%s</td></tr>"
                 % (base_prop, base_dic[base_prop], "", base_dic[base_prop])
             )
-    update_keys = update_dic.keys()
+    update_keys = list(update_dic.keys())
     update_keys.sort()
 
     for new_prop in update_keys:
@@ -2000,7 +2000,7 @@ def correct_language(
             )
             current_lang = "AttributeError"
             continue
-        except KeyError, msg:
+        except KeyError as msg:
             # es-es not found in deletable language
             errors.append(
                 "<div>Language '%s' not in deletable lang: '%s' at url '<a href=\"%s\">%s</a>'</div>"
@@ -2268,7 +2268,7 @@ def copy_image_attribute(self):
             self.getField(IMAGE_FIELD_NAME).getMutator(self)(
                 canonical_obj.getField(IMAGE_FIELD_NAME).getAccessor(canonical_obj)()
             )
-    self.plone_utils.addPortalMessage(u"Ajout du champ leadImage")
+    self.plone_utils.addPortalMessage("Ajout du champ leadImage")
     return self.REQUEST.RESPONSE.redirect(self.absolute_url())
 
 
@@ -2287,7 +2287,7 @@ def desactivate_base2dom(self):
                 if js.getEnabled():
                     js.setEnabled(False)
                     out.append("Disabled ++resource++base2-dom-fp.js for %s" % sitePath)
-    except Exception, message:
+    except Exception as message:
         out.append("!! error when disabling base2dom: %s" % (message))
     return "\n".join(out)
 
@@ -2331,7 +2331,7 @@ def unregister_adapter(self, unregister=""):
                 out.append("Adapter '%s' unregistered" % unregister)
             else:
                 out.append("Adapter '%s' not unregistered !" % unregister)
-        except Exception, msg:
+        except Exception as msg:
             out.append("Adapter '%s' not unregistered : %s" % (unregister, msg))
 
     return lf.join(out)
@@ -2594,7 +2594,7 @@ def checkInstance(self, isProductInstance="", instdir=""):
         else:
             # Search the "type" of application hosted by the zope instance (website, urban, teleservice,..)
             type = ""
-            for productname in dic_hpList.keys():
+            for productname in list(dic_hpList.keys()):
                 # Determine it by checking if the product is installable
                 if productname in self.Control_Panel.Products.objectIds():
                     type = productname
@@ -2687,7 +2687,7 @@ def checkInstance(self, isProductInstance="", instdir=""):
                         )
             # out.append("")
         return "\n".join(out)
-    except Exception, message:
+    except Exception as message:
         out.append("!! error in checkinstance %s" % str(message))
         return "\n".join(out)
 
@@ -2711,8 +2711,8 @@ def list_context_portlets_by_name(self, portlet_name=""):
     from zope.component import getUtility
 
     out = ['<table><tr style="nth-child(odd): background-color: #000000;">']
-    left_column = getUtility(IPortletManager, name=u"plone.leftcolumn")
-    right_column = getUtility(IPortletManager, name=u"plone.rightcolumn")
+    left_column = getUtility(IPortletManager, name="plone.leftcolumn")
+    right_column = getUtility(IPortletManager, name="plone.rightcolumn")
 
     brains = self.portal_catalog()
     # Add the portal as it is portlet assignable
@@ -2736,7 +2736,7 @@ def list_context_portlets_by_name(self, portlet_name=""):
                 % (abs_url, abs_url)
             )
         elif portlet_name == "*":
-            for k in left_mappings.keys():
+            for k in list(left_mappings.keys()):
                 out.append(
                     '<td width=20%%>left_column</td><td width=60%%><a href="%s">%s</a></td>'
                     "<td width=20%%>%s</td></tr>" % (abs_url, abs_url, k)
@@ -2748,7 +2748,7 @@ def list_context_portlets_by_name(self, portlet_name=""):
                 % (abs_url, abs_url)
             )
         elif portlet_name == "*":
-            for k in right_mappings.keys():
+            for k in list(right_mappings.keys()):
                 out.append(
                     '<td width=20%%>right_column</td><td width=60%%><a href="%s">%s</a></td>'
                     "<td width=20%%>%s</td></tr>" % (abs_url, abs_url, k)
@@ -2874,7 +2874,7 @@ def rename_long_ids(self, length="255", dochange="", fromfile=""):
 
         if do_change:
             # reverse sort objects by path to change id, handling childs to parents
-            for opathid in sorted(otn.keys(), reverse=True):
+            for opathid in sorted(list(otn.keys()), reverse=True):
                 if opathid == "/" or opathid == otn[opathid]["npathid"]:
                     continue
                 obj = portal.restrictedTraverse(opathid[1:])
@@ -3086,7 +3086,7 @@ def remove_dependency_step(self, step="", dependency="", change="", by="5"):
         out.append(
             "{}".format(
                 "<br />\n".join(
-                    [", ".join(steps[i: i + by]) for i in xrange(0, len(steps), by)]
+                    [", ".join(steps[i: i + by]) for i in range(0, len(steps), by)]
                 )
             )
         )
@@ -3339,7 +3339,7 @@ def list_used_views(self, specific_view=None):
                 views[t]["/".join(ob.getPhysicalPath())] = ob.absolute_url()
     if not specific_view:
         out = ["Used views on objects\n---------------------\n"]
-        for typ in views.keys():
+        for typ in list(views.keys()):
             out.append(
                 "%s : %s"
                 % (
@@ -3357,7 +3357,7 @@ def list_used_views(self, specific_view=None):
             "<html><b><u>Objects using the '%s' layout</u></b><br /><br />"
             % specific_view
         ]
-        for typ in views.keys():
+        for typ in list(views.keys()):
             for path in sorted(views[typ]):
                 out.append("%s : <a href='%s'>%s</a>" % (typ, views[typ][path], path))
                 out.append("<br />")
@@ -3922,7 +3922,7 @@ def move_item(self, delta=-1):
     oldpos = folder.getObjectPosition(eid)
     folder.moveObjectsByDelta(eid, int(delta))
     newpos = folder.getObjectPosition(eid)
-    print "%d => %d" % (oldpos, newpos)
+    print("%d => %d" % (oldpos, newpos))
 
 
 def search_users_by_name(self, filter_login="", filter_name="", filter_mail=""):
@@ -4005,7 +4005,7 @@ def move_copy_objects(self, action="move", dest="", doit="", types="", by=50):
     by = int(by)
     try:
         dest_folder = portal.unrestrictedTraverse(dest)
-    except KeyError, e:
+    except KeyError as e:
         out.append("!! The dest path '%s' isn't correct: %s" % (dest, e))
         return "<br />\n".join(out)
     if not self.plone_utils.isStructuralFolder(dest_folder):
@@ -4132,7 +4132,7 @@ def mark_last_version(self, product=""):
             )
         else:
             return "Product version in pqi already at last: '%s' '%s'" % (product, i_v)
-    except AttributeError, e:
+    except AttributeError as e:
         return "Cannot get product '%s' from portal_quickinstaller: %s" % (product, e)
 
 
@@ -4210,7 +4210,7 @@ def dv_images_size(self):
     ):
         return sizes
     files = annot.get("blob_files", None)
-    keys = files.keys()
+    keys = list(files.keys())
     iformat = annot["pdf_image_format"]
     for name in sizes:
         for page in range(1, annot["num_pages"] + 1):
@@ -4550,7 +4550,7 @@ def correct_intids(self, dochange=""):
     if dochange not in ("", "0", "False", "false"):
         change = True
     intids = getUtility(IIntIds)
-    items = intids.items()
+    items = list(intids.items())
     ilen = len(intids.ids)
     rlen = len(intids.refs)
     wlen = len(items)
@@ -4691,7 +4691,7 @@ def check_blobs(self, delete=""):
                     blob_attrs[typ]["at"].append(field.getName())
         elif isinstance(obj, DexterityContent):
             # Iterate through all Python object attributes
-            for key, value in obj.__dict__.items():
+            for key, value in list(obj.__dict__.items()):
                 if not key.startswith("_"):
                     if INamedFile.providedBy(value):
                         if typ not in blob_attrs:
@@ -4772,7 +4772,7 @@ def check_blobs_slow(self, delete=""):
         if isinstance(context, DexterityContent):
             # Iterate through all Python object attributes
             # XXX: Might be smarter to use zope.schema introspection here?
-            for key, value in context.__dict__.items():
+            for key, value in list(context.__dict__.items()):
                 # Ignore non-contentish attributes to speed up us a bit
                 if not key.startswith("_"):
                     if INamedFile.providedBy(value):
@@ -4881,7 +4881,7 @@ def del_object(self, doit="", linki="1"):
     # TODO add option to by pass subscribers with container._delObject(id, suppress_events=True)
     for brain in api.content.find(context=self, sort_on="path"):
         obj = brain.getObject()
-        out.append(u"<span>{}</span>, {}".format(brain.getPath(), object_link(obj)))
+        out.append("<span>{}</span>, {}".format(brain.getPath(), object_link(obj)))
         if doit == "1":
             api.content.delete(obj=self, check_linkintegrity=(linki == "1"))
     return sep.join(out)
@@ -4915,7 +4915,7 @@ def set_attr(self, attr="", value="", typ="str"):
         return sep.join(out)
     if not value:
         old_val = getattr(self, attr)
-        out.append(u"Current value type={}, value='{}'".format(escape(str(type(old_val))), old_val))
+        out.append("Current value type={}, value='{}'".format(escape(str(type(old_val))), old_val))
         out.append("value parameter is mandatory !")
         return sep.join(out)
     if typ not in good_types:
@@ -4939,7 +4939,7 @@ def set_attr(self, attr="", value="", typ="str"):
             from datetime import datetime
 
             import re
-            dt = map(int, filter(None, re.split(r"[\- /\\:]+", value)))
+            dt = list(map(int, [_f for _f in re.split(r"[\- /\\:]+", value) if _f]))
             new_val = datetime(*dt)  # example '2017-10-13 9:00'
         elif typ == "None":
             new_val = None
@@ -4960,7 +4960,7 @@ def uid(self):
         return "You must have a manager role to run this script"
     try:
         return self.UID()
-    except Exception, msg:
+    except Exception as msg:
         return msg
 
 
@@ -5070,6 +5070,6 @@ def clear_completed_async_jobs(self):
     main_conn = getUtility(ISiteRoot)._p_jar
     async_conn = main_conn.get_connection(db.database_name)
     queue = async_conn.root()[KEY]['']
-    for da in queue.dispatchers.values():
-        for agent in da.values():
+    for da in list(queue.dispatchers.values()):
+        for agent in list(da.values()):
             agent.completed.clear()

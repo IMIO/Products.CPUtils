@@ -9,7 +9,7 @@ import sys
 
 
 if __name__ == "__main__":
-    execfile(os.path.join(sys.path[0], "framework.py"))
+    exec(compile(open(os.path.join(sys.path[0], "framework.py"), "rb").read(), os.path.join(sys.path[0], "framework.py"), 'exec'))
 
 ZopeTestCase.installProduct(PROJECTNAME)
 
@@ -60,7 +60,7 @@ class testNewsLetter(CPUtilsTestCase):
         nlf.createSubscriberObject('sub3')
         subList = nlf.getSubscribers()
         print(subList)"""
-        self.failUnless(True)
+        self.assertTrue(True)
 
 
 def test_suite():
@@ -73,5 +73,5 @@ def test_suite():
 
 
 if __name__ == "__main__":
-    import framework
+    from . import framework
     framework()

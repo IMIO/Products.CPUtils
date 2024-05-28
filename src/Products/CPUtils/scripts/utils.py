@@ -8,24 +8,24 @@ from datetime import datetime
 
 import os
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 
 TRACE = False
 
 
 def verbose(*messages):
-    print ">>", " ".join(messages)
+    print(">>", " ".join(messages))
 
 
 def error(*messages):
-    print "!!", (" ".join(messages))
+    print("!!", (" ".join(messages)))
 
 
 def trace(*messages):
     if not TRACE:
         return
-    print "TRACE:", " ".join(messages)
+    print("TRACE:", " ".join(messages))
 
 
 # ------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ def treat_zopeconflines(zodbfilename, fspath):
     return port
 
 
-class MyUrlOpener(urllib.FancyURLopener):
+class MyUrlOpener(urllib.request.FancyURLopener):
     """ redefinition of this class to give the user and password"""
 
     def prompt_user_passwd(self, host, realm):
@@ -133,7 +133,7 @@ class MyUrlOpener(urllib.FancyURLopener):
 
     def __init__(self, *args):
         self.version = "Zope Packer"
-        urllib.FancyURLopener.__init__(self, *args)
+        urllib.request.FancyURLopener.__init__(self, *args)
 
 
 # ------------------------------------------------------------------------------
@@ -144,13 +144,13 @@ def packdb(port, db, days, method, module, function, user_, pwd_):
     user = user_
     pwd = pwd_
     host = "http://localhost:%s" % port
-    urllib._urlopener = MyUrlOpener()
+    urllib.request._urlopener = MyUrlOpener()
     start = datetime.now()
     verbose("\tPacking db '%s' for instance %s (%s days)" % (db, host, days))
     url_spd = "%s/Control_Panel/Database/%s/%s?days:float=%s" % (host, db, method, days)
     # verbose("url='%s'"%url_spd)
     try:
-        ret_html = urllib.urlopen(url_spd).read()
+        ret_html = urllib.request.urlopen(url_spd).read()
         if (
             "the requested resource does not exist" in ret_html
             or "error was encountered while publishing this resource" in ret_html
@@ -161,7 +161,7 @@ def packdb(port, db, days, method, module, function, user_, pwd_):
                 % (host, method, module, function)
             )
             try:
-                ret_html = urllib.urlopen(url_em).read()
+                ret_html = urllib.request.urlopen(url_em).read()
                 if (
                     "the requested resource does not exist" in ret_html
                     or "error was encountered while publishing this resource"
@@ -175,18 +175,18 @@ def packdb(port, db, days, method, module, function, user_, pwd_):
                     )
                 else:
                     try:
-                        ret_html = urllib.urlopen(url_spd).read()
+                        ret_html = urllib.request.urlopen(url_spd).read()
                         #                            if "/Control_Panel/Database/%s"%db not in ret_html:
                         #                                error("Problem during compression of %s"%db)
                         #                                log.debug(ret_html)
                         verbose("\t%s" % ret_html)
-                    except IOError, msg:
+                    except IOError as msg:
                         error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
-            except Exception, msg:
+            except Exception as msg:
                 error("! Cannot open URL %s, aborting : %s" % (url_em, msg))
         else:
             verbose("\t%s" % ret_html)
-    except IOError, msg:
+    except IOError as msg:
         error("! Cannot open URL %s, aborting : %s" % (url_spd, msg))
     verbose("\t\t-> elapsed time %s" % (datetime.now() - start))
 
@@ -202,12 +202,12 @@ def CreateAndCallExternalMethod(
     host = "http://localhost:%s" % port
     user = user_
     pwd = pwd_
-    urllib._urlopener = MyUrlOpener()
+    urllib.request._urlopener = MyUrlOpener()
     url_pv = "%s/%s%s" % (host, ext_method, param)
     current_url = url_pv
     try:
         # verbose("Running '%s'"%current_url)
-        ret_html = urllib.urlopen(current_url).read()
+        ret_html = urllib.request.urlopen(current_url).read()
         if "the requested resource does not exist" in ret_html:
             verbose("external method %s not exist : we will create it" % ext_method)
             (module, extension) = os.path.splitext(ext_filename)
@@ -217,7 +217,7 @@ def CreateAndCallExternalMethod(
                 % (host, ext_method, module, function)
             )
             # verbose("Running now '%s'"%current_url)
-            ret_html = urllib.urlopen(current_url).read()
+            ret_html = urllib.request.urlopen(current_url).read()
             if "the requested resource does not exist" in ret_html or (
                 "The specified module" in ret_html and "couldn't be found" in ret_html
             ):
@@ -226,7 +226,7 @@ def CreateAndCallExternalMethod(
             else:
                 current_url = "%s/%s/valid_roles" % (host, ext_method)
                 # verbose("Running now '%s'"%current_url)
-                ret_html = urllib.urlopen(current_url).read()
+                ret_html = urllib.request.urlopen(current_url).read()
                 if not ret_html[0] == "(":
                     error("error with valid_roles return: '%s'" % ret_html)
                     sys.exit(1)
@@ -234,7 +234,7 @@ def CreateAndCallExternalMethod(
                 managerindex = valid_roles.index("Manager")
                 current_url = "%s/%s/permission_settings" % (host, ext_method)
                 # verbose("Running now '%s'"%current_url)
-                ret_html = urllib.urlopen(current_url).read()
+                ret_html = urllib.request.urlopen(current_url).read()
                 if not ret_html[0] == "[":
                     error("error with permission_settings return: '%s'" % ret_html)
                     sys.exit(1)
@@ -251,8 +251,8 @@ def CreateAndCallExternalMethod(
                 # verbose("Running now '%s'"%current_url)
                 # params example                       params = {  'permission_to_manage':'View',
                 #                                    'roles':['Manager'], }
-                data = urllib.urlencode(params)
-                ret_html = urllib.urlopen(current_url, data).read()
+                data = urllib.parse.urlencode(params)
+                ret_html = urllib.request.urlopen(current_url, data).read()
                 if "Your changes have been saved" not in ret_html:
                     error(
                         "Error changing permissions with URL '%s', data '%s'"
@@ -261,10 +261,10 @@ def CreateAndCallExternalMethod(
                     sys.exit(1)
                 current_url = url_pv
                 # verbose("Running again '%s'"%current_url)
-                ret_html = urllib.urlopen(current_url).read()
+                ret_html = urllib.request.urlopen(current_url).read()
         # verbose("callAndCreateExternalMethod : \n%s"%ret_html)
         if ret_html:
             verbose("%s" % ret_html)
-    except Exception, msg:
+    except Exception as msg:
         error("Cannot open URL %s, aborting: '%s'" % (current_url, msg))
         sys.exit(1)

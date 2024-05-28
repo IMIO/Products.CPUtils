@@ -5,8 +5,8 @@ Changelog
 1.26.2 (unreleased)
 -------------------
 
-- Nothing changed yet.
-
+- Migrate codebase to Python 3.
+  [laulaz]
 
 1.26.1 (2026-03-26)
 -------------------

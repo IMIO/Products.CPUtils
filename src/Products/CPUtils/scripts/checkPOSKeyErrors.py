@@ -12,7 +12,7 @@ from Products.CPUtils.scripts.utils import error
 from Products.CPUtils.scripts.utils import trace
 from Products.CPUtils.scripts.utils import treat_zopeconflines
 from Products.CPUtils.scripts.utils import verbose
-from utils import datetime
+from .utils import datetime
 from zope.component import getSiteManager
 from zope.component import getUtilitiesFor
 
@@ -23,7 +23,7 @@ import sys
 
 buildout_inst_type = None  # True for buildout, False for manual instance
 tempdir = ""
-now = datetime(1973, 02, 12).now()
+now = datetime(1973, 2, 12).now()
 pfolders = {}
 temp_added = False
 
@@ -91,11 +91,11 @@ def _checkAttributes(obj, errors, context=None):
 
     # very dumb checks for list and dict (like) attributes
     # is very slow but ensures that all attributes are checked
-    for k, v in obj.__dict__.items():
+    for k, v in list(obj.__dict__.items()):
         if hasattr(v, "values") and hasattr(v, "keys"):
             try:
-                [repr(val) for val in v.values()]
-                [repr(val) for val in v.keys()]
+                [repr(val) for val in list(v.values())]
+                [repr(val) for val in list(v.keys())]
             except POSKeyError as ex:
                 if hasattr(obj, "getPhysicalPath"):
                     path = "/".join(obj.getPhysicalPath())
@@ -134,7 +134,7 @@ def _sub(master, errors):
 
     def check_utilities(sm, master, errors):
         for one in sm.utilities._subscribers:
-            for interface in one.keys():
+            for interface in list(one.keys()):
                 try:
                     for util_tup in getUtilitiesFor(interface, context=master):
                         utility = util_tup[1]
@@ -170,7 +170,7 @@ def _sub(master, errors):
                 "Catalog",
                 "Plone Catalog Tool",
             ] or hasattr(obj, "_catalog"):
-                for idxid in obj._catalog.indexes.keys():
+                for idxid in list(obj._catalog.indexes.keys()):
                     try:
                         index = obj._catalog.indexes.get(idxid)
                         trace(

@@ -11,18 +11,18 @@ import sys
 
 
 def verbose(*messages):
-    print ">>", " ".join(messages)
+    print(">>", " ".join(messages))
 
 
 def error(*messages):
     #    print >>sys.stderr, '!!', (' '.join(messages))
-    print "!!", (" ".join(messages))
+    print("!!", (" ".join(messages)))
 
 
 def debug(*messages):
     if not TRACE:
         return
-    print "TRACE:", " ".join(messages)
+    print("TRACE:", " ".join(messages))
 
 
 # ------------------------------------------------------------------------------
@@ -161,7 +161,7 @@ def main():
                             verbose(
                                 "\t'%s' copied to '%s'" % (logfilepath, destination)
                             )
-                        except Exception, errmsg:
+                        except Exception as errmsg:
                             error(
                                 "'%s' NOT COPIED to '%s'" % (logfilepath, destination)
                             )
