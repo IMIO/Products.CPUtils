@@ -6,7 +6,7 @@ import sys
 
 
 if __name__ == "__main__":
-    execfile(os.path.join(sys.path[0], "framework.py"))
+    exec(compile(open(os.path.join(sys.path[0], "framework.py"), "rb").read(), os.path.join(sys.path[0], "framework.py"), 'exec'))
 
 
 class testMethods(CPUtilsTestCase):
@@ -27,7 +27,7 @@ class testMethods(CPUtilsTestCase):
             "<h1>RESULTATS DE LA RECHERCHE</h1> <p>Recherche dans : /</p> <p>Nombre d'elements trouves :"
         )
         ok = ok and result.find("portal_type : getObjSize : url") > -1
-        self.failUnless(ok)
+        self.assertTrue(ok)
 
     def test_change_authentication_plugins_param_doChange(self):
         result = self.app.cputils_change_authentication_plugins(self.app, "", "")
@@ -38,7 +38,7 @@ class testMethods(CPUtilsTestCase):
         ok = ok and result.startswith(
             "The following changes are not applied: you must run the script with the parameter '...?dochange=1'"
         )
-        self.failUnless(ok)
+        self.assertTrue(ok)
 
     def test_change_authentication_plugins_param_activate(self):
         result = self.app.cputils_change_authentication_plugins(self.app, "", 1)
@@ -47,7 +47,7 @@ class testMethods(CPUtilsTestCase):
         result = self.app.cputils_change_authentication_plugins(self.app, 1, 1)
         ok = ok and result.find("site found plone")
         ok = ok and result.find("Activate plugins source_users") > -1
-        self.failUnless(ok)
+        self.assertTrue(ok)
 
     def test_change_user_properties_no_param(self):
         result = self.portal.cputils_change_user_properties(self.portal, "", "")
@@ -56,7 +56,7 @@ class testMethods(CPUtilsTestCase):
             and result.find("USER:'admin'") > -1
             and result.find("USER:'anon'") > -1
         )
-        self.failUnless(ok)
+        self.assertTrue(ok)
 
     def test_change_user_properties_param_visibleIDs(self):
         result = self.portal.cputils_change_user_properties(
@@ -79,7 +79,7 @@ class testMethods(CPUtilsTestCase):
         ok = ok and result.find(
             "old properties: visible_ids='False',<br/>->  new properties: visible_ids='True',"
         )
-        self.failUnless(ok)
+        self.assertTrue(ok)
 
     def test_cpdb(self):
         print("push 'c' and then 'return' to pass the test")
@@ -89,7 +89,7 @@ class testMethods(CPUtilsTestCase):
     def old_test_desactivate_base2dom(self):
         result = self.app.cputils_desactivate_base2dom()
         ok = result.find("Disabled ++resource++base2-dom-fp.js for /plone") > -1
-        self.failUnless(ok)
+        self.assertTrue(ok)
 
     def old_test_list_portlets(self):
         result = self.portal.cputils_list_portlets()
@@ -99,7 +99,7 @@ class testMethods(CPUtilsTestCase):
         ok = ok and result.endswith(
             "right: {u'news': <Assignment at news>, u'review': <Assignment at review>, u'events': <Assignment at events>, u'calendar': <Assignment at calendar>}"
         )
-        self.failUnless(ok)
+        self.assertTrue(ok)
 
     def old_test_list_users_param_sort(self):
         result = self.portal.cputils_list_users(self.portal, "csv", "users")
@@ -107,7 +107,7 @@ class testMethods(CPUtilsTestCase):
             "<br />UserId,GroupId<br />admin,AuthenticatedUsers<br />member,AuthenticatedUsers<br />anon,AuthenticatedUsers<br />test_user_1_,AuthenticatedUsers"
         )
         # result = self.portal.cputils_list_users('csv','groups')
-        self.failUnless(ok)
+        self.assertTrue(ok)
 
     def old_test_store_user_properties(self):
         self.portal.cputils_store_user_properties()
@@ -115,7 +115,7 @@ class testMethods(CPUtilsTestCase):
         self.portal.cputils_change_user_properties(self.portal, "visible_ids:True", 1)
         self.portal.cputils_store_user_properties()
         ok = ok and str(self.portal.users_properties).find("True	Kupu") > -1
-        self.failUnless(ok)
+        self.assertTrue(ok)
 
 
 def test_suite():
@@ -128,5 +128,5 @@ def test_suite():
 
 
 if __name__ == "__main__":
-    import framework
+    from . import framework
     framework()

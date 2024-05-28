@@ -1,8 +1,8 @@
 #!/usr/bin/python
-from utils import error
-from utils import packdb
-from utils import read_zopeconffile
-from utils import verbose
+from .utils import error
+from .utils import packdb
+from .utils import read_zopeconffile
+from .utils import verbose
 
 import os
 import shutil

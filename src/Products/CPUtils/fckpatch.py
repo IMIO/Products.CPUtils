@@ -21,7 +21,7 @@ def convert(self, orig, data, **kwargs):
     if unique_ruid:
         ruid_url = self.mapRUID_URL(unique_ruid, kwargs["context"])
         for tag_ruid in tags_ruid:
-            t, uid = tag_ruid.items()[0]
+            t, uid = list(tag_ruid.items())[0]
             if uid in ruid_url:
                 text = text.replace(
                     t,

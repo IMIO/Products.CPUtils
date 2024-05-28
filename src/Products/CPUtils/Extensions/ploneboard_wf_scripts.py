@@ -124,9 +124,9 @@ def notifyConvMembersByMail(self, state_change, **kw):
             From=send_from_address,
         )
         # print result
-    except Exception, message:
-        print "There was a problem during the send of an e-mail for object : %s." % object
-        print "The exception is : %s." % message
+    except Exception as message:
+        print("There was a problem during the send of an e-mail for object : %s." % object)
+        print("The exception is : %s." % message)
 
     return
 

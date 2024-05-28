@@ -10,7 +10,7 @@ import sys
 
 
 if __name__ == "__main__":
-    execfile(os.path.join(sys.path[0], "framework.py"))
+    exec(compile(open(os.path.join(sys.path[0], "framework.py"), "rb").read(), os.path.join(sys.path[0], "framework.py"), 'exec'))
 
 ZopeTestCase.installProduct(PROJECTNAME)
 
@@ -51,7 +51,7 @@ class CPUtilsTestCase(testcase):
     def checkActionList(self, object, actions):
         """ Compare un set d'action de sorte que ['corriger', 'attendre'] soit egal a ['attendre', 'corriger'] """
         obj_actions = self.getActionList(object)
-        self.assertEquals(Set(obj_actions), Set(actions))
+        self.assertEqual(Set(obj_actions), Set(actions))
 
     def getActionList(self, object):
         return [
@@ -106,5 +106,5 @@ def test_suite():
 
 
 if __name__ == "__main__":
-    import framework
+    from . import framework
     framework()

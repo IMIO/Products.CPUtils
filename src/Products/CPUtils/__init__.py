@@ -1,9 +1,8 @@
 from Acquisition import aq_base
-from config import PLONE_VERSION
-from config import product_globals
+from .config import PLONE_VERSION
+from .config import product_globals
 from Products.CMFCore import DirectoryView
 from Products.CMFCore.utils import getToolByName
-from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
 from Products.validation.validators.SupplValidators import MaxSizeValidator
 from ZPublisher.HTTPRequest import FileUpload
 
@@ -472,16 +471,19 @@ def initialize(context):
         logger.error("CMFPlone version NOT FOUND: MONKEY PATCH NOT APPLIED")
         return
     elif PLONE_VERSION.startswith("2.5"):
+        from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
         QuickInstallerTool.listInstallableProducts = listInstallableProducts25
         QuickInstallerTool.listInstalledProducts = listInstalledProducts25
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
     elif PLONE_VERSION.startswith("3."):
+        from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
         QuickInstallerTool.listInstallableProducts = listInstallableProducts31
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
         MaxSizeValidator.__call__ = CallMaxSizeValidator
         logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
     elif PLONE_VERSION < "4.3.4":
+        from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
         QuickInstallerTool.listInstallableProducts = listInstallableProducts40
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
@@ -511,13 +513,15 @@ def initialize(context):
             )
         except BaseException:
             pass
-    elif PLONE_VERSION >= "4.3.4":
+    elif PLONE_VERSION < "4.3.7":
+        from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
         QuickInstallerTool.listInstallableProducts = listInstallableProducts434
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
         MaxSizeValidator.__call__ = CallMaxSizeValidator
         logger.info("MaxSizeValidator MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
-    elif PLONE_VERSION >= "4.3.7":
+    elif PLONE_VERSION < "5":
+        from Products.CMFQuickInstallerTool.QuickInstallerTool import QuickInstallerTool
         QuickInstallerTool.listInstallableProducts = listInstallableProducts437
         QuickInstallerTool.listInstalledProducts = listInstalledProducts31
         logger.info("QuickInstallerTool MONKEY PATCHED FOR PLONE %s!" % PLONE_VERSION)
