@@ -43,13 +43,12 @@ setup(
         'Products.validation',
         'plone.api',
         'setuptools',
+        'collective.ckeditor',
     ],
     extras_require={
         'test': [
             'plone.app.testing',
             'plone.app.robotframework',
-            'Products.PloneGazette',
-            'Products.PloneTestCase',
         ],
     },
     entry_points="""
