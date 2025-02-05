@@ -1,25 +1,21 @@
 # -*- coding: utf-8 -*-
+
+from plone import api
+from plone.app.testing import login, logout, TEST_USER_ID, TEST_USER_NAME, setRoles
 from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
-
-import os
-import sys
-
-
-if __name__ == "__main__":
-    exec(compile(open(os.path.join(sys.path[0], "framework.py"), "rb").read(), os.path.join(sys.path[0], "framework.py"), 'exec'))
+from Products.CPUtils.Extensions.utils import folder_position
 
 
 class testMethods(CPUtilsTestCase):
     """Test-cases for class(es) ."""
 
-    def afterSetUp(self):
-        """
-        """
-        CPUtilsTestCase.afterSetup(self)
+    def setUp(self):
+        super().setUp()
+        setRoles(self.portal, TEST_USER_ID, ["Manager"])
+        login(self.portal, TEST_USER_NAME)
 
-        self.loginAsPortalOwner()
-
-    # Manually created methods
+    def tearDown(self):
+        logout()
 
     def test_audit_catalog(self):
         result = self.portal.cputils_audit_catalog()
@@ -30,6 +26,7 @@ class testMethods(CPUtilsTestCase):
         self.assertTrue(ok)
 
     def test_change_authentication_plugins_param_doChange(self):
+        login(self.app, "admin")
         result = self.app.cputils_change_authentication_plugins(self.app, "", "")
         ok = result.startswith(
             "The following changes are not applied: you must run the script with the parameter '...?dochange=1'"
@@ -41,6 +38,7 @@ class testMethods(CPUtilsTestCase):
         self.assertTrue(ok)
 
     def test_change_authentication_plugins_param_activate(self):
+        login(self.app, "admin")
         result = self.app.cputils_change_authentication_plugins(self.app, "", 1)
         ok = result.startswith("Document '/authentication_plugins_sites' added")
         ok = ok and result.find("Desactivate plugins source_users") > -1
@@ -53,8 +51,7 @@ class testMethods(CPUtilsTestCase):
         result = self.portal.cputils_change_user_properties(self.portal, "", "")
         ok = (
             result.find("USER:'member'") > -1
-            and result.find("USER:'admin'") > -1
-            and result.find("USER:'anon'") > -1
+            and result.find(f"USER:'{TEST_USER_ID}'") > -1
         )
         self.assertTrue(ok)
 
@@ -64,8 +61,7 @@ class testMethods(CPUtilsTestCase):
         )
         ok = (
             result.find("USER:'member'") > -1
-            and result.find("USER:'admin'") > -1
-            and result.find("USER:'anon'") > -1
+            and result.find(f"USER:'{TEST_USER_ID}'") > -1
         )
         ok = ok and result.find(" all properties: visible_ids='False'")
         result = self.portal.cputils_change_user_properties(
@@ -73,8 +69,7 @@ class testMethods(CPUtilsTestCase):
         )
         ok = (
             result.find("USER:'member'") > -1
-            and result.find("USER:'admin'") > -1
-            and result.find("USER:'anon'") > -1
+            and result.find(f"USER:'{TEST_USER_ID}'") > -1
         )
         ok = ok and result.find(
             "old properties: visible_ids='False',<br/>->  new properties: visible_ids='True',"
@@ -86,47 +81,43 @@ class testMethods(CPUtilsTestCase):
         # self.portal.cputils_cpdb()
         "cputils_cpdb test passed"
 
-    def old_test_desactivate_base2dom(self):
-        result = self.app.cputils_desactivate_base2dom()
-        ok = result.find("Disabled ++resource++base2-dom-fp.js for /plone") > -1
-        self.assertTrue(ok)
+    def test_folder_position(self):
+        folder = api.content.create(type="Folder", id="container", container=self.portal)
+        api.content.create(type="Document", id="d1", container=folder)
+        api.content.create(type="Document", id="d2", container=folder)
+        api.content.create(type="Document", id="d3", container=folder)
+        api.content.create(type="Document", id="d4", container=folder)
+        self.assertEqual(["d1", "d2", "d3", "d4"], folder.objectIds())
+        folder_position(folder, "down", "d1")
+        self.assertEqual(["d2", "d1", "d3", "d4"], folder.objectIds())
+        folder_position(folder, "down", "d4")
+        self.assertEqual(["d2", "d1", "d3", "d4"], folder.objectIds())
+        folder_position(folder, "bottom", "d1")
+        self.assertEqual(["d2", "d3", "d4", "d1"], folder.objectIds())
+        folder_position(folder, "bottom", "d1")
+        self.assertEqual(["d2", "d3", "d4", "d1"], folder.objectIds())
+        folder_position(folder, "up", "d1")
+        self.assertEqual(["d2", "d3", "d1", "d4"], folder.objectIds())
+        folder_position(folder, "up", "d2")
+        self.assertEqual(["d2", "d3", "d1", "d4"], folder.objectIds())
+        folder_position(folder, "top", "d1")
+        self.assertEqual(["d1", "d2", "d3", "d4"], folder.objectIds())
+        folder_position(folder, "top", "d1")
+        self.assertEqual(["d1", "d2", "d3", "d4"], folder.objectIds())
 
-    def old_test_list_portlets(self):
-        result = self.portal.cputils_list_portlets()
-        ok = result.startswith(
-            "left: {u'login': <Assignment at login>, u'navigation': <Assignment at navigation>}"
-        )
-        ok = ok and result.endswith(
-            "right: {u'news': <Assignment at news>, u'review': <Assignment at review>, u'events': <Assignment at events>, u'calendar': <Assignment at calendar>}"
-        )
-        self.assertTrue(ok)
-
-    def old_test_list_users_param_sort(self):
-        result = self.portal.cputils_list_users(self.portal, "csv", "users")
-        ok = result.endswith(
-            "<br />UserId,GroupId<br />admin,AuthenticatedUsers<br />member,AuthenticatedUsers<br />anon,AuthenticatedUsers<br />test_user_1_,AuthenticatedUsers"
-        )
-        # result = self.portal.cputils_list_users('csv','groups')
-        self.assertTrue(ok)
-
-    def old_test_store_user_properties(self):
-        self.portal.cputils_store_user_properties()
-        ok = str(self.portal.users_properties).find("False	Kupu") > -1
-        self.portal.cputils_change_user_properties(self.portal, "visible_ids:True", 1)
-        self.portal.cputils_store_user_properties()
-        ok = ok and str(self.portal.users_properties).find("True	Kupu") > -1
-        self.assertTrue(ok)
-
-
-def test_suite():
-    from unittest import makeSuite
-    from unittest import TestSuite
-
-    suite = TestSuite()
-    suite.addTest(makeSuite(testMethods))
-    return suite
-
-
-if __name__ == "__main__":
-    from . import framework
-    framework()
+    def test_folder_position_typeaware(self):
+        folder = api.content.create(type="Folder", id="container", container=self.portal)
+        api.content.create(type="Folder", id="f1", container=folder)
+        api.content.create(type="Document", id="d1", container=folder)
+        api.content.create(type="Document", id="d2", container=folder)
+        api.content.create(type="Folder", id="f2", container=folder)
+        api.content.create(type="Document", id="d3", container=folder)
+        self.assertEqual(["f1", "d1", "d2", "f2", "d3"], folder.objectIds())
+        folder_position(folder, "down", "f1", typeaware=True)
+        self.assertEqual(["d1", "d2", "f2", "f1", "d3"], folder.objectIds())
+        folder_position(folder, "up", "d3", typeaware=True)
+        self.assertEqual(["d1", "d3", "d2", "f2", "f1"], folder.objectIds())
+        folder_position(folder, "top", "f1", typeaware=True)
+        self.assertEqual(["f1", "d1", "d3", "d2", "f2"], folder.objectIds())
+        folder_position(folder, "bottom", "d1", typeaware=True)
+        self.assertEqual(["f1", "d3", "d2", "f2", "d1"], folder.objectIds())

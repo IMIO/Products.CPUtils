@@ -4,8 +4,11 @@
 from imio.helpers.security import check_zope_admin
 from imio.pyutils.utils import safe_encode
 from plone.app.uuid.utils import uuidToObject
+from plone.protect.interfaces import IDisableCSRFProtection
 from plone.registry.interfaces import IRegistry
+from Products.CMFPlone import PloneMessageFactory as _
 from zope.component import getUtility
+from zope.interface import alsoProvides
 
 
 def get_users(self, obj=True):
@@ -92,7 +95,6 @@ def sendmail(self, mfrom="", to="", body="", subject="", cc="", bcc=""):
     from email.Header import Header
     from Products.CMFCore.utils import getToolByName
     from Products.CMFPlone.utils import safe_unicode
-    from Products.CPUtils.config import PLONE_VERSION
 
     import email.Message
     import email.Utils
@@ -113,7 +115,7 @@ def sendmail(self, mfrom="", to="", body="", subject="", cc="", bcc=""):
     mailMsg.epilogue = "\n"  # To ensure that message ends with newline
     mail_host = getattr(portal, "MailHost", None)
     try:
-        if PLONE_VERSION.startswith("4."):
+        if 1:  # MIGRATION-PLONE6
             return mail_host.send(mailMsg, mto=to, mfrom=mfrom, subject=subject)
         else:
             return mail_host.secureSend(mailMsg, to, mfrom, subject=subject)
@@ -157,51 +159,37 @@ def install(self):
         return "You must be a zope manager to run this script"
     methods = []
     for method in (
-        "add_subject",
-        "audit_catalog",
-        "change_authentication_plugins",
-        "change_user_properties",
-        "check_groups_users",
-        "check_users",
-        "clean_provides_for",
-        "clean_utilities_for",
-        "configure_ckeditor",
-        "copy_image_attribute",
-        "cpdb",
-        "creators",
-        "del_bad_portlet",
-        "del_object",
-        "del_objects",
-        "desactivate_base2dom",
-        "export_subscribers_csv",
-        "install_plone_product",
-        "list_context_portlets_by_name",
-        "list_local_roles",
-        "list_newsletter_users",
-        "list_objects",
-        "list_portlets",
-        "list_used_views",
-        "list_users",
-        "load_user_properties",
-        "move_copy_objects",
-        "move_item",
-        "obj_from_uid",
-        "object_info",
-        "objects_stats",
-        "order_folder",
-        "recreate_users_groups",
-        "reftooltoobjects",
-        "removeStep",
-        "rename_long_ids",
-        "resources_order",
-        "send_adminMail",
-        "set_attr",
-        "show_object_relations",
-        "store_user_properties",
-        "sync_properties",
-        "uid",
-        "unlock_webdav_objects",
-        "zmi",
+        "add_subject",  # OK
+        "audit_catalog",  # OK
+        "change_authentication_plugins",  # OK
+        "change_user_properties",  # NO - USED IN configure_ckeditor
+        "check_groups_users",  # OK
+        "check_users",  # OK
+        "clean_provides_for",  # OK
+        "clean_utilities_for",  # OK
+        "configure_ckeditor",  # YES
+        "cpdb",  # OK
+        "creators",  # OK
+        "del_object",  # OK
+        "del_objects",  # OK
+        "list_context_portlets_by_name",  # OK
+        "list_local_roles",  # OK
+        "list_objects",  # OK
+        "list_portlets",  # OK
+        "list_used_views",  # OK
+        "list_users",  # OK
+        "move_copy_objects",  # OK
+        "move_item",  # OK
+        "obj_from_uid",  # OK
+        "object_info",  # OK
+        "objects_stats",  # OK
+        "order_folder",  # OK
+        "removeStep",  # OK
+        "set_attr",  # OK
+        "show_object_relations",  # OK
+        "store_user_properties",  # OK
+        "uid",  # OK
+        "unlock_webdav_objects",  # OK
     ):
         method_name = "cputils_" + method
         if not base_hasattr(self, method_name):
@@ -330,6 +318,7 @@ def audit_catalog(self):
     if not check_role(self):
         return "You must have a manager role to run this script"
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     portal_url = getToolByName(self, "portal_url")
     portal = portal_url.getPortalObject()
 
@@ -360,14 +349,7 @@ def audit_catalog(self):
             )
         )
 
-    def sortBySize(row1, row2):
-        size1 = row1[-1]
-        size2 = row2[-1]
-        # reverse order
-        return cmp(size1, size2)
-
-    res.sort(sortBySize, reverse=True)
-
+    res.sort(key=lambda row: row[-1], reverse=True)
     count = 0
     for row in res:
         (ptype, size, url, bytes) = row
@@ -378,49 +360,6 @@ def audit_catalog(self):
 
     out.append("<br />FIN")
     return "<br />".join(out)
-
-
-def delete_subscribers(self, delete=False):
-    """
-        delete inactive subscribers (maybe robots) of PloneGazette.
-        script to be run on the subscriber's folder context
-    """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-    ids = []
-    out = ["<h1>Inactive subscribers</h1>"]
-    for obj in self.objectValues():
-        if obj.meta_type == "Subscriber" and not obj.active:
-            out.append(obj.Title())
-            ids.append(obj.getId())
-    if delete:
-        self.manage_delObjects(ids)
-    return "<br />".join(out)
-
-
-def export_subscribers_csv(self):
-    """
-        Export in csv all subscribers for a NewsLetter Theme
-        script to be run on the subscriber's folder context
-    """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    out = ['"email","active","format"']
-
-    for obj in self.objectValues():
-        if obj.meta_type != "Subscriber":
-            continue
-        try:
-            ligne = '"%s","%s","%s"' % (
-                obj.Title().encode("utf8"),
-                obj.active and "1" or "0",
-                obj.format.encode("utf8"),
-            )
-            out.append(ligne)
-        except BaseException:
-            continue
-    return "\n".join(out)
 
 
 def delete_users(self, delete=False):
@@ -583,6 +522,7 @@ def store_user_properties(self):
 
     from Products.CMFCore.utils import getToolByName
 
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     portal = getToolByName(self, "portal_url").getPortalObject()
     target_dir = portal
 
@@ -625,203 +565,7 @@ def store_user_properties(self):
     return "\n".join(out)
 
 
-def load_user_properties(self, dochange=""):
-    """
-        load saved user properties
-    """
-
-    if not check_zope_admin():
-        return "You must be a zope manager to run this script"
-
-    from Products.CMFCore.utils import getToolByName
-
-    portal = getToolByName(self, "portal_url").getPortalObject()
-
-    out = []
-    if "oldacl" not in portal.objectIds():
-        return (
-            "First you must create a folder at Plonesite root named 'oldacl' and containing the imported "
-            "'user_properties' DTMLDocument (created with external method 'store_user_properties')"
-        )
-
-    if "users_properties" not in portal.oldacl.objectIds():
-        return (
-            "You must import in the folder named '/oldacl' the DTMLDocument named 'user_properties'"
-            "(created with external method 'store_user_properties')"
-        )
-
-    change_property = False
-    if dochange not in ("", "0", "False", "false"):
-        change_property = True
-
-    if not change_property:
-        out.append(
-            "The following changes are not applied: you must run the script with the parameter '...?dochange=1'"
-        )
-
-    properties_names = dict(portal.portal_memberdata.propertyItems())
-    skipped_properties = [
-        "error_log_update",
-        "ext_editor",
-        "last_login_time",
-        "listed",
-        "login_time",
-        "visible_ids",
-        "wysiwyg_editor",
-    ]
-
-    doc = portal.oldacl.users_properties
-    lines = doc.raw.splitlines()
-    if not len(lines) > 1:
-        return "No information found in document: content='%s'" % doc.raw
-    columns = {}
-
-    header_line = True
-    for line in lines:
-        infos = line.split("\t")
-        user = infos[1]
-        props = {}
-        if header_line and user != "User":
-            return "No header line in document: content='%s'" % doc.raw
-        for i in range(2, len(infos)):
-            property = infos[i]
-            if not property:
-                continue
-            if header_line:
-                if property in skipped_properties:
-                    property = ""
-                    # this column is made empty, this will not be used when reading value
-                elif property not in properties_names:
-                    out.append(
-                        "Warning: old property '%s' not found in portal_memberdata properties"
-                        % property
-                    )
-                    property = ""
-                columns[i] = property
-            elif columns[i]:
-                props[columns[i]] = property.replace("|", "\r\n")
-
-        if header_line:
-            header_line = False
-            continue
-
-        count = int(infos[0])
-        if props:
-            out.append(
-                "%03d, User '%s' has changed properties '%s'"
-                % (count, user, str(props))
-            )
-            if change_property:
-                member = portal.portal_membership.getMemberById(user)
-                if member is None:
-                    out.append("%03d, User '%s' not found !!" % (count, user))
-                    continue
-                member.setMemberProperties(props)
-        else:
-            out.append("%03d, User '%s' hasn't change in properties" % (count, user))
-    return "\n".join(out)
-
-
-def ploneboard_correct_modified(self, dochange=""):
-    """
-        This script corrects the modified date of conversations after a migration.
-        The modified date becomes last modified comment.
-        The portal_catalog must be updated !!
-    """
-    from Products.CMFCore.utils import getToolByName
-
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    out = []
-    if not dochange:
-        # out.append("available properties:%s" % portal.portal_memberdata.propertyItems())
-        out.append("To really change modification date, call the script with param:")
-        out.append("-> dochange=1")
-        out.append("by example ...?dochange=1\n")
-        out.append("You must update the portal_catalog after running the script\n")
-
-    portal_url = getToolByName(self, "portal_url")
-    portal = portal_url.getPortalObject()
-
-    kw = {}
-    kw["portal_type"] = "PloneboardConversation"
-    # kw['review_state'] = ('private',) #'published'
-    # kw['path'] = '/' # '/'.join(context.getPhysicalPath())
-    kw["sort_on"] = "created"
-    # kw['sort_order'] = 'reverse'
-
-    results = portal.portal_catalog.searchResults(kw)
-
-    out.append("%d conversations found\n" % len(results))
-    for r in results:
-        conv = r.getObject()
-        #        print "%s, %s, %s, %s" % (r.id, conv.Title(), r.created, r.modified)
-        out.append("%s, %s, %s, %s" % (r.id, conv.Title(), r.created, r.modified))
-        last_modification_date = None
-        for com in conv.getComments():
-            #            print "\t%s, %s, %s, %s" % (com.getId(), com.Title(), com.CreationDate(), com.ModificationDate())
-            out.append("\t%s, %s, %s" % (com.getId(), com.Title(), com.CreationDate()))
-            if dochange:
-                com.setModificationDate(com.CreationDate())
-                # com.reindexObject() #avoid
-            # print "\t%s" % com.ModificationDate()
-            last_modification_date = com.CreationDate()
-        out.append("=> new modification date = %s" % last_modification_date)
-        if dochange:
-            conv.setModificationDate(last_modification_date)
-            # conv.reindexObject() #avoid
-    return "\n".join(out)
-
-
-def configure_fckeditor(self, default=1, allusers=1, custom=1, nomerge=0):
-    """
-        configure fckeditor with default parameters.
-        This method can be called as an external method, with the following parameters: ...?default=1&alluser=0&custom=0
-    """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    from Products.CMFCore.utils import getToolByName
-
-    portal = getToolByName(self, "portal_url").getPortalObject()
-
-    try:
-        pqi = getToolByName(self, "portal_quickinstaller")
-        if not pqi.isProductInstalled("FCKeditor"):
-            pqi.installProduct("FCKeditor")
-    except Exception as msg:
-        return "FCKeditor cannot be installed: '%s'" % msg
-
-    # setting default editor to FCKeditor
-    if default:
-        portal.portal_memberdata.manage_changeProperties(wysiwyg_editor="FCKeditor")
-
-    # changing editor of all users
-    if allusers:
-        change_user_properties(portal, kw="wysiwyg_editor:FCKeditor", dochange=1)
-
-    # setting custom toolbar
-    if custom:
-        fckprops = portal.portal_properties.fckeditor_properties
-        if fckprops.getProperty("fck_toolbar") != "Custom":
-            fckprops.manage_changeProperties(
-                fck_custom_toolbar="[\n ['Templates','rtSpellCheck'],\n ['Cut','Copy',"
-                "'Paste','PasteText','PasteWord'],\n ['Undo','Redo','-','Find','Replace',"
-                "'-','RemoveFormat'],\n ['Bold','Italic','Underline','StrikeThrough'],\n "
-                "['OrderedList','UnorderedList'],\n ['JustifyLeft','JustifyCenter',"
-                "'JustifyRight','JustifyFull'],\n ['Link','Unlink'],\n ['Image',"
-                "'imgmapPopup','Table','Rule','SpecialChar'],\n ['Style','FontFormat',"
-                "'TextColor'],\n ['FitWindow'],['Source']\n]"
-            )
-            fckprops.manage_changeProperties(fck_toolbar="Custom")
-
-    # removing javascript merge option on fcksetting custom toolbar
-    if nomerge:
-        pjs = getToolByName(self, "portal_javascripts")
-        pjs.updateScript("fckeditor.js", cookable=False)
-
-
+# MIGRATION-PLONE6
 def configure_ckeditor(
     self,
     default=1,
@@ -833,7 +577,6 @@ def configure_ckeditor(
     removeWsc=1,
     skin="moono-lisa",
     filtering="",
-    use_registry=False
 ):
     """
         configure collective.ckeditor with default parameters.
@@ -888,22 +631,21 @@ def configure_ckeditor(
     ]
 
     from Products.CMFCore.utils import getToolByName
+    from Products.CMFPlone.utils import get_installer
 
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     portal = getToolByName(self, "portal_url").getPortalObject()
 
     try:
-        pqi = getToolByName(self, "portal_quickinstaller")
-        if not pqi.isProductInstalled("collective.ckeditor"):
-            pqi.installProduct("collective.ckeditor")
+        installer = get_installer(self, self.REQUEST)
+        if not installer.is_product_installed("collective.ckeditor"):
+            installer.install_product("collective.ckeditor")
     except Exception as msg:
         return "collective.ckeditor cannot be installed: '%s'" % msg
 
     sp = portal.portal_properties.site_properties
-    if use_registry:
-        registry = getUtility(IRegistry)
-        ck_prefix = "collective.ckeditor.browser.ckeditorsettings.ICKEditorSchema.%s"
-    else:
-        ckp = portal.portal_properties.ckeditor_properties
+    registry = getUtility(IRegistry)
+    ck_prefix = "collective.ckeditor.browser.ckeditorsettings.ICKEditorSchema.%s"
 
     # setting default editor to ckeditor
     if default:
@@ -925,23 +667,7 @@ def configure_ckeditor(
             availables.remove("TinyMCE")
         sp.manage_changeProperties(available_editors=availables)
         out.append("Removed Tiny from available editors")
-
-        def disable_resource(tool, names=[]):
-            changes = False
-            for name in names:
-                rsc = tool.getResource(name)
-                if rsc.getEnabled():
-                    changes = True
-                    rsc.setEnabled(False)
-            if changes:
-                tool.cookResources()
-
-        disable_resource(
-            portal.portal_css, names=["++resource++tinymce.stylesheets/tinymce.css"]
-        )
-        disable_resource(
-            portal.portal_javascripts, names=["jquery.tinymce.js", "tiny_mce_gzip.js"]
-        )
+        # MIGRATION-PLONE6 (disable Tiny bundles)
 
     # changing editor for all users
     if allusers:
@@ -955,60 +681,37 @@ def configure_ckeditor(
                 "custom parameter '%s' not defined in available custom toolbars"
                 % custom
             )
-        if use_registry:
-            if registry.get(ck_prefix % "toolbar") != "Custom":
-                registry[ck_prefix % "toolbar"] = "Custom"
-                registry[ck_prefix % "toolbar_Custom"] = safe_encode(customs[custom])
-        else:
-            if ckp.getProperty("toolbar") != "Custom":
-                ckp.manage_changeProperties(toolbar="Custom")
-                ckp.manage_changeProperties(toolbar_Custom=customs[custom])
+        if registry.get(ck_prefix % "toolbar") != "Custom":
+            registry[ck_prefix % "toolbar"] = "Custom"
+            registry[ck_prefix % "toolbar_Custom"] = safe_encode(customs[custom])
         out.append("Set '%s' toolbar" % custom)
 
     # force text paste
     if forceTextPaste:
-        if use_registry:
-            registry[ck_prefix % "forcePasteAsPlainText"] = True
-        else:
-            ckp.manage_changeProperties(forcePasteAsPlainText=True)
+        registry[ck_prefix % "forcePasteAsPlainText"] = True
         out.append("Set forcePasteAsPlainText to True")
 
     # activate scayt
     if scayt:
-        if use_registry:
-            registry[ck_prefix % "enableScaytOnStartup"] = True
-        else:
-            ckp.enableScaytOnStartup = True
+        registry[ck_prefix % "enableScaytOnStartup"] = True
         out.append("Set enableScaytOnStartup to True")
 
     # disable the 'wsc' plugin, removing the wsc plugin will remove the
     # "Check spell" option from Scayt menu that is broken
     if removeWsc:
-        if use_registry:
-            removePlugins = registry.get(ck_prefix % "removePlugins")
-            if 'wsc' not in removePlugins:
-                removePlugins += ('wsc',)
-                registry[ck_prefix % "removePlugins"] = removePlugins
-        else:
-            removePlugins = ckp.removePlugins
-            if 'wsc' not in removePlugins:
-                removePlugins += ('wsc',)
-                ckp.removePlugins = removePlugins
+        removePlugins = registry.get(ck_prefix % "removePlugins")
+        if 'wsc' not in removePlugins:
+            removePlugins += ('wsc',)
+            registry[ck_prefix % "removePlugins"] = removePlugins
 
     # change filtering
     if filtering and filtering in ("default", "custom", "disabled"):
-        if use_registry:
-            registry[ck_prefix % "filtering"] = filtering
-        else:
-            ckp.manage_changeProperties(filtering=filtering)
+        registry[ck_prefix % "filtering"] = filtering
         out.append("Set filtering to '{}'".format(filtering))
 
     # skin
     if skin:
-        if use_registry:
-            registry[ck_prefix % "skin"] = skin
-        else:
-            ckp.manage_changeProperties(skin=skin)
+        registry[ck_prefix % "skin"] = skin
 
     return "\n".join(out)
 
@@ -1032,6 +735,7 @@ def list_users(
 
     from Products.CMFCore.utils import getToolByName
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     pg = getToolByName(self, "portal_groups")
     out = [
         "<h2>Users list</h2>",
@@ -1225,6 +929,7 @@ def check_groups_users(self, app="docs"):
     from zope.component import getUtility
     from zope.schema.interfaces import IVocabularyFactory
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     out.append(
         "{}T0={}".format(lf, datetime(1973, 2, 12).now().strftime("%H:%M:%S.%f"))
     )
@@ -1541,107 +1246,6 @@ def check_users(self):
     return lf.join(errors)
 
 
-def recreate_users_groups(self, only_users=False, only_groups=False, dochange=""):
-    """copy users from old acl_users to the new one """
-
-    if not check_zope_admin():
-        return "You must be a zope manager to run this script"
-
-    from Products.CMFCore.utils import getToolByName
-
-    portal = getToolByName(self, "portal_url").getPortalObject()
-
-    out = []
-    lf = "\n"
-    out.append("call the script followed by needed parameters:")
-    out.append("-> only_users=... : recreate only users")
-    out.append("-> only_groups=... : recreate only groups")
-    out.append("-> dochange=1 : apply changes")
-    out.append("")
-
-    change = False
-    if dochange not in ("", "0", "False", "false"):
-        change = True
-    if not change:
-        out.append(
-            "The following changes are not applied: you must run the script with the parameter 'dochange=1'"
-        )
-
-    if "oldacl" not in portal.objectIds():
-        out.append(
-            "First you must create a folder at Plonesite root named 'oldacl' and containing a "
-            "copy of another acl_users"
-        )
-        return lf.join(out)
-
-    if "acl_users" not in portal.oldacl.objectIds():
-        out.append(
-            "You must import a Plonesite acl_users folder in the folder named '/oldacl'"
-        )
-        return lf.join(out)
-
-    old_acl = portal.oldacl.acl_users
-    acl = portal.acl_users
-    prg = portal.portal_registration
-    pgr = portal.portal_groups
-
-    if not only_users:
-        for gd in old_acl.searchGroups():
-            if gd["pluginid"] == "auto_group":
-                continue
-            g = old_acl.source_groups.getGroupById(gd["groupid"])
-            if g.getId() not in acl.getGroupIds():
-                if change:
-                    pgr.addGroup(g.getId(), roles=g.getRoles(), groups=g.getGroups())
-                out.append("Group '%s' is added" % g.getId())
-            else:
-                out.append("Group '%s' already exists" % g.getId())
-
-    if not only_groups:
-        users = old_acl.getUsers()
-        # thanks http://blog.kagesenshi.org/2008/05/exporting-plone30-memberdata-and.html
-        passwords = old_acl.source_users._user_passwords
-        # Check if password validation is activated, if so deactivate it
-        # This is necessary because it will try to validate the hash instead of the real password
-        val_deact = False
-        plugins = acl.plugins
-        val_plugins = plugins.getAllPlugins(plugin_type="IValidationPlugin")
-        if "password_strength_plugin" in val_plugins["active"]:
-            from Products.PluggableAuthService.interfaces.plugins import IValidationPlugin
-
-            plugins.deactivatePlugin(IValidationPlugin, "password_strength_plugin")
-            val_deact = True
-        for user in users:
-            if user.getUserId() not in [ud["userid"] for ud in acl.searchUsers()]:
-                if change:
-                    try:
-                        prg.addMember(
-                            user.getUserId(),
-                            passwords[user.getUserId()],
-                            roles=user.getRoles(),
-                            domains=user.getDomains(),
-                        )
-                    except ValueError as error:
-                        out.append(
-                            "Problem creating user '%s': %s" % (user.getUserId(), error)
-                        )
-                        continue
-                out.append("User '%s' is added" % user.getUserId())
-                if not only_users:
-                    for groupid in user.getGroupIds():
-                        if groupid == "AuthenticatedUsers":
-                            continue
-                        if change:
-                            pgr.addPrincipalToGroup(user.getUserId(), groupid)
-                        out.append("    -> Added in group '%s'" % groupid)
-            else:
-                out.append("User '%s' already exists" % user.getUserId())
-        # Reactivate password validation plugin, only if we deactivated it
-        if val_deact:
-            plugins.activatePlugin(IValidationPlugin, "password_strength_plugin")
-    return lf.join(out)
-
-
 def get_user_pwd_hash(self, userid=""):
     """Get a user password as hash"""
     if not check_zope_admin():
@@ -1750,137 +1354,6 @@ def correctPOSKey(self, dochange=""):
         out.append("Correcting values for dic _rpaths in utility RedirectionStorage")
         correctDicValues(dic, out)
 
-    return lf.join(out)
-
-
-def sync_properties(self, base="", update="", dochange=""):
-    """
-        Synchronize properties between objects
-    """
-    if not check_zope_admin():
-        return "You must be a zope manager to run this script"
-
-    lf = "\n"
-    #    lf = '<br />'
-    base_path = base
-    update_path = update
-    base_obj = None
-    update_obj = None
-    change_property = False
-
-    from Products.CMFCore.utils import getToolByName
-
-    portal = getToolByName(self, "portal_url").getPortalObject()
-    out = []
-    out.append('<head><style type="text/css">')
-    out.append("table { border: 1px solid black; border-collapse:collapse; }")
-    out.append("table th { border: 1px solid black; background: #8297FD; }")
-    out.append("table td { border: 1px solid black; padding: 2px }")
-    out.append(".red { color: red; } ")
-    out.append("</style></head>")
-    out.append("<h2>Synchronize properties of objects</h2>")
-    out.append("<p>You can call the script with the following parameters:<br />")
-    out.append(
-        "-> base=path => path of base object to synchronize, beginning at the root of the plone site "
-        "(those properties will be kept)<br />"
-    )
-    out.append(
-        "-> update=path => path of update object (containing new properties), beginning at the root of "
-        "the plone site<br />"
-    )
-    out.append(
-        "-> dochange=1 => really do the change. By default, only prints changes<br />"
-    )
-    out.append(
-        "by example /cputils_sync_properties?base=portal_skins/custom/cpskin3_properties&update=portal_skins/"
-        "acptheme_cpskin3_theme1/cpskin3_properties</p>"
-    )
-
-    if not base:
-        out.append("<p>!! You must enter the 'base' parameter</p>")
-        return lf.join(out)
-
-    if not update:
-        out.append("<p>!! You must enter the 'update' parameter</p>")
-        return lf.join(out)
-
-    base_path = base_path.lstrip("/")
-    base_obj = portal.unrestrictedTraverse(base_path)
-    if base_obj is None:
-        out.append("<p>base path '%s' not found in portal</p>" % base_path)
-        return lf.join(out)
-
-    update_path = update_path.lstrip("/")
-    update_obj = portal.unrestrictedTraverse(update_path)
-    if update_obj is None:
-        out.append("<p>update path '%s' not found in portal</p>" % update_path)
-        return lf.join(out)
-
-    if dochange not in ("", "0", "False", "false"):
-        change_property = True
-
-    #    if not dochange:
-    #        out.append("<p>To really change the base object to synchronize '%s', call the script with another param:</p>" %
-    # base_path)
-    #        out.append("<p>-> dochange=1    , by example ...&dochange=1</p>")
-
-    #    out.append('<p style="text-align: center;">*****</p>')
-    out.append("<table><thead><tr>")
-    out.append("<th>Property</th>")
-    out.append("<th>Status</th>")
-    out.append("<th>Base value</th>")
-    out.append("<th>Other value</th>")
-    out.append("<th>Kept</th>")
-    out.append("</tr></thead><tbody>")
-
-    base_dic = dict(base_obj.propertyItems())
-    base_keys = list(base_dic.keys())
-    base_keys.sort()
-    update_dic = dict(update_obj.propertyItems())
-
-    for base_prop in base_keys:
-        if base_prop in update_dic:
-            if base_dic[base_prop] == update_dic[base_prop]:
-                out.append(
-                    "<tr><td>%s</td><td>==</td><td>%s</td><td>%s</td><td>%s</td></tr>"
-                    % (
-                        base_prop,
-                        base_dic[base_prop],
-                        base_dic[base_prop],
-                        base_dic[base_prop],
-                    )
-                )
-            else:
-                out.append(
-                    "<tr><td>%s</td><td class='red'><></td><td>%s</td><td>%s</td><td>%s</td></tr>"
-                    % (
-                        base_prop,
-                        base_dic[base_prop],
-                        update_dic[base_prop],
-                        base_dic[base_prop],
-                    )
-                )
-            del update_dic[base_prop]
-        else:
-            out.append(
-                "<tr><td>%s</td><td class='red'>del</td><td>%s</td><td>%s</td><td>%s</td></tr>"
-                % (base_prop, base_dic[base_prop], "", base_dic[base_prop])
-            )
-    update_keys = list(update_dic.keys())
-    update_keys.sort()
-
-    for new_prop in update_keys:
-        out.append(
-            "<tr><td>%s</td><td class='red'>new</td><td>%s</td><td>%s</td><td>%s</td></tr>"
-            % (new_prop, "", update_dic[new_prop], update_dic[new_prop])
-        )
-        if change_property:
-            #            base_obj.manage_changeProperties({newprop:update_dic[new_prop]})
-            base_obj.manage_addProperty(
-                new_prop, update_dic[new_prop], update_obj.getPropertyType(new_prop)
-            )
-
-    out.append("</tbody></table>")
     return lf.join(out)
 
 
@@ -2244,53 +1717,6 @@ def correct_pam_language(
     return lf.join(out)
 
 
-def copy_image_attribute(self):
-    """
-        copy image from canonical document into translated document.
-        method to add action in site :
-        1. add external method (copy_image_attribute)
-        2. in portal_action add new CMF action
-        3. edit this action
-        >>> url (expression) is : string:${globals_view/getCurrentObjectUrl}/cputils_copy_image_attributes
-        >>> Condition (expression) is : python:checkPermission("Delete objects", globals_view.getParentObject()) and
-            checkPermission("Copy or Move", object) and checkPermission("Add portal content", object) and
-            not globals_view.isPortalOrPortalDefaultPage() and not object.isCanonical()
-    """
-    from collective.contentleadimage.config import IMAGE_FIELD_NAME
-    from collective.contentleadimage.utils import hasContentLeadImage
-
-    canonical_obj = self.getCanonical()
-    if not canonical_obj or (self == self.getCanonical()):
-        return
-    if hasContentLeadImage(canonical_obj):
-        if canonical_obj.getField(IMAGE_FIELD_NAME) and self.getField(IMAGE_FIELD_NAME):
-            self.getField(IMAGE_FIELD_NAME).getMutator(self)(
-                canonical_obj.getField(IMAGE_FIELD_NAME).getAccessor(canonical_obj)()
-            )
-    self.plone_utils.addPortalMessage("Ajout du champ leadImage")
-    return self.REQUEST.RESPONSE.redirect(self.absolute_url())
-
-
-def desactivate_base2dom(self):
-    """
-     desactivate base2-dom javascript to resolve problem on fckeditor loading in firefox4
-    """
-    if not check_zope_admin():
-        return "desactivate_base2dom run with a non admin user: we go out"
-    out = []
-    try:
-        for site in get_all_site_objects(self):
-            sitePath = "/".join(site.getPhysicalPath())
-            if hasattr(site, "portal_javascripts"):
-                js = site.portal_javascripts.getResource("++resource++base2-dom-fp.js")
-                if js.getEnabled():
-                    js.setEnabled(False)
-                    out.append("Disabled ++resource++base2-dom-fp.js for %s" % sitePath)
-    except Exception as message:
-        out.append("!! error when disabling base2dom: %s" % (message))
-    return "\n".join(out)
-
-
 def unregister_adapter(self, unregister=""):
     """
         unregister lost adapter (product removed from the file system)
@@ -2362,6 +1788,7 @@ def change_authentication_plugins(self, activate="", dochange=""):
 
     from Products.PluggableAuthService.interfaces.plugins import IAuthenticationPlugin
 
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     if change_activate:
         # read authentication_plugins_sites dtml doc
         if "authentication_plugins_sites" not in self.objectIds():
@@ -2435,147 +1862,7 @@ def change_authentication_plugins(self, activate="", dochange=""):
     return "\n".join(out)
 
 
-def install_plone_product(self, productName="", installMode="", dochange=""):
-    """
-        install/reinstall or uninstall a plone product
-    """
-
-    if not check_zope_admin():
-        return "You must be a zope manager to run this script"
-
-    out = []
-
-    out.append('<head><style type="text/css">')
-    out.append("table { border: 1px solid black; border-collapse:collapse; }")
-    out.append("table th { border: 1px solid black; background: #8297FD; }")
-    out.append("table td { border: 1px solid black; padding: 2px }")
-    out.append(".red { color: red; } ")
-    out.append(".green { color: green; } ")
-    out.append("</style></head>")
-    out.append("<h2>Install, Uninstall or Re-Install product</h2>")
-    out.append("<p>You can call the script with the following parameters:<br />")
-    out.append("-> productName=name of product => ie. contact<br />")
-    out.append(
-        "-> installMode='I','U' or 'R' => Install (Re-Install if product exist), Uninstall or Re-install "
-        "(not install if product doesn't exist)<br />"
-    )
-    out.append(
-        "-> (Optional) dochange=1 => really do the change. By default, only prints changes<br />"
-    )
-    out.append(
-        "<p>by example /install_plone_product?productName=Linguaplone&installMode=I&dochange=1</p>"
-    )
-
-    out.append("<table><thead><tr>")
-    out.append("</tr></thead><tbody>")
-    if productName == "":
-        out.append(
-            """<tr><td class="red">please, choose a product to install</td><td class="red"></td></tr>"""
-        )
-        return "\n".join(out)
-
-    if installMode not in ("I", "U", "R"):
-        out.append(
-            """<tr><td class="red">please, installMode must be in 'I','U' or 'R'</td>"""
-            """<td class="red"></td></tr>"""
-        )
-        return "\n".join(out)
-    out.append("</tbody></table>")
-
-    execute_change = False
-    if dochange not in ("", "0", "False", "false"):
-        execute_change = True
-
-    if not execute_change:
-        out.append(
-            "The following changes are not applied: you must run the script with the parameter '...?dochange=1'"
-        )
-
-    # get all site on root or in first folder (by mountpoint)
-    allSiteObj = get_all_site_objects(self)
-    if installMode in ("I", "R"):
-        # install or re-install product
-        for obj in allSiteObj:
-            objid = obj.getId()
-            if not obj.portal_quickinstaller.isProductInstallable(productName):
-                out.append("<p>Bad Product name %s for %s</p>" % (productName, objid))
-                continue
-            if obj.portal_quickinstaller.isProductInstalled(productName):
-                out.append("<p>Re-install product %s for %s</p>" % (productName, objid))
-                if execute_change:
-                    obj.portal_quickinstaller.reinstallProducts([productName])
-            elif installMode == "I":
-                out.append("<p>Install product %s for %s</p>" % (productName, objid))
-                if execute_change:
-                    obj.portal_quickinstaller.installProducts([productName])
-    else:
-        # uninstall product
-        for obj in allSiteObj:
-            objid = obj.getId()
-            if not obj.portal_quickinstaller.isProductInstallable(productName):
-                out.append("<p>Bad Product name %s for %s</p>" % (productName, objid))
-                continue
-            if obj.portal_quickinstaller.isProductInstalled(productName):
-                out.append("<p>Uninstall product %s for %s</p>" % (productName, objid))
-                if execute_change:
-                    obj.portal_quickinstaller.uninstallProducts([productName])
-    return "\n".join(out)
-
-
-def send_adminMail(
-    self,
-    dochange="",
-    subject="Aux administrateurs du site plone",
-    bodyText="",
-    allsites="1",
-):
-    """
-        send mail to all admin user
-    """
-    if not check_zope_admin():
-        return "You must be a zope manager to run this script"
-
-    out = []
-    send_mail = False
-    if dochange not in ("", "0", "False", "false"):
-        send_mail = True
-
-    # get all site on root or in first folder (by mountpoint)
-    allSiteObj = get_all_site_objects(self)
-    if allsites in ("", "0", "False", "false"):
-        allSiteObj = [self.portal_url.getPortalObject()]
-
-    for obj in allSiteObj:
-        # get contact email
-        authorEmail = obj.email_from_address
-        users_mail = [authorEmail]
-        # get administrators email
-        for userInfos in obj.acl_users.searchUsers():
-            userid = userInfos["userid"]
-            member = obj.portal_membership.getMemberById(userid)
-            if member.has_role("Manager"):
-                user_mail = member.getProperty("email")
-                if user_mail != "" and user_mail not in users_mail:
-                    users_mail.append(user_mail)
-        objPath = "/".join(obj.getPhysicalPath())
-        To = ";".join(users_mail)
-
-        out.append("EMAIL for site %s" % objPath)
-        out.append(
-            "From : %s, To : %s, Mail subject : %s, mail data : %s "
-            % (authorEmail, To, subject, bodyText)
-        )
-
-        if send_mail:
-            ret = sendmail(obj, authorEmail, To, bodyText, subject=subject)
-            ret and out.append("Return code:%s" % ret)
-
-    return "\n".join(out)
-
-
 def checkInstance(self, isProductInstance="", instdir=""):
-    from Products.CPUtils.hiddenProductsList import dic_hpList
-
     if not check_zope_admin():
         return "checkInstance run with a non admin user: we go out"
     try:
@@ -2587,65 +1874,13 @@ def checkInstance(self, isProductInstance="", instdir=""):
         allSiteObj = get_all_site_objects(self)
         isProductInstance = self.getId()
 
-        # 0.Check if hiddenProducts properties exists, and if yes, check discrepancies
-        if not hasattr(self, "hiddenProducts"):
-            out.append(" !! No hiddenProducts properties defined")
-        else:
-            # Search the "type" of application hosted by the zope instance (website, urban, teleservice,..)
-            type = ""
-            for productname in list(dic_hpList.keys()):
-                # Determine it by checking if the product is installable
-                if productname in self.Control_Panel.Products.objectIds():
-                    type = productname
-                    break
-            # Once the type is known, look for discrepancies in the "hidden products" list for this type of product
-            external_hp_list = set(dic_hpList[type])
-            internal_hp_list = set(self.hiddenProducts)
-            for hiddenProduct in external_hp_list.symmetric_difference(
-                internal_hp_list
-            ):
-                if hiddenProduct not in internal_hp_list:
-                    out.append(
-                        "!! the product '%s' is in the hidden products external list but not in the site list"
-                        % (hiddenProduct)
-                    )
-                else:
-                    out.append(
-                        "!! the product '%s' is in the hidden products site list but not in the external list"
-                        % (hiddenProduct)
-                    )
-
         for obj in allSiteObj:
             objid = obj.getId()
             objPath = ""
             for i in range(1, len(obj.getPhysicalPath()) - 1):
                 objPath = objPath + obj.getPhysicalPath()[i] + "/"
             # out.append(">> Site in analyse : %s" % objPath+objid)
-            # 1. Check if we are in debugMode (only for product instance)
-            if is_Production_Instance:
-                # out.append(">> Check debugMode")
-                if hasattr(obj, "portal_css"):
-                    if obj.portal_css.debugmode:
-                        obj.portal_css.setDebugMode(False)
-                        out.append(
-                            "!! %s (debugMode) >>> Css : %s"
-                            % (objPath + objid, obj.portal_css.debugmode)
-                        )
-                if hasattr(obj, "portal_javascripts"):
-                    if obj.portal_javascripts.debugmode:
-                        obj.portal_javascripts.setDebugMode(False)
-                        out.append(
-                            "!! %s (debugMode) >>> Javascripts : %s"
-                            % (objPath + objid, obj.portal_javascripts.debugmode)
-                        )
-                if hasattr(obj, "portal_kss"):
-                    if obj.portal_kss.debugmode:
-                        obj.portal_kss.setDebugMode(False)
-                        out.append(
-                            "!! %s (debugMode) >>> kss %s"
-                            % (objPath + objid, obj.portal_kss.debugmode)
-                        )
-            # 2. Check if robot.txt exist in test instance and not exist in product instance
+            # 1. Check if robot.txt exist in test instance and not exist in product instance
             # out.append(">> Check robots.txt")
             if hasattr(obj, "portal_skins.custom"):
                 if is_Production_Instance and hasattr(
@@ -2661,7 +1896,7 @@ def checkInstance(self, isProductInstance="", instdir=""):
                         "!! %s >>> Haven't a file named 'robots.txt'"
                         % (objPath + objid)
                     )
-            # 3. Check if connexion plugins is activate
+            # 2. Check if connexion plugins is activate
             # out.append(">> Check connexion plugins")
             plugins = obj.acl_users.plugins
             auth_plugins = plugins.getAllPlugins(plugin_type="IAuthenticationPlugin")
@@ -2669,22 +1904,13 @@ def checkInstance(self, isProductInstance="", instdir=""):
                 out.append(
                     "!! %s >>> No connexion plugins is activate" % (objPath + objid)
                 )
-            # 4. Check if Ids is correct (without space)
+            # 3. Check if Ids is correct (without space)
             # out.append(">> Check Ids")
             if objid.find(" ") >= 0:
                 out.append(
                     "!! %s >>> this site (%s) contain space characters in id"
                     % (objPath + objid, objid)
                 )
-            # 5. Check if cache setup is installed (only for product instance)
-            if is_Production_Instance:
-                # out.append(">> Check CacheSetup")
-                if hasattr(obj, "portal_quickinstaller"):
-                    if not obj.portal_quickinstaller.isProductInstalled("CacheSetup"):
-                        out.append(
-                            "!! %s >>> cache setup isn't installed" % (objPath + objid)
-                        )
-            # out.append("")
         return "\n".join(out)
     except Exception as message:
         out.append("!! error in checkinstance %s" % str(message))
@@ -2709,7 +1935,9 @@ def list_context_portlets_by_name(self, portlet_name=""):
     from zope.component import getMultiAdapter
     from zope.component import getUtility
 
-    out = ['<table><tr style="nth-child(odd): background-color: #000000;">']
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
+    tr = '<tr style="nth-child(odd): background-color: #000000;">'
+    out = ['<table>%s' % tr]
     left_column = getUtility(IPortletManager, name="plone.leftcolumn")
     right_column = getUtility(IPortletManager, name="plone.rightcolumn")
 
@@ -2731,14 +1959,14 @@ def list_context_portlets_by_name(self, portlet_name=""):
         left_mappings = getMultiAdapter((obj, left_column), IPortletAssignmentMapping)
         if not portlet_name == "*" and portlet_name in left_mappings:
             out.append(
-                '<td width=50%%>left_column</td><td width=50%%><a href="%s">%s</a></td></tr>'
-                % (abs_url, abs_url)
+                '%s<td width=50%%>left_column</td><td width=50%%><a href="%s">%s</a></td></tr>'
+                % (tr, abs_url, abs_url)
             )
         elif portlet_name == "*":
             for k in list(left_mappings.keys()):
                 out.append(
-                    '<td width=20%%>left_column</td><td width=60%%><a href="%s">%s</a></td>'
-                    "<td width=20%%>%s</td></tr>" % (abs_url, abs_url, k)
+                    '%s<td width=20%%>left_column</td><td width=60%%><a href="%s">%s</a></td>'
+                    "<td width=20%%>%s</td></tr>" % (tr, abs_url, abs_url, k)
                 )
         right_mappings = getMultiAdapter((obj, right_column), IPortletAssignmentMapping)
         if not portlet_name == "*" and portlet_name in right_mappings:
@@ -2749,14 +1977,14 @@ def list_context_portlets_by_name(self, portlet_name=""):
         elif portlet_name == "*":
             for k in list(right_mappings.keys()):
                 out.append(
-                    '<td width=20%%>right_column</td><td width=60%%><a href="%s">%s</a></td>'
-                    "<td width=20%%>%s</td></tr>" % (abs_url, abs_url, k)
+                    '%s<td width=20%%>right_column</td><td width=60%%><a href="%s">%s</a></td>'
+                    "<td width=20%%>%s</td></tr>" % (tr, abs_url, abs_url, k)
                 )
 
     if out == ['<table><tr style="nth-child(odd): background-color: #000000;">']:
         out = ['Nothing found with search parameter "%s"' % portlet_name]
     else:
-        out.append("</table>")
+        out.append("<tr></table>")
         out.extend(
             (
                 "<style type='text/css'>tr:nth-child(even) {background-color: #EDEDED;}</style>",
@@ -2789,237 +2017,6 @@ def list_portlets(self):
     return "\n".join(out)
 
 
-def rename_long_ids(self, length="255", dochange="", fromfile=""):
-    """
-        Renames too long ids, not permitting transmogrifier export
-        1) run on orig site first, writing correspondences in output file
-        2) renames as orig filenames from correspondences file
-    """
-    from Acquisition import aq_base
-    from Products.CMFCore.utils import getToolByName
-
-    import os.path
-
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    out = []
-    out.append("<p>You can call the script with following parameters:</p>")
-    out.append("-> length=20 : maximum length of id")
-    out.append("-> fromfile : rename from the generated file")
-    out.append("-> dochange=1 : to do really the changes")
-    out.append("by example ...?length=20&dochange=1<br/>")
-
-    from_file = False
-    if fromfile not in ("", "0", "False", "false"):
-        from_file = True
-    do_change = False
-    if dochange not in ("", "0", "False", "false"):
-        do_change = True
-    max_len = int(length)
-
-    portal_url = getToolByName(self, "portal_url")
-    portal = portal_url.getPortalObject()
-
-    otn = {}
-    nto = {}
-    plen = max_len - 3
-
-    def cut_oid(oid):
-        """ Cut oid following '-', nicer """
-        i = lasti = 0
-        while i >= 0:
-            lasti = i
-            i = oid.find("-", i + 1, plen)
-        if lasti:
-            return oid[0:lasti]
-        else:
-            return oid[0:plen]
-
-    if not from_file:
-        results = portal.portal_catalog.searchResults()
-        otn["/"] = {}
-        otn["/"]["obj"] = portal
-        otn["/"]["npathid"] = ""
-
-        # cannot get results sorted by path index !
-        for r in results:
-            obj = r.getObject()
-            rpathid = "/%s" % "/".join(portal_url.getRelativeContentPath(obj))
-            otn[rpathid] = {}
-            otn[rpathid]["obj"] = obj
-
-        txt = []
-        # sort objects by path, handling parents to childs
-        for opathid in sorted(otn.keys()):
-            if opathid == "/":
-                continue
-            (opath, oid) = os.path.split(opathid)
-            noid = oid
-            npath = otn[opath]["npathid"]
-            if len(oid) > max_len:
-                cont = otn[opath]["obj"]
-                baseoid = noid = cut_oid(oid)
-                i = 1
-                while hasattr(aq_base(cont), noid) or "%s/%s" % (npath, noid) in nto:
-                    noid = "%s-%d" % (baseoid, i)
-                    i += 1
-            npathid = "%s/%s" % (npath, noid)
-            otn[opathid]["npathid"] = npathid
-            nto[npathid] = opathid
-            if opathid != npathid:
-                txt.append("%s => %s" % (opathid, npathid))
-                out.append("%s => %s" % (opathid, npathid))
-
-        if do_change:
-            # reverse sort objects by path to change id, handling childs to parents
-            for opathid in sorted(list(otn.keys()), reverse=True):
-                if opathid == "/" or opathid == otn[opathid]["npathid"]:
-                    continue
-                obj = portal.restrictedTraverse(opathid[1:])
-                nid = os.path.split(otn[opathid]["npathid"])[1]
-                obj.setId(nid)
-                obj.reindexObject("id")
-
-        if "rename_long_ids" not in portal.objectIds():
-            portal.manage_addDTMLDocument(
-                id="rename_long_ids", title="Correspondences for long ids rename"
-            )
-            out.append(
-                "<br />Document '%s/rename_long_ids' added"
-                % "/".join(portal.getPhysicalPath())
-            )
-        doc = self.rename_long_ids
-        if txt:
-            doc.raw = "\n".join(txt)
-            out.append(
-                "Document '%s/rename_long_ids' updated !"
-                % "/".join(portal.getPhysicalPath())
-            )
-    else:
-        if "rename_long_ids" not in portal.objectIds():
-            return "You must import at the root site the DTMLDocument named 'rename_long_ids'"
-        # first we load the correspondences
-        doc = portal.rename_long_ids
-        lines = doc.raw.splitlines()
-        # reverse sort objects by path to change id, handling childs to parents
-        for line in sorted(lines, reverse=True):
-            opathid, npathid = line.split(" => ")
-            opath, oid = os.path.split(opathid)
-            out.append("%s => %s" % (npathid, oid))
-            if do_change:
-                obj = portal.restrictedTraverse(npathid[1:])
-                obj.setId(oid)
-                obj.reindexObject("id")
-
-    if do_change:
-        out.append("<br />Rename applied !")
-    return "<br />".join(out)
-
-
-def list_newsletter_users(self, activity="all", format="all"):
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    out = []
-
-    out.append("You can call the script with following parameters:\n")
-    out.append("-> activity=all : 'all' (default value).")
-    out.append("                :'active' selects active users")
-    out.append("                :'inactive' selects inactive users")
-    out.append("-> format=all : 'all' (default value).")
-    out.append("              :'HTML' selects users with the HTML format")
-    out.append("              :'Text' selects users with the text format")
-    out.append(
-        "\nexample:  .../cputils_list_newsletter_users?activity=active&format=Text\n"
-    )
-
-    options = {
-        "activity": ["all", "active", "inactive"],
-        "format": ["all", "HTML", "Text"],
-    }
-
-    if activity not in options["activity"]:
-        activity = options["activity"][0]
-    if format not in options["format"]:
-        format = options["format"][0]
-
-    header = ["EMAIL", "ACTIVE", "FORMAT"]
-    header = ",".join(header)
-
-    results = self.portal_catalog.searchResults(portal_type="NewsletterBTree")
-    for brain in results:
-        obj = brain.getObject()
-        out.append(
-            "\nSucribers list of the folder '"
-            + obj.Title()
-            + "' from the newsletter '"
-            + obj.aq_parent.Title()
-            + "'\n"
-        )
-        out.append(header)
-        for sub in obj.objectValues():
-            line = [sub.email]
-
-            if activity != "all" and (activity == "active") != sub.active:
-                continue
-
-            if sub.active:
-                act = "*"
-            else:
-                act = ""
-            line.append(act)
-
-            if format != "all" and format != sub.format:
-                continue
-            line.append(sub.format)
-
-            out.append(",".join(line))
-
-    return "\n".join(out)
-
-
-def zmi(self):
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    """ no more necessary
-    servers = { 'plonegov' : 'plonegov-0000.proxy.pilotsystems.net',
-                'villesetcommunes' : 'villesetcommunes.all2all.org:0000',
-                'villesetcommunes3' : 'villesetcommunes3.all2all.org:0000',}
-    """
-    import socket
-
-    infos = self.Control_Panel.getServers()
-    hostname = socket.gethostname()
-    # ip_address = socket.gethostbyname(hostname)
-    out = []
-    if "instance" in hostname:  # into docker
-        import os
-
-        hostname = os.environ.get("HOSTNAME_HOST")
-        http_port = os.environ.get("HTTP_PORT")
-        url = "http://{0}:{1}/manage_main".format(hostname, http_port)
-        out.append('<a href="%s">%s</a>' % (url, url))
-        return self.REQUEST.RESPONSE.redirect(url)
-
-    server = "localhost:0000"
-    if infos and len(infos[0]) > 1:
-        port = infos[0][1]
-        out.append(port)
-        port = port.replace("Port: ", "")
-        #        if servers.has_key(hostname):
-        #            server = servers[hostname]
-        server = server.replace("localhost", hostname)
-        #        server = server.replace('localhost', ip_address)
-        server = server.replace("0000", port)
-        url = "http://%s/manage_main" % server
-        out.append('<a href="%s">%s</a>' % (url, url))
-        return self.REQUEST.RESPONSE.redirect(url)
-    # out.append(infos[1])
-    return "<br />\n".join(out)
-
-
 def removeStep(self, step=""):
     """
         Remove an import step
@@ -3029,6 +2026,8 @@ def removeStep(self, step=""):
 
     from Products.CMFCore.utils import getToolByName
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     out = []
 
     out.append("You can call the script with following parameters:\n")
@@ -3140,173 +2139,6 @@ def removeRegisteredTool(self, tool=""):
     return "<br />\n".join(out)
 
 
-def subscribers(self):
-    """
-        Display subscribers on context (Products.PloneboardSubscription)
-    """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-    from Products.CMFCore.utils import getToolByName
-
-    portal_url = getToolByName(self, "portal_url")
-    portal = portal_url.getPortalObject()
-    pb_tool = getToolByName(portal, "portal_pbnotification")
-    path = pb_tool.getObjId(self)
-    if path in pb_tool.subscribers:
-        return "Subscribers on '%s':\n%s" % (
-            path,
-            "\n".join(sorted(pb_tool.subscribers[path])),
-        )
-    return "No subscriber on %s" % path
-
-
-def subscribe_forums(
-    self,
-    userids="",
-    dochange="",
-    action="add",
-    target="forum,conversation",
-    details="",
-    path="",
-):
-    """
-        Manage subscription to forum or conversation (Products.PloneboardSubscription)
-    """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    import os
-
-    out = []
-    out.append("<p>You can call the script with following parameters:</p>")
-    out.append("-> userids=user1,user2 : list of users separated by ,")
-    out.append(
-        "-> action=add|remove|replace : 'add' (default) or 'remove' the users for all forums. "
-        "'replace' user1 by user2 for all forums and conversations."
-    )
-    out.append("-> target=forum,conversation : list of changes target (default twice)")
-    out.append("-> path=folder : relative site path to search in")
-    out.append("-> details=1 : display all subscribers")
-    out.append("-> dochange=1 : to do really the changes")
-    out.append("by example ...?userids=user1,user2&dochange=1<br/>")
-
-    do_change = False
-    if dochange not in ("", "0", "False", "false"):
-        do_change = True
-    if not userids:
-        return "<br />\n".join(out)
-
-    kw = {"sort_on": "path", "portal_type": []}
-    targets = target.strip().split(",")
-    for starget in targets:
-        if starget == "forum":
-            kw["portal_type"].append("PloneboardForum")
-        elif starget == "conversation":
-            kw["portal_type"].append("PloneboardConversation")
-        else:
-            out.append(
-                "Target option '%s' must be a list of forum and/or conversation '%s'"
-                % (starget, target)
-            )
-            return "<br />\n".join(out)
-
-    from Products.CMFCore.utils import getToolByName
-
-    portal_url = getToolByName(self, "portal_url")
-    portal = portal_url.getPortalObject()
-    pb_tool = getToolByName(portal, "portal_pbnotification")
-    mtool = getToolByName(portal, "portal_membership")
-    if path:
-        kw["path"] = os.path.join(portal_url.getPortalPath(), path)
-    out.append("Catalog search parameters: %s<br/>" % repr(kw))
-
-    users = userids.split(",")
-    users = [user.strip(" ").decode() for user in users]
-    if action == "replace" and len(users) != 2:
-        out.append(
-            "With replace action, you have to give 2 users: ?userids=oldname,newname"
-        )
-    error = False
-    for user in users:
-        mem = mtool.getMemberById(user)
-        if mem is None:
-            out.append("!! user not exist: %s" % user)
-            error = True
-    if not error:
-        i = 0
-        results = portal.portal_catalog.searchResults(kw)
-        for brain in results:
-            i += 1
-            obj_path = brain.getPath()
-            type = brain.getObject().getPortalTypeName().replace("Ploneboard", "")
-            if action in ("add", "remove"):
-                for user in users:
-                    if (
-                        obj_path not in pb_tool.subscribers
-                        or user not in pb_tool.subscribers[obj_path]
-                    ):
-                        if action == "add":
-                            out.append("%d %s: %s (%s)" % (i, type, brain.id, obj_path))
-                            if details and obj_path in pb_tool.subscribers:
-                                out.append(
-                                    "&emsp;... %s"
-                                    % ",".join(pb_tool.subscribers[obj_path])
-                                )
-                            if do_change:
-                                pb_tool.addSubscriber(brain.getObject(), user)
-                                out.append("&emsp;===> added")
-                            else:
-                                out.append("&emsp;===> will be added")
-                    else:
-                        if action == "remove":
-                            out.append("%d %s: %s (%s)" % (i, type, brain.id, obj_path))
-                            if details:
-                                out.append(
-                                    "&emsp;... %s"
-                                    % ",".join(pb_tool.subscribers[obj_path])
-                                )
-                            if do_change:
-                                pb_tool.subscribers[obj_path].remove(user)
-                                out.append("&emsp;===> removed")
-                            else:
-                                out.append("&emsp;===> will be removed")
-            elif action == "replace":
-                oldname, newname = users
-                if (
-                    obj_path in pb_tool.subscribers
-                    and oldname in pb_tool.subscribers[obj_path]
-                ):
-                    out.append("%d %s: %s (%s)" % (i, type, brain.id, obj_path))
-                    if details and obj_path in pb_tool.subscribers:
-                        out.append(
-                            "&emsp;... %s" % ",".join(pb_tool.subscribers[obj_path])
-                        )
-                    idx = pb_tool.subscribers[obj_path].index(oldname)
-                    if do_change:
-                        if newname in pb_tool.subscribers[obj_path]:
-                            pb_tool.subscribers[obj_path].pop(idx)
-                            out.append("&emsp;===> %s removed" % oldname)
-                        else:
-                            pb_tool.subscribers[obj_path][idx] = newname
-                            out.append(
-                                "&emsp;===> %s replaced by %s" % (oldname, newname)
-                            )
-                    elif newname in pb_tool.subscribers[obj_path]:
-                        out.append("&emsp;===> %s will be removed" % oldname)
-                    else:
-                        out.append(
-                            "&emsp;===> %s will be replaced by %s" % (oldname, newname)
-                        )
-    if do_change:
-        # We must indicate that the PersistentMapping has been modified. Otherwise nothing is commited
-        pb_tool.subscribers._p_changed = 1
-        import transaction
-
-        transaction.commit()
-
-    return "<br />\n".join(out)
-
-
 def list_used_views(self, specific_view=None):
     """
         List used views of the plone site
@@ -3318,6 +2150,7 @@ def list_used_views(self, specific_view=None):
 
     from Products.CMFCore.utils import getToolByName
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     portal = getToolByName(self, "portal_url").getPortalObject()
     catalog = portal.portal_catalog
     types = portal.portal_types.objectIds()
@@ -3337,10 +2170,10 @@ def list_used_views(self, specific_view=None):
             elif specific_view and specific_view == layout:
                 views[t]["/".join(ob.getPhysicalPath())] = ob.absolute_url()
     if not specific_view:
-        out = ["Used views on objects\n---------------------\n"]
+        out = ["<html><b><u>Used views on objects</u></b><br /><br />"]
         for typ in list(views.keys()):
             out.append(
-                "%s : %s"
+                "%s : %s<br/>"
                 % (
                     typ,
                     ", ".join(
@@ -3371,6 +2204,7 @@ def list_local_roles(self):
     if not check_role(self):
         return "You must have a manager role to run this script"
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     out = ["<h1>List of defined local roles</h1>"]
     avoided_roles = ["Owner"]
     from Products.CMFCore.utils import getToolByName
@@ -3417,6 +2251,7 @@ def unlock_webdav_objects(self, dochange=""):
 
     from Products.CMFCore.utils import getToolByName
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     purl = getToolByName(self, "portal_url")
     portal = purl.getPortalObject()
 
@@ -3428,6 +2263,7 @@ def unlock_webdav_objects(self, dochange=""):
 
     do_change = False
     if dochange not in ("", "0", "False", "false"):
+        alsoProvides(self.REQUEST, IDisableCSRFProtection)
         do_change = True
 
     def unlock_obj(obj):
@@ -3453,6 +2289,8 @@ def unlock_webdav_objects(self, dochange=""):
 def objects_stats(self, csv=""):
     if not check_role(self):
         return "You must have a manager role to run this script"
+
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     sep = "<br/>"
     out = []
     as_csv = False
@@ -3495,6 +2333,7 @@ def objects_stats(self, csv=""):
 def list_objects(self, type):
     if not check_role(self):
         return "You must have a manager role to run this script"
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     portal = self.portal_url.getPortalObject()
     brains = portal.portal_catalog.searchResults({"portal_type": type})
     out = []
@@ -3504,153 +2343,6 @@ def list_objects(self, type):
         info = "&nbsp;<a href= " + url + "/cputils_object_info>(more info)</a>"
         out.append("%s %s %s %s %s %s" % ("<a href= ", url, ">", url, "</a>", info))
     return "<br/>".join(out)
-
-
-def reftooltoobjects(self, dochange=""):
-    """
-        This is usefull with quintagroup.transmogrifier because references
-        are not migrated on object (at_references).  But they are
-        still in the old imported reference_catalog.zexp.
-        Update every objects.at_references depending on the found references
-        in the reference_catalog.
-    """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    import logging
-
-    logger = logging.getLogger("CPUtils")
-    from Acquisition import aq_base
-    from Products.CMFCore.utils import getToolByName
-
-    purl = getToolByName(self, "portal_url")
-    portal = purl.getPortalObject()
-
-    out = []
-    out.append("<p>You can call the script with following parameters:</p>")
-    out.append("-> dochange=1 : to update at_references on objects")
-    out.append("by example ...?dochange=1<br/>")
-    out.append("<h1>Updated objects</h1>")
-
-    do_change = False
-    if dochange not in ("", "0", "False", "false"):
-        do_change = True
-
-    logger.info("Updating 'at_references' on every objects...")
-    brains = portal.portal_catalog()
-    totalBrains = len(brains)
-
-    if totalBrains < 100:
-        numberOfSteps = 1
-    elif totalBrains < 1000:
-        numberOfSteps = 10
-    else:
-        numberOfSteps = 100
-
-    i = 1
-    stepTreshold = round(int(totalBrains / numberOfSteps))
-    step = 1
-    logger.info("Updating '%d' objects..." % totalBrains)
-    refTool = portal.reference_catalog
-    changed = False
-    for brain in brains:
-        if i > stepTreshold:
-            i = 1
-            logger.info("Step '%d / %d'..." % (step, numberOfSteps))
-            step = step + 1
-        i = i + 1
-        obj = brain.getObject()
-        # some elements like Newsletters are not referenceable...
-        uobj = aq_base(obj)
-        if not refTool.isReferenceable(uobj):
-            continue
-        at_references = obj._getReferenceAnnotations()
-        if at_references.objectValues():
-            # at_references already contains references, it seems OK...
-            continue
-        # Look in the reference_catalog for existing references about obj
-        # for every relationships
-        for relationship in refTool.getRelationships(obj):
-            if not relationship:
-                continue
-            references = obj.getReferences(relationship)
-            for reference in references:
-                if not reference:
-                    continue
-                out.append(
-                    "References for relationship '%s' of object at %s' where updated"
-                    % (relationship, "/".join(obj.getPhysicalPath()))
-                )
-                if do_change:
-                    changed = True
-                    refTool.addReference(
-                        obj, reference, relationship, updateReferences=False
-                    )
-    if changed:
-        refTool.refreshCatalog(clear=1)
-    logger.info("Done !")
-    return "<br />\n".join(out)
-
-
-def del_bad_portlet(self, dochange="", column="left", portlet=""):
-    """
-        Delete a Plone3 portlet that cannot more be edited.
-        Print the content of the text portlet.
-    """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    import logging
-
-    logger = logging.getLogger("CPUtils")
-    from zope.annotation.interfaces import IAnnotations
-
-    import cgi
-
-    out = ["<h1>Deleting a portlet and displaying some attributes</h1>"]
-    out.append("You can/must call the script with following parameters:")
-    out.append("-> column='right' : to search left (default) or right portlets")
-    out.append(
-        "-> portlet='xxx' : the id of the portlet to search (can be seen in url when editing it)"
-    )
-    out.append("-> dochange=1 : to apply change (really delete portlet)")
-    out.append("by example ...?portlet=mon portlet&column=right")
-    out.append("")
-
-    do_change = False
-    if dochange not in ("", "0", "False", "false"):
-        do_change = True
-    if not portlet:
-        out.append("!! You must give the portlet name with 'portlet' parameter")
-        return "\n".join(out)
-
-    ann = IAnnotations(self)
-    columnkey = "plone.%scolumn" % column
-    if "plone.portlets.contextassignments" not in ann:
-        out.append("No portlets defined in this context")
-    elif columnkey not in ann["plone.portlets.contextassignments"]:
-        out.append("Column '%s' not found in portlets definition" % columnkey)
-    elif portlet not in ann["plone.portlets.contextassignments"][columnkey]:
-        out.append(
-            "Portlet '%s' in column '%s' not found in portlets definition"
-            % (portlet, column)
-        )
-    else:
-        asg = ann["plone.portlets.contextassignments"][columnkey][portlet]
-        if hasattr(asg, "header"):
-            out.append("header attribute='%s'\n<br />" % asg.header)
-        if hasattr(asg, "text"):
-            out.append("text attribute='%s'\n<br />" % cgi.escape(asg.text))
-        if do_change:
-            del ann["plone.portlets.contextassignments"][columnkey][portlet]
-            out.append("portlet '%s' of %s column is deleted" % (portlet, column))
-        else:
-            out.append(
-                "portlet '%s' of %s column will be really deleted with dochange parameter"
-                % (portlet, column)
-            )
-    logger.info("\n".join(out))
-    return "<br />\n".join(out)
 
 
 def clean_provides_for(self, interface_name=None):
@@ -3666,6 +2358,7 @@ def clean_provides_for(self, interface_name=None):
             "'collective.zipfiletransport.utilities.interfaces.IZipFileTransportUtility' for example)"
         )
 
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     brains = self.portal_catalog(object_provides=interface_name)
     if not brains:
         return "No elements provides '%s'" % interface_name
@@ -3706,6 +2399,7 @@ def clean_utilities_for(self, interface_name=None):
         )
 
     from zope.component import getSiteManager
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
 
     sm = getSiteManager()
     out = []
@@ -3759,6 +2453,7 @@ def add_subject(self, dochange="", path="", type="", subject=""):
 
     import os
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     purl = getToolByName(self, "portal_url")
     portal = purl.getPortalObject()
     sitePath = "/".join(portal.getPhysicalPath())
@@ -3777,6 +2472,7 @@ def add_subject(self, dochange="", path="", type="", subject=""):
     do_change = False
     if dochange not in ("", "0", "False", "false"):
         do_change = True
+        alsoProvides(self.REQUEST, IDisableCSRFProtection)
     if not subject:
         out.append("!! You must give the subject name with 'subject' parameter")
         return "<br />\n".join(out)
@@ -3795,11 +2491,11 @@ def add_subject(self, dochange="", path="", type="", subject=""):
     out.append("Count of objects:%d" % len(results))
     for brain in results:
         obj = brain.getObject()
-        subjects = list(obj.Subject())
+        subjects = list(getattr(obj, "subject", ()))
         if subject not in subjects:
             subjects.append(subject)
             if do_change:
-                obj.setSubject(subjects)
+                obj.subject = tuple(subjects)
                 obj.reindexObject()
                 out.append(
                     "%s -> added subject to subjects:'%s'"
@@ -3879,11 +2575,12 @@ def removeZFT(self):
 
 def order_folder(self, key="title", reverse="", verbose=""):
     """
-        Order items in a folder
+        Order items in a folder (not Plone site root)
     """
     if not check_role(self):
         return "You must have a manager role to run this script"
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     out = ["<h1>Order a folder</h1>"]
     out.append("You can/must call the script with following parameters:")
     out.append("-> key='' : ordering key (default title).")
@@ -3898,6 +2595,7 @@ def order_folder(self, key="title", reverse="", verbose=""):
     if verbose in ("", "0", "False", "false"):
         do_print = False
 
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     self.orderObjects(key, reverse=do_reverse)
     out.append(
         "Re-ordered by '%s' in %s order" % (key, do_reverse and "reverse" or "normal")
@@ -3916,6 +2614,7 @@ def move_item(self, delta=-1):
     if not check_role(self):
         return "You must have a manager role to run this script"
 
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     eid = self.getId()
     folder = self.__parent__
     oldpos = folder.getObjectPosition(eid)
@@ -3996,6 +2695,7 @@ def move_copy_objects(self, action="move", dest="", doit="", types="", by=50):
     if not check_role(self):
         return "You must have a manager role to run this script"
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     if not dest:
         out.append("!! You must give the dest path")
         return "<br />\n".join(out)
@@ -4010,6 +2710,8 @@ def move_copy_objects(self, action="move", dest="", doit="", types="", by=50):
     if not self.plone_utils.isStructuralFolder(dest_folder):
         out.append("!! The dest object '%s' isn't folderish" % (dest_folder))
         return "<br />\n".join(out)
+
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     do_change = False
     if doit not in ("", "0", "False", "false"):
         do_change = True
@@ -4024,11 +2726,12 @@ def move_copy_objects(self, action="move", dest="", doit="", types="", by=50):
             continue
         if obj.portal_type not in found_types:
             found_types.append(obj.portal_type)
-        if obj.portal_type not in dest_folder.getLocallyAllowedTypes():
+        allowed_types = [t.id for t in dest_folder.allowedContentTypes()]
+        if obj.portal_type not in allowed_types:
             out.append("Object not allowed: '%s'" % obj)
             continue
         ids.append(obj.getId())
-    out.append("\nExisting types: %s" % ", ".join(found_types))
+    out.append("Existing types: %s" % ", ".join(found_types))
     out.append("Will %s: %s" % (action, ", ".join(ids)))
     while ids:
         pids = ids[0:by]
@@ -4039,7 +2742,7 @@ def move_copy_objects(self, action="move", dest="", doit="", types="", by=50):
             clipboard = self.manage_copyObjects(pids)
         if do_change:
             dest_folder.manage_pasteObjects(clipboard)
-    return "\n".join(out)
+    return "<br />\n".join(out)
 
 
 def reset_passwords(self, not_for_ids="siteadmin", dochange=""):
@@ -4133,42 +2836,6 @@ def mark_last_version(self, product=""):
             return "Product version in pqi already at last: '%s' '%s'" % (product, i_v)
     except AttributeError as e:
         return "Cannot get product '%s' from portal_quickinstaller: %s" % (product, e)
-
-
-def resources_order(self, tool="css", output="xml"):
-    """
-        Print resources order:
-        - with output type: 'list', 'xml' (default)
-        - with tool: 'css' (default), 'js'
-    """
-    if not check_zope_admin():
-        return "You must be a zope manager to run this script"
-    portal = self.portal_url.getPortalObject()
-    out = []
-    out.append(resources_order.__doc__.strip("\n "))
-    out.append("Used parameters: tool='%s', output='%s'\n" % (tool, output))
-    tools = {
-        "css": {"n": "portal_css", "tag": "stylesheet"},
-        "js": {"n": "portal_javascripts", "tag": "javascript"},
-    }
-    if tool not in tools:
-        out.append("Bad parameter value for tool")
-        return "\n".join(out)
-
-    last = ""
-    for i, rsc in enumerate(getattr(portal, tools[tool]["n"]).getResources()):
-        if output == "list":
-            out.append(
-                "%02d: %s: %s" % (i, rsc.getEnabled() and "O" or "-", rsc.getId())
-            )
-        elif output == "xml":
-            out.append(
-                '<%s id="%s" insert-after="%s" />\n'
-                % (tools[tool]["tag"], rsc.getId(), last)
-            )
-        last = rsc.getId()
-
-    return "\n".join(out)
 
 
 def load_site(self, duration="15"):
@@ -4415,6 +3082,7 @@ def creators(self, value="", replace="1", add="-1", recursive="", dochange=""):
         return "You must have a manager role to run this script"
     from Products.CMFPlone.utils import base_hasattr
 
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     out = ["<strong>Creators change</strong>"]
     out.append("You can/must call the script with following parameters:")
     out.append("-> value='' : creator name. Mandatory param")
@@ -4437,12 +3105,13 @@ def creators(self, value="", replace="1", add="-1", recursive="", dochange=""):
     change = False
     if dochange not in ("", "0", "False", "false"):
         change = True
+        alsoProvides(self.REQUEST, IDisableCSRFProtection)
     new_i = int(add)
 
     def set_creators(obj):
-        if not base_hasattr(obj, "Creators"):
+        if not base_hasattr(obj, "creators"):
             return
-        cur_val = list(obj.Creators())
+        cur_val = list(obj.creators)
         mod = False
         if replace == "1":
             if cur_val != values:
@@ -4466,7 +3135,7 @@ def creators(self, value="", replace="1", add="-1", recursive="", dochange=""):
                 % (cur_val, obj.absolute_url(), obj.Title())
             )
             if change:
-                obj.setCreators(tuple(cur_val))
+                obj.creators = tuple(cur_val)
                 obj.reindexObject(["Creator", "listCreators"])
         else:
             out.append(
@@ -4657,13 +3326,9 @@ def check_blobs(self, delete=""):
     ret = []
 
     from datetime import datetime
-    from plone.app.blob.subtypes.file import ExtensionBlobField
     from plone.dexterity.content import DexterityContent
     from plone.namedfile.interfaces import INamedFile
-    from Products.Archetypes.Field import FileField
-    from Products.Archetypes.interfaces import IBaseContent
     from Products.CMFCore.utils import getToolByName
-    from Products.CMFPlone.utils import base_hasattr
     from ZODB.POSException import POSKeyError
 
     portal = getToolByName(self, "portal_url").getPortalObject()
@@ -4676,19 +3341,7 @@ def check_blobs(self, delete=""):
         if not brains:
             continue
         obj = brains[0].getObject()
-        if IBaseContent.providedBy(obj):
-            schema = obj.Schema()
-            for field in schema.fields():
-                if isinstance(field, FileField) or isinstance(
-                    field, ExtensionBlobField
-                ):
-                    value = field.getAccessor(obj)()
-                    if not base_hasattr(value, "getSize"):
-                        continue
-                    if typ not in blob_attrs:
-                        blob_attrs[typ] = {"t": "at", "at": []}
-                    blob_attrs[typ]["at"].append(field.getName())
-        elif isinstance(obj, DexterityContent):
+        if isinstance(obj, DexterityContent):
             # Iterate through all Python object attributes
             for key, value in list(obj.__dict__.items()):
                 if not key.startswith("_"):
@@ -4722,7 +3375,7 @@ def check_blobs(self, delete=""):
     return "\n".join(ret)
 
 
-def check_blobs_slow(self, delete=""):
+def check_blobs_slow(self, delete=""):  # MIGRATION-PLONE6
     """
         Check blobs for poskeyerrors
     """
@@ -4737,8 +3390,6 @@ def check_blobs_slow(self, delete=""):
     from datetime import datetime
     from plone.dexterity.content import DexterityContent
     from plone.namedfile.interfaces import INamedFile
-    from Products.Archetypes.Field import FileField
-    from Products.Archetypes.interfaces import IBaseContent
     from Products.CMFCore.interfaces import IFolderish
     from Products.CMFCore.utils import getToolByName
     from ZODB.POSException import POSKeyError
@@ -4746,24 +3397,6 @@ def check_blobs_slow(self, delete=""):
     portal = getToolByName(self, "portal_url").getPortalObject()
     start = datetime(1973, 2, 12).now()
     log_list(ret, "Starting check_blobs at %s" % start)
-
-    def check_at_blobs(context):
-        """ Archetypes content checker. Return True if purge needed """
-        if IBaseContent.providedBy(context):
-            schema = context.Schema()
-            for field in schema.fields():
-                id = field.getName()
-                if isinstance(field, FileField):
-                    try:
-                        field.get_size(context)
-                    except POSKeyError:
-                        log_list(
-                            ret,
-                            "Found damaged AT FileField %s on %s"
-                            % (id, context.absolute_url()),
-                        )
-                        return True
-        return False
 
     def check_dexterity_blobs(context):
         """ Check Dexterity content for damaged blob fields. Return True if purge needed """
@@ -4791,7 +3424,7 @@ def check_blobs_slow(self, delete=""):
         Iterate through the object variables and see if they are blob fields
         and if the field loading fails then poof
         """
-        if check_at_blobs(context) or check_dexterity_blobs(context):
+        if check_dexterity_blobs(context):
             log_list(ret, "Bad blobs found on %s" % context.absolute_url())
             if delete:
                 parent = context.aq_parent
@@ -4817,7 +3450,9 @@ def del_objects(self, doit="", types="", linki="1"):
 
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    # person,held_position
+
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     out = ["<strong>Objects deletion following types search in context path</strong>"]
     out.append("You can/must call the script with following parameters:")
     out.append("-> types=''  : portal_types (separated by ,). Default=empty.")
@@ -4840,12 +3475,6 @@ def del_objects(self, doit="", types="", linki="1"):
     out.append("")
     sep = "\n<br />"
 
-    # only valid for plone < 5 !!!! otherwise use linkintegrity/utils.py
-    pp = api.portal.get_tool("portal_properties")
-    livalue = pp.site_properties.enable_link_integrity_checks
-    if livalue != lk:
-        pp.site_properties.enable_link_integrity_checks = lk
-
     crit = {"portal_type": ptypes}
     # crit.update({'created': {'query': datetime.strptime('20211213', '%Y%m%d'), 'range': 'min'}})
     for brain in api.content.find(
@@ -4860,8 +3489,6 @@ def del_objects(self, doit="", types="", linki="1"):
         if doit == "1":
             api.content.delete(obj=obj, check_linkintegrity=False)
 
-    if livalue != lk:
-        pp.site_properties.enable_link_integrity_checks = livalue
     return sep.join(out)
 
 
@@ -4870,19 +3497,22 @@ def del_object(self, doit="", linki="1"):
 
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
+
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     out = ["<strong>Object deletion</strong>"]
     out.append("You can/must call the script with following parameters:")
     out.append("-> linki=''  : link integrity check. Default=1")
     out.append("-> doit=''  : apply changes if 1. Default=empty")
-    out.append("ie. cputils_del_objects?linki=0&doit=1")
+    out.append("ie. cputils_del_object?linki=0&doit=1")
     out.append("")
     sep = "\n<br />"
     # TODO add option to by pass subscribers with container._delObject(id, suppress_events=True)
     for brain in api.content.find(context=self, sort_on="path"):
         obj = brain.getObject()
         out.append("<span>{}</span>, {}".format(brain.getPath(), object_link(obj)))
-        if doit == "1":
-            api.content.delete(obj=self, check_linkintegrity=(linki == "1"))
+    if doit == "1":
+        api.content.delete(obj=self, check_linkintegrity=(linki == "1"))
     return sep.join(out)
 
 
@@ -4893,10 +3523,11 @@ def set_attr(self, attr="", value="", typ="str"):
     """
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
-    from cgi import escape
-    from Products.CMFPlone.utils import safe_hasattr
+    from html import escape
+    from plone.base.utils import safe_hasattr
 
-    good_types = ["str", "int", "list", "DateTime", "unicode", "datetime", "None"]
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
+    good_types = ["str", "int", "list", "DateTime", "datetime", "None"]
 
     sep = "\n<br />"
     out = ["<h2>You can/must call the script with following parameters:</h2>",
@@ -4904,8 +3535,7 @@ def set_attr(self, attr="", value="", typ="str"):
            "-> value=''  : value to set.",
            "-> typ=''  : value type. Can be %s. Default='str'" % ", ".join(["'%s'" % t for t in good_types]),
            "-> Example: ?attr=creation_date&value=2017-10-13 9:00 GMT%2B1&typ=DateTime<br />"
-           "-> Example: ?attr=_plone.uuid&value=xxx<br />"
-    ]
+           "-> Example: ?attr=_plone.uuid&value=xxx<br />"]
     if not attr:
         out.append("attr parameter is mandatory !")
         return sep.join(out)
@@ -4928,9 +3558,6 @@ def set_attr(self, attr="", value="", typ="str"):
         elif typ == "list":
             import json
             new_val = json.loads(value)
-        elif typ == "unicode":
-            from Products.CMFPlone.utils import safe_unicode
-            new_val = safe_unicode(value)
         elif typ == "DateTime":
             from DateTime import DateTime
             new_val = DateTime(value)  # example '2017-10-13 9:00 GMT%2B1'  %2B = '+'
@@ -4946,6 +3573,7 @@ def set_attr(self, attr="", value="", typ="str"):
         out.append("Cannot cast value type to '%s': '%s'" % (typ, msg))
         return sep.join(out)
 
+    alsoProvides(self.REQUEST, IDisableCSRFProtection)
     old_val = getattr(self, attr)
     setattr(self, attr, new_val)
     self.reindexObject()
@@ -4972,6 +3600,7 @@ def obj_from_uid(self, uid=''):
     obj = uuidToObject(uid)
     if obj is None:
         return "No object found for uid '%s'" % uid
+    self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     return object_link(obj)
 
 
@@ -5057,18 +3686,55 @@ def remove_generated_previews(obj):
         annotations.pop("collective.documentviewer", {})
 
 
-def clear_completed_async_jobs(self):
-    """ Remove plone.app.async jobs that are completed, i.e. success or failure.
-        Does not remove jobs still in flight """
-    from plone.app.async.interfaces import IAsyncDatabase
-    from Products.CMFCore.interfaces import ISiteRoot
-    from zc.async.interfaces import KEY
-    from zope.component import getUtility
+def _folder_position_typeaware(context, position="", id=None):
+    """ Move content up / down / top / bottom in its container, following types """
+    allObjectIds = context.objectIds()
+    pos = allObjectIds.index(id)
+    portal_type = getattr(context, id).portal_type
+    mtObjectIds = [ob.id for ob in context.objectValues() if ob.portal_type == portal_type]
+    delta = 1
+    previousFound = False
 
-    db = getUtility(IAsyncDatabase)
-    main_conn = getUtility(ISiteRoot)._p_jar
-    async_conn = main_conn.get_connection(db.database_name)
-    queue = async_conn.root()[KEY]['']
-    for da in list(queue.dispatchers.values()):
-        for agent in list(da.values()):
-            agent.completed.clear()
+    if position.lower() == "up":
+        previousFound = False
+        while not previousFound and ((pos - delta) > 0):
+            previousId = allObjectIds[pos - delta]
+            if previousId not in mtObjectIds:
+                delta += 1
+            else:
+                previousFound = True
+        if previousFound:
+            context.moveObjectsUp(id, delta=delta)
+
+    if position.lower() == "down":
+        nextFound = False
+        while not nextFound and ((pos + delta) < len(allObjectIds)):
+            nextId = allObjectIds[pos + delta]
+            if nextId not in mtObjectIds:
+                delta += 1
+            else:
+                nextFound = True
+        if nextFound:
+            context.moveObjectsDown(id, delta=delta)
+
+
+def folder_position(context, position="", id=None, delta=1, reverse=None, typeaware=False):
+    """ Move content up / down / top / bottom in its container """
+    position = position.lower()
+    if typeaware and position in ["down", "up"]:
+        _folder_position_typeaware(context, position, id)
+    elif position == "up":
+        context.moveObjectsUp(id, delta=delta)
+    elif position == "down":
+        context.moveObjectsDown(id, delta=delta)
+    elif position == "top":
+        context.moveObjectsToTop(id)
+    elif position == "bottom":
+        context.moveObjectsToBottom(id)
+    # order folder by field
+    # id in this case is the field
+    elif position == "ordered":
+        context.orderObjects(id, reverse)
+    context.plone_utils.reindexOnReorder(context)
+    msg = _(u"Item's position has changed.")
+    context.plone_utils.addPortalMessage(msg)

@@ -8,7 +8,7 @@ from datetime import datetime
 
 import os
 import sys
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
 
 
 TRACE = False

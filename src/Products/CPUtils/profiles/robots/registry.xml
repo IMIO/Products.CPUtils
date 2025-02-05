@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<registry>
+
+  <record name="plone.robots_txt"
+          interface="plone.base.interfaces.controlpanel.ISiteSchema"
+          field="robots_txt">
+    <value>
+# Define access-restrictions for robots/spiders
+# http://www.robotstxt.org/wc/norobots.html
+
+# By default we disallow robots to access all areas of our site in developement
+
+# This file must be removed in production mode
+
+User-agent: *
+Disallow: /
+</value>
+  </record>
+
+</registry>
