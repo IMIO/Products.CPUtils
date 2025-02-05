@@ -5060,9 +5060,9 @@ def remove_generated_previews(obj):
 def clear_completed_async_jobs(self):
     """ Remove plone.app.async jobs that are completed, i.e. success or failure.
         Does not remove jobs still in flight """
-    from plone.app.async.interfaces import IAsyncDatabase
+    # from plone.app.async.interfaces import IAsyncDatabase  # MIGRATION-PLONE6
     from Products.CMFCore.interfaces import ISiteRoot
-    from zc.async.interfaces import KEY
+    # from zc.async.interfaces import KEY  # MIGRATION-PLONE6
     from zope.component import getUtility
 
     db = getUtility(IAsyncDatabase)
