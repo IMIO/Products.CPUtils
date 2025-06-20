@@ -261,6 +261,7 @@ def object_info(self):
         )
         out.append("current object id='%s'" % self.getId())
         out.append("current object UID='%s'" % self.UID())
+        out.append("current object externalIdentifier='%s'" % getattr(self, 'externalIdentifier', ''))
         out.append(
             "current object portal_type/meta_type/class='%s'/'%s'/'%s'"
             % (self.getPortalTypeName(), self.meta_type, self.__class__.__name__)

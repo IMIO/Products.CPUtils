@@ -5,8 +5,8 @@ Changelog
 1.26 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Completed `object_info`, display `externalIdentifier` if exists.
+  [gbastien]
 
 1.25 (2024-04-10)
 -----------------
