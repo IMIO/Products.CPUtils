@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.26 (unreleased)
+1.26 (2025-08-28)
 -----------------
 
 - Completed `object_info`, display `externalIdentifier` if exists.
