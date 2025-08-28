@@ -14,7 +14,7 @@ long_description = (
 
 setup(
     name='Products.CPUtils',
-    version='1.26',
+    version='1.27.dev0',
     description="Some plone utilities as external methods, monkey patches, etc.",
     long_description=long_description,
     # Get more from http://pypi.python.org/pypi?%3Aaction=list_classifiers
