@@ -117,7 +117,7 @@ def sendmail(self, mfrom="", to="", body="", subject="", cc="", bcc=""):
             return mail_host.send(mailMsg, mto=to, mfrom=mfrom, subject=subject)
         else:
             return mail_host.secureSend(mailMsg, to, mfrom, subject=subject)
-    except Exception, msg:
+    except Exception as msg:
         return msg
 
 
@@ -1227,7 +1227,7 @@ def check_groups_users(self, app="docs"):
     from zope.schema.interfaces import IVocabularyFactory
 
     out.append(
-        "{}T0={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f"))
+        "{}T0={}".format(lf, datetime(1973, 2, 12).now().strftime("%H:%M:%S.%f"))
     )
     all_groups = {g.id: g for g in api.group.get_groups()}
     all_users = get_users(self, obj=False)
@@ -1507,7 +1507,7 @@ def check_groups_users(self, app="docs"):
                         )
                     )
     out.append(
-        "{}T end={}".format(lf, datetime(1973, 02, 12).now().strftime("%H:%M:%S.%f"))
+        "{}T end={}".format(lf, datetime(1973, 2, 12).now().strftime("%H:%M:%S.%f"))
     )
     return lf.join(out)
 
@@ -4255,7 +4255,7 @@ def dv_conversion(
         return "\n".join(out)
     from datetime import datetime
 
-    start = datetime(1973, 02, 12).now()
+    start = datetime(1973, 2, 12).now()
     import logging
 
     logger = logging.getLogger("CPUtils dv_conversion")
@@ -4369,7 +4369,7 @@ def dv_conversion(
             ),
         )
 
-    end = datetime(1973, 02, 12).now()
+    end = datetime(1973, 2, 12).now()
     delta = end - start
     log_list(out, "Finishing dv_conversion, duration %s" % delta, logger)
     log_list(
@@ -4668,7 +4668,7 @@ def check_blobs(self, delete=""):
     from ZODB.POSException import POSKeyError
 
     portal = getToolByName(self, "portal_url").getPortalObject()
-    log_list(ret, "Starting check_blobs at %s" % datetime(1973, 02, 12).now())
+    log_list(ret, "Starting check_blobs at %s" % datetime(1973, 2, 12).now())
 
     blob_attrs = {}
     # get all files attributes
@@ -4719,7 +4719,7 @@ def check_blobs(self, delete=""):
                     log_list(ret, "  => will be deleted")
                     parent.manage_delObjects([obj.getId()])
 
-    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 02, 12).now())
+    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 2, 12).now())
     return "\n".join(ret)
 
 
@@ -4745,7 +4745,7 @@ def check_blobs_slow(self, delete=""):
     from ZODB.POSException import POSKeyError
 
     portal = getToolByName(self, "portal_url").getPortalObject()
-    start = datetime(1973, 02, 12).now()
+    start = datetime(1973, 2, 12).now()
     log_list(ret, "Starting check_blobs at %s" % start)
 
     def check_at_blobs(context):
@@ -4809,7 +4809,7 @@ def check_blobs_slow(self, delete=""):
                 recurse(child, delete=delete)
 
     recurse(portal, delete=delt)
-    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 02, 12).now())
+    log_list(ret, "Finished check_blobs at %s" % datetime(1973, 2, 12).now())
     return "\n".join(ret)
 
 
@@ -4875,7 +4875,7 @@ def del_object(self, doit="", linki="1"):
     out.append("You can/must call the script with following parameters:")
     out.append("-> linki=''  : link integrity check. Default=1")
     out.append("-> doit=''  : apply changes if 1. Default=empty")
-    out.append("ie. cputils_del_objects?linki=0&doit=1")
+    out.append("ie. cputils_del_object?linki=0&doit=1")
     out.append("")
     sep = "\n<br />"
     # TODO add option to by pass subscribers with container._delObject(id, suppress_events=True)
