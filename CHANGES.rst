@@ -5,8 +5,10 @@ Changelog
 1.27 (unreleased)
 -----------------
 
-- Nothing changed yet.
-
+- Improved code.
+  [sgeulette]
+- Upgraded zc.buildout
+  [sgeulette
 
 1.26 (2025-08-28)
 -----------------
