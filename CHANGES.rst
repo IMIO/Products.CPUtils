@@ -8,7 +8,7 @@ Changelog
 - Improved code.
   [sgeulette]
 - Upgraded zc.buildout
-  [sgeulette
+  [sgeulette]
 
 1.26 (2025-08-28)
 -----------------
