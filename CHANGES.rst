@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-1.27 (unreleased)
------------------
+1.26.1 (2026-03-26)
+-------------------
 
 - Improved code.
   [sgeulette]
