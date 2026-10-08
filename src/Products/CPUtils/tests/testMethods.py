@@ -6,15 +6,22 @@ from plone.app.testing import logout
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import TEST_USER_NAME
-from Products.CPUtils.Extensions.utils import folder_position
 from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
+
+import unittest
+
+
+try:
+    from Products.CPUtils.Extensions.utils import folder_position
+except ImportError:  # added with Plone 6 support
+    folder_position = None
 
 
 class testMethods(CPUtilsTestCase):
     """Test-cases for class(es) ."""
 
     def setUp(self):
-        super().setUp()
+        super(testMethods, self).setUp()
         setRoles(self.portal, TEST_USER_ID, ["Manager"])
         login(self.portal, TEST_USER_NAME)
 
@@ -55,7 +62,7 @@ class testMethods(CPUtilsTestCase):
         result = self.portal.cputils_change_user_properties(self.portal, "", "")
         ok = (
             result.find("USER:'member'") > -1
-            and result.find(f"USER:'{TEST_USER_ID}'") > -1
+            and result.find("USER:'%s'" % TEST_USER_ID) > -1
         )
         self.assertTrue(ok)
 
@@ -65,7 +72,7 @@ class testMethods(CPUtilsTestCase):
         )
         ok = (
             result.find("USER:'member'") > -1
-            and result.find(f"USER:'{TEST_USER_ID}'") > -1
+            and result.find("USER:'%s'" % TEST_USER_ID) > -1
         )
         ok = ok and result.find(" all properties: visible_ids='False'")
         result = self.portal.cputils_change_user_properties(
@@ -73,7 +80,7 @@ class testMethods(CPUtilsTestCase):
         )
         ok = (
             result.find("USER:'member'") > -1
-            and result.find(f"USER:'{TEST_USER_ID}'") > -1
+            and result.find("USER:'%s'" % TEST_USER_ID) > -1
         )
         ok = ok and result.find(
             "old properties: visible_ids='False',<br/>->  new properties: visible_ids='True',"
@@ -85,6 +92,7 @@ class testMethods(CPUtilsTestCase):
         # self.portal.cputils_cpdb()
         "cputils_cpdb test passed"
 
+    @unittest.skipIf(folder_position is None, "folder_position added with Plone 6 support")
     def test_folder_position(self):
         folder = api.content.create(type="Folder", id="container", container=self.portal)
         api.content.create(type="Document", id="d1", container=folder)
@@ -109,6 +117,7 @@ class testMethods(CPUtilsTestCase):
         folder_position(folder, "top", "d1")
         self.assertEqual(["d1", "d2", "d3", "d4"], folder.objectIds())
 
+    @unittest.skipIf(folder_position is None, "folder_position added with Plone 6 support")
     def test_folder_position_typeaware(self):
         folder = api.content.create(type="Folder", id="container", container=self.portal)
         api.content.create(type="Folder", id="f1", container=folder)

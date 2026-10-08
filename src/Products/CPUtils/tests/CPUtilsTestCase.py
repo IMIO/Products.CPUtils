@@ -1,36 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from plone import api
-from plone.app.testing import applyProfile
-from plone.app.testing import IntegrationTesting
-from plone.app.testing import PLONE_FIXTURE
-from plone.app.testing import PloneSandboxLayer
 from Products.CMFCore.utils import getToolByName
+from Products.CPUtils.testing import CPUTILS_INTEGRATION_TESTING
 
-import Products.CPUtils
 import unittest
 
 
-class CPUtilsLayer(PloneSandboxLayer):
-    """"""
-
-    defaultBases = (PLONE_FIXTURE,)
-
-    def setUpZope(self, app, configurationContext):
-        self.loadZCML(package=Products.CPUtils)
-
-    def setUpPloneSite(self, portal):
-        applyProfile(portal, "Products.CPUtils:default")
-
-
-CPUTILS_INTEGRATION_TESTING = IntegrationTesting(
-    bases=(CPUtilsLayer(),),
-    name="CPUtils:Integration",
-)
-
-
 class CPUtilsTestCase(unittest.TestCase):
-    """Base TestCase for contacts."""
+    """Base TestCase for CPUtils."""
 
     layer = CPUTILS_INTEGRATION_TESTING
 
@@ -48,12 +26,3 @@ class CPUtilsTestCase(unittest.TestCase):
             roles=("Member",),
             password="password",
         )
-
-
-def test_suite():
-    from unittest import makeSuite
-    from unittest import TestSuite
-
-    suite = TestSuite()
-    suite.addTest(makeSuite(CPUtilsTestCase))
-    return suite
