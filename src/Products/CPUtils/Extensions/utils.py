@@ -4,10 +4,9 @@
 from imio.helpers.security import check_zope_admin
 from imio.pyutils.utils import safe_encode
 from plone.app.uuid.utils import uuidToObject
+from plone.base import PloneMessageFactory as _
+from plone.base.utils import safe_text
 from plone.protect.interfaces import IDisableCSRFProtection
-from plone.registry.interfaces import IRegistry
-from Products.CMFPlone import PloneMessageFactory as _
-from zope.component import getUtility
 from zope.interface import alsoProvides
 
 
@@ -88,41 +87,6 @@ def get_all_site_objects(self):
     return allSiteObj
 
 
-def sendmail(self, mfrom="", to="", body="", subject="", cc="", bcc=""):
-    """
-        send a mail
-    """
-    from email.Header import Header
-    from Products.CMFCore.utils import getToolByName
-    from Products.CMFPlone.utils import safe_unicode
-
-    import email.Message
-    import email.Utils
-
-    portal = getToolByName(self, "portal_url").getPortalObject()
-
-    mailMsg = email.Message.Message()
-    mailMsg["To"] = to
-    mailMsg["From"] = mfrom
-    mailMsg["CC"] = cc
-    mailMsg["BCC"] = bcc
-    mailMsg["Subject"] = str(Header(safe_unicode(subject), "utf-8"))
-    mailMsg["Date"] = email.Utils.formatdate(localtime=1)
-    mailMsg["Message-ID"] = email.Utils.make_msgid()
-    mailMsg["Mime-version"] = "1.0"
-    mailMsg["Content-type"] = "text/plain"
-    mailMsg.set_payload(safe_unicode(body).encode("utf-8"), "utf-8")
-    mailMsg.epilogue = "\n"  # To ensure that message ends with newline
-    mail_host = getattr(portal, "MailHost", None)
-    try:
-        if 1:  # MIGRATION-PLONE6
-            return mail_host.send(mailMsg, mto=to, mfrom=mfrom, subject=subject)
-        else:
-            return mail_host.secureSend(mailMsg, to, mfrom, subject=subject)
-    except Exception as msg:
-        return msg
-
-
 def log_list(lst, line, logger=None, level="info"):
     levels = {"info": ">>", "warn": "??", "error": "!!"}
     if logger:
@@ -134,7 +98,6 @@ def log_list(lst, line, logger=None, level="info"):
 
 def object_link(obj, view="view", attribute="Title", content="", target=""):
     """ Returns an html link for the given object """
-    from Products.CMFPlone.utils import safe_unicode
 
     href = view and "%s/%s" % (obj.absolute_url(), view) or obj.absolute_url()
     if not content:
@@ -145,14 +108,14 @@ def object_link(obj, view="view", attribute="Title", content="", target=""):
             content = content()
     if target:
         target = ' target="{}"'.format(target)
-    return '<a href="%s"%s>%s</a>' % (href, target, safe_unicode(content))
+    return '<a href="%s"%s>%s</a>' % (href, target, safe_text(content))
 
 
 def install(self):
     """
         Install cputils methods where the user is (root of zope?)
     """
-    from Products.CMFPlone.utils import base_hasattr
+    from plone.base.utils import base_hasattr
     from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
 
     if not check_zope_admin():
@@ -162,12 +125,11 @@ def install(self):
         "add_subject",  # OK
         "audit_catalog",  # OK
         "change_authentication_plugins",  # OK
-        "change_user_properties",  # NO - USED IN configure_ckeditor
+        "change_user_properties",  # OK
         "check_groups_users",  # OK
         "check_users",  # OK
         "clean_provides_for",  # OK
         "clean_utilities_for",  # OK
-        "configure_ckeditor",  # YES
         "cpdb",  # OK
         "creators",  # OK
         "del_object",  # OK
@@ -566,157 +528,6 @@ def store_user_properties(self):
     return "\n".join(out)
 
 
-# MIGRATION-PLONE6
-def configure_ckeditor(
-    self,
-    default=1,
-    allusers=1,
-    custom="",
-    rmTiny=1,
-    forceTextPaste=1,
-    scayt=1,
-    removeWsc=1,
-    skin="moono-lisa",
-    filtering="",
-):
-    """
-        configure collective.ckeditor with default parameters.
-        This method can be called as an external method, with the following parameters: ...?default=1&alluser=0&custom=0
-    """
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-
-    customs = {
-        "urban": "[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
-        "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
-        "['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter',"
-        "'JustifyRight','JustifyBlock'],\n['Table','SpecialChar','Link','Unlink'],\n'/',\n['Styles','Format'],"
-        "\n['Maximize', 'ShowBlocks', 'Source']\n]",
-        "plonemeeting": "[\n"
-        "['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n"
-        "['Undo','Redo','-','RemoveFormat'],\n"
-        "['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],\n"
-        "['NumberedList','BulletedList','-','Outdent','Indent'],\n"
-        "['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n"
-        "['Table','SpecialChar','Link','Unlink','Image'],\n"
-        "'/',\n"
-        "['Styles','NbSpace','NbHyphen'],\n"
-        "['Maximize','ShowBlocks','Source']\n"
-        "]\n",
-        "ged": "[\n['Templates'], \n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
-        "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
-        "['NumberedList','BulletedList'],\n['Table','SpecialChar','Link','Unlink'],\n['Format'],\n['Maximize', "
-        "'ShowBlocks', 'Source']\n]",
-        "pst": "[\n['AjaxSave'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-',"
-        "'Scayt'],\n['Undo','Redo','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike'],\n"
-        "['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n['JustifyLeft','JustifyCenter',"
-        "'JustifyRight','JustifyBlock'],\n['Table','SpecialChar','Link','Unlink'],\n'/',\n['Styles'],"
-        "\n['Maximize', 'ShowBlocks', 'Source']\n]",
-        "site": "[\n['AjaxSave','Templates'],\n['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],\n"
-        "['Undo','Redo','-','Find','Replace','-','RemoveFormat'],\n['Bold','Italic','Underline','Strike','-',"
-        "'Subscript','Superscript'],\n['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],\n"
-        "['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],\n['Link','Unlink','Anchor'],\n'/',"
-        "['Image','Flash','Table','HorizontalRule','Smiley','SpecialChar','PageBreak'],\n['Styles','Format'],\n"
-        "['Maximize', 'ShowBlocks', 'Source']\n]",
-    }
-
-    out = [
-        "Call the script followed by possible parameters:",
-        "-> default=... : set as default editor (default 1)",
-        "-> allusers=... : set ckeditor for all users (default 1)",
-        "-> rmTiny=... : remove Tiny from available editors (default 1)",
-        "-> forceTextPaste=... : set force paste as plain text (default 1)",
-        "-> skin=... : set skin (default moono-lisa)",
-        "-> custom=%s : set custom toolbar (default None)'\n"
-        % "|".join(list(customs.keys())),
-    ]
-
-    from Products.CMFCore.utils import getToolByName
-    from Products.CMFPlone.utils import get_installer
-
-    alsoProvides(self.REQUEST, IDisableCSRFProtection)
-    portal = getToolByName(self, "portal_url").getPortalObject()
-
-    try:
-        installer = get_installer(self, self.REQUEST)
-        if not installer.is_product_installed("collective.ckeditor"):
-            installer.install_product("collective.ckeditor")
-    except Exception as msg:
-        return "collective.ckeditor cannot be installed: '%s'" % msg
-
-    sp = portal.portal_properties.site_properties
-    registry = getUtility(IRegistry)
-    ck_prefix = "collective.ckeditor.browser.ckeditorsettings.ICKEditorSchema.%s"
-
-    # setting default editor to ckeditor
-    if default:
-        portal.portal_memberdata.manage_changeProperties(wysiwyg_editor="CKeditor")
-        sp.manage_changeProperties(default_editor="CKeditor")
-        out.append("Set ckeditor as default editor")
-
-    # remove FCKeditor from available editor
-    availables = list(sp.available_editors)
-    if "FCKeditor" in availables:
-        availables.remove("FCKeditor")
-    sp.manage_changeProperties(available_editors=availables)
-    out.append("Removed FCKeditor from available editors")
-
-    # remove Tiny from available editor
-    if rmTiny:
-        availables = list(sp.available_editors)
-        if "TinyMCE" in availables:
-            availables.remove("TinyMCE")
-        sp.manage_changeProperties(available_editors=availables)
-        out.append("Removed Tiny from available editors")
-        # MIGRATION-PLONE6 (disable Tiny bundles)
-
-    # changing editor for all users
-    if allusers:
-        change_user_properties(portal, kw="wysiwyg_editor:CKeditor", dochange=1)
-        out.append("Set ckeditor as editor for all users")
-
-    # setting custom toolbar
-    if custom:
-        if custom not in customs:
-            return (
-                "custom parameter '%s' not defined in available custom toolbars"
-                % custom
-            )
-        if registry.get(ck_prefix % "toolbar") != "Custom":
-            registry[ck_prefix % "toolbar"] = "Custom"
-            registry[ck_prefix % "toolbar_Custom"] = safe_encode(customs[custom])
-        out.append("Set '%s' toolbar" % custom)
-
-    # force text paste
-    if forceTextPaste:
-        registry[ck_prefix % "forcePasteAsPlainText"] = True
-        out.append("Set forcePasteAsPlainText to True")
-
-    # activate scayt
-    if scayt:
-        registry[ck_prefix % "enableScaytOnStartup"] = True
-        out.append("Set enableScaytOnStartup to True")
-
-    # disable the 'wsc' plugin, removing the wsc plugin will remove the
-    # "Check spell" option from Scayt menu that is broken
-    if removeWsc:
-        removePlugins = registry.get(ck_prefix % "removePlugins")
-        if 'wsc' not in removePlugins:
-            removePlugins += ('wsc',)
-            registry[ck_prefix % "removePlugins"] = removePlugins
-
-    # change filtering
-    if filtering and filtering in ("default", "custom", "disabled"):
-        registry[ck_prefix % "filtering"] = filtering
-        out.append("Set filtering to '{}'".format(filtering))
-
-    # skin
-    if skin:
-        registry[ck_prefix % "skin"] = skin
-
-    return "\n".join(out)
-
-
 def list_users(
     self,
     output="csv",
@@ -1089,7 +900,7 @@ def check_groups_users(self, app="docs"):
                 groups[group]["u"] = [u.id for u in api.user.get_users(groupname=group)]
                 out.append(
                     "!! group '{}' on inactive org '{}' with {} users".format(
-                        group, full_orgs[org].encode("utf8"), len(groups[group]["u"])
+                        group, full_orgs[org], len(groups[group]["u"])
                     )
                 )
             elif group in global_groups:
@@ -1150,7 +961,7 @@ def check_groups_users(self, app="docs"):
                 if res:
                     out.append(
                         " > '{} ({})' can be cleaned of '{}' users; already in '{}'".format(
-                            full_orgs[org].encode("utf8"),
+                            full_orgs[org],
                             u_fct,
                             ",".join(sorted(res)),
                             h_fct,
@@ -1172,7 +983,7 @@ def check_groups_users(self, app="docs"):
             if s_grp == t_grp:
                 out.append(
                     " > '{} ({})' and '{}': same users '{}'".format(
-                        full_orgs[org].encode("utf8"),
+                        full_orgs[org],
                         u_fct,
                         u_fcts[u_fct],
                         ",".join(sorted(s_grp)),
@@ -1181,13 +992,13 @@ def check_groups_users(self, app="docs"):
             elif not s_grp:
                 out.append(
                     " > '{} ({})' and '{}': no users in the 1".format(
-                        full_orgs[org].encode("utf8"), u_fct, u_fcts[u_fct]
+                        full_orgs[org], u_fct, u_fcts[u_fct]
                     )
                 )
             elif not t_grp:
                 out.append(
                     " > '{} ({})' and '{}': no users in the 2".format(
-                        full_orgs[org].encode("utf8"), u_fct, u_fcts[u_fct]
+                        full_orgs[org], u_fct, u_fcts[u_fct]
                     )
                 )
             else:
@@ -1195,7 +1006,7 @@ def check_groups_users(self, app="docs"):
                 if res:
                     out.append(
                         " > '{} ({})' and '{}': more users '{}' in the 2".format(
-                            full_orgs[org].encode("utf8"),
+                            full_orgs[org],
                             u_fct,
                             u_fcts[u_fct],
                             ",".join(sorted(res)),
@@ -1205,7 +1016,7 @@ def check_groups_users(self, app="docs"):
                 if res:
                     out.append(
                         " > '{} ({})' and '{}': more users '{}' in the 1".format(
-                            full_orgs[org].encode("utf8"),
+                            full_orgs[org],
                             u_fct,
                             u_fcts[u_fct],
                             ",".join(sorted(res)),
@@ -1253,7 +1064,7 @@ def get_user_pwd_hash(self, userid=""):
         return "You must be a zope manager to run this script"
     passwords = self.acl_users.source_users._user_passwords
     if userid in passwords:
-        return "'{}' = '{}'".format(userid, passwords[userid])
+        return "'{}' = '{}'".format(userid, safe_text(passwords[userid]))
     else:
         return "Cannot find password for userid '{}'".format(userid)
 
@@ -1358,180 +1169,6 @@ def correctPOSKey(self, dochange=""):
     return lf.join(out)
 
 
-def correct_language(
-    self, default="", search="all", onlycurrentfolder=0, dochange="", filter=0
-):
-    """
-        correct language objects, set as neutral if no translation exists
-    """
-    if not check_zope_admin():
-        return "You must be a zope manager to run this script"
-
-    import Missing
-
-    lf = "\n"
-    #    lf = '<br />'
-    change_property = False
-    only_current_folder = False
-    filters = [1, 2, 3, 4]
-
-    from Products.CMFCore.utils import getToolByName
-
-    portal = getToolByName(self, "portal_url").getPortalObject()
-    pqi = portal.portal_quickinstaller
-
-    out = []
-    out.append('<head><style type="text/css">')
-    out.append("table { border: 1px solid black; border-collapse:collapse; }")
-    out.append("table th { border: 1px solid black; background: #8297FD; }")
-    out.append("table td { border: 1px solid black; padding: 2px }")
-    out.append(".red { color: red; } ")
-    out.append(".green { color: green; } ")
-    out.append("</style></head>")
-    out.append("<h2>Corrects language of untranslated objects</h2>")
-    out.append("<p>You can call the script with the following parameters:<br />")
-    out.append(
-        "-> default=code => language code for untranslated objects (default to neutral)<br />"
-    )
-    out.append(
-        "-> search=fr => language code of searched objects (default to all languages)<br />"
-    )
-    out.append(
-        "-> onlycurrentfolder=0 => do correct language in all site (default) <br />"
-    )
-    out.append(
-        "-> filter=1 or filter=123 => filter numbers (default to all objects)<br />"
-    )
-    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;1 => displays only canonical objects<br />")
-    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;2 => displays only translations<br />")
-    out.append(
-        "-> &nbsp;&nbsp;&nbsp;&nbsp;3 => displays if object language is different from default<br />"
-    )
-    out.append("-> &nbsp;&nbsp;&nbsp;&nbsp;4 => displays unchanged objects<br />")
-    out.append(
-        "-> dochange=1 => really do the change. By default, only prints changes<br />"
-    )
-    out.append("by example /cputils_correct_language?default=fr&dochange=1</p>")
-    out.append('<p>New value in <span class="red">red</span> will be changed</p>')
-
-    errors = []
-
-    if "LinguaPlone" not in [p["id"] for p in pqi.listInstalledProducts()]:
-        out.append(
-            "<p>LinguaPlone not installed ! Not necessary to do this operation</p>"
-        )
-        return lf.join(out)
-
-    if onlycurrentfolder not in ("", "0", "False", "false"):
-        only_current_folder = True
-
-    kw = {}
-    # kw['portal_type'] = ('Document','Link','Image','File','Folder','Large Plone Folder','Wrapper','Topic')
-    # kw['review_state'] = ('private',) #'published'
-    if only_current_folder:
-        kw["path"] = "/".join(self.getPhysicalPath())
-    # kw['sort_on'] = 'created'
-    # kw['sort_order'] = 'reverse'
-    kw["Language"] = search
-
-    if filter:
-        filters = [int(i) for i in list(filter.strip())]
-
-    if dochange not in ("", "0", "False", "false"):
-        change_property = True
-
-    results = portal.portal_catalog.searchResults(kw)
-    out.append("<p>Number of retrieved objects (not filtered): %d</p>" % len(results))
-    out.append("<table><thead><tr>")
-    out.append("<th>Language</th>")
-    out.append("<th>Metadata</th>")
-    out.append("<th>Path</th>")
-    out.append("<th>New value</th>")
-    out.append("</tr></thead><tbody>")
-
-    # out.append("<tr><td>%s</td></tr>" % ';'.join(filters))
-    for brain in results:
-        obj = brain.getObject()
-        # metadata can be missing !
-        if brain.Language == Missing.MV:
-            meta_lang = "Missing.Value"
-        elif brain.Language == "":
-            meta_lang = "neutral"
-        else:
-            meta_lang = brain.Language
-        # we use obj instead
-        try:
-            if obj.getLanguage() == "":
-                current_lang = "neutral"
-            else:
-                current_lang = obj.getLanguage()
-            obj.getDeletableLanguages()
-        except AttributeError:
-            errors.append(
-                "<div>Cannot get language on object '%s' at url '<a href=\"%s\">%s</a>'</div>"
-                % (brain.Title, brain.getURL(), brain.getPath())
-            )
-            current_lang = "AttributeError"
-            continue
-        except KeyError as msg:
-            # es-es not found in deletable language
-            errors.append(
-                "<div>Language '%s' not in deletable lang: '%s' at url '<a href=\"%s\">%s</a>'</div>"
-                % (msg, brain.Title, brain.getURL(), brain.getPath())
-            )
-            continue
-
-        # we first search for translated objects: no change for those objects
-        # condition= already language and canonical with translations
-        if current_lang and obj.isCanonical() and obj.getDeletableLanguages():
-            if 1 in filters:
-                out.append(
-                    '<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="green">'
-                    "canonical</td></tr>"
-                    % (current_lang, meta_lang, brain.getURL(), brain.getPath())
-                )
-        # condition= already language and not canonical = translation
-        elif current_lang and not obj.isCanonical():
-            if 2 in filters:
-                out.append(
-                    '<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td class="green">'
-                    "translation</td></tr>"
-                    % (current_lang, meta_lang, brain.getURL(), brain.getPath())
-                )
-        # no translation and language must be changed
-        elif current_lang != default:
-            if 3 in filters:
-                out.append(
-                    '<tr><td class="red">%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td>'
-                    '<td class="red">%s</td></tr>'
-                    % (
-                        current_lang,
-                        meta_lang,
-                        brain.getURL(),
-                        brain.getPath(),
-                        default or "neutral",
-                    )
-                )
-                if change_property:
-                    obj.setLanguage(default)
-                    obj.reindexObject()
-        # no change
-        elif 4 in filters:
-            out.append(
-                '<tr><td>%s</td><td>%s</td><td><a href="%s" target="_blank">%s</a></td><td>unchanged</td></tr>'
-                % (current_lang, meta_lang, brain.getURL(), brain.getPath())
-            )
-
-    out.append("</tbody></table>")
-
-    if errors:
-        i = out.index("<table><thead><tr>")
-        errors.append("<br />")
-        out[i:i] = errors
-
-    return lf.join(out)
-
-
 def correct_pam_language(
     self,
     default="",
@@ -1601,7 +1238,7 @@ def correct_pam_language(
     out.append(
         "-> dochange=1 => really do the change. By default, only prints changes<br />"
     )
-    out.append("by example /cputils_correct_language?default=fr&dochange=1</p>")
+    out.append("by example /cputils_correct_pam_language?default=fr&dochange=1</p>")
     out.append('<p>New value in <span class="red">red</span> will be changed</p>')
 
     errors = []
@@ -2044,6 +1681,7 @@ def removeStep(self, step=""):
     # delete the offending step
     try:
         del ir._registered[step]
+        setup._p_changed = True
     except KeyError:
         pass
 
@@ -2128,6 +1766,7 @@ def removeRegisteredTool(self, tool=""):
     # delete the offending step
     try:
         del toolset._required[tool]
+        setup._p_changed = True
     except KeyError:
         pass
 
@@ -2522,58 +2161,6 @@ def list_for_generator(self, tree):
     return [elem for elem in tree]
 
 
-def removeZFT(self):
-    if not check_role(self):
-        return "You must have a manager role to run this script"
-    try:
-        from zope.app.component.hooks import setSite
-    except ImportError:
-        from zope.component.hooks import setSite
-
-    from collective.zipfiletransport.utilities.interfaces import IZipFileTransportUtility
-    from zope.component import getSiteManager
-
-    setSite(self)
-    sm = getSiteManager()
-    util = sm.queryUtility(IZipFileTransportUtility, name="zipfiletransport")
-    sm.unregisterUtility(component=None, provided=IZipFileTransportUtility)
-    sm.utilities.unsubscribe((), IZipFileTransportUtility)
-    del util
-
-    # Even though unregister happened, it probably said it worked but left crap around.
-    # Let's clean it up
-
-    # This intclass variable might not be right.  It's going to be the key present below,
-    # so you can always find the right InterfaceClass manually and set it accordingly.
-    intclass = IZipFileTransportUtility
-
-    try:
-        del sm.utilities._adapters[0][intclass]
-    except BaseException:
-        pass
-
-    try:
-        del sm.utilities._subscribers[0][intclass]
-    except BaseException:
-        pass
-
-    try:
-        del sm.utilities._provided[intclass]
-    except BaseException:
-        pass
-
-    # From here, search for 'Zip' to see if it's gone
-    # Each should return -1.  If not, you've done something wrong!
-    str(sm.utilities._adapters[0]).find("Zip")
-    str(sm.utilities._subscribers[0]).find("Zip")
-    str(sm.utilities._provided).find("Zip")
-    str(sm.utilities.__bases__[0].__dict__).find("Zip")
-
-    import transaction
-
-    transaction.commit()
-
-
 def order_folder(self, key="title", reverse="", verbose=""):
     """
         Order items in a folder (not Plone site root)
@@ -2808,35 +2395,6 @@ def reindex_relations(self):
     for brain in brains:
         obj = brain.getObject()
         updateRelations(obj, None)
-
-
-def mark_last_version(self, product=""):
-    """
-        Mark a product in pqi as last version installed
-    """
-    if not check_zope_admin():
-        return "You must be a zope manager to run this script"
-    if not product:
-        return (
-            "You must give the parameter product with the product name: "
-            "mark_last_version?product=Products.Ploneboard"
-        )
-    pqi = self.portal_quickinstaller
-    try:
-        prod = pqi.get(product)
-        i_v = prod.getInstalledVersion()
-        s_v = pqi.getProductVersion(product)
-        if i_v != s_v:
-            setattr(prod, "installedversion", s_v)
-            return "Product version set in pqi: '%s' from '%s' to '%s'" % (
-                product,
-                i_v,
-                s_v,
-            )
-        else:
-            return "Product version in pqi already at last: '%s' '%s'" % (product, i_v)
-    except AttributeError as e:
-        return "Cannot get product '%s' from portal_quickinstaller: %s" % (product, e)
 
 
 def load_site(self, duration="15"):
@@ -3081,7 +2639,7 @@ def creators(self, value="", replace="1", add="-1", recursive="", dochange=""):
     """
     if not check_role(self):
         return "You must have a manager role to run this script"
-    from Products.CMFPlone.utils import base_hasattr
+    from plone.base.utils import base_hasattr
 
     self.REQUEST.RESPONSE.setHeader("Content-Type", "text/html; charset=utf-8")
     out = ["<strong>Creators change</strong>"]
@@ -3161,10 +2719,10 @@ def change_uuid(self, recursive="", dochange=""):
     """
     if not check_role(self):
         return "You must have a manager role to run this script"
+    from plone.base.utils import base_hasattr
     from plone.uuid.interfaces import ATTRIBUTE_NAME
     from plone.uuid.interfaces import IUUID
     from plone.uuid.interfaces import IUUIDGenerator
-    from Products.CMFPlone.utils import base_hasattr
     from zope.component import getUtility
 
     generator = getUtility(IUUIDGenerator)
@@ -3357,12 +2915,7 @@ def check_blobs(self, delete=""):
             obj = brain.getObject()
             for attr in blob_attrs[typ]["at"]:
                 try:
-                    if blob_attrs[typ]["t"] == "dx":
-                        val = getattr(obj, attr)
-                        val.data
-                    else:
-                        val = obj.getField(attr).get(obj)
-                        val.getSize()
+                    getattr(obj, attr).data
                 except (POSKeyError, SystemError):
                     log_list(
                         ret, "Found damaged object %s on %s" % (typ, obj.absolute_url())
@@ -3376,7 +2929,7 @@ def check_blobs(self, delete=""):
     return "\n".join(ret)
 
 
-def check_blobs_slow(self, delete=""):  # MIGRATION-PLONE6
+def check_blobs_slow(self, delete=""):
     """
         Check blobs for poskeyerrors
     """
@@ -3617,7 +3170,6 @@ def relation_infos(rel):
         "to_o": rel.to_object,
         "to_p": rel.to_path,
     }
-    # rel.from_interfaces, rel.from_interfaces_flattened, rel.to_interfaces, rel.to_interfaces_flattened
 
 
 def check_relations(self):
@@ -3629,8 +3181,8 @@ def check_relations(self):
     if not check_zope_admin():
         return "You must be a zope manager to run this script"
     from zc.relation.interfaces import ICatalog
-    from zope.app.intid.interfaces import IIntIds
     from zope.component import getUtility
+    from zope.intid.interfaces import IIntIds
 
     intids = getUtility(IIntIds)
     rels = getUtility(ICatalog)

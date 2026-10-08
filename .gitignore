@@ -18,3 +18,7 @@ src/*
 var/
 .idea/
 pyvenv.cfg
+.coverage
+.plone-version
+.python-version
+CACHEDIR.TAG

@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from functools import partial
-
-import collections
 import os
 
 
@@ -39,44 +36,3 @@ def runCommand(cmd):
     get_output("_cmd_pv.out", stdout)
     get_output("_cmd_pv.err", stderr)
     return (stdout, stderr)
-
-
-# ------------------------------------------------------------------------------
-
-
-def writeTo(filepath, data, replace=True):
-    """
-        Write the data in the file
-    """
-    if os.path.exists(filepath) and not replace:
-        return verbose("%s already exists" % filepath)
-    ofile = open(filepath, "w")
-    if isinstance(data, list):
-        for line in data:
-            ofile.write(
-                "%s\n" % (isinstance(line, str) and line.encode("utf8") or line)
-            )
-    elif isinstance(data, str):
-        ofile.write(data)
-    elif isinstance(data, str):
-        ofile.write(data.encode("utf8"))
-    ofile.close()
-
-
-# ------------------------------------------------------------------------------
-
-
-def encodeData(data, encoding="utf8"):
-    """
-        Encode any data to the specified encoding
-    """
-    if isinstance(data, str):
-        return data.encode(encoding)
-    elif isinstance(data, collections.Mapping):
-        mapfunc = partial(encodeData, encoding=encoding)
-        return dict(list(map(mapfunc, iter(data.items()))))
-    elif isinstance(data, collections.Iterable):
-        mapfunc = partial(encodeData, encoding=encoding)
-        return type(data)(list(map(mapfunc, data)))
-    else:
-        return data

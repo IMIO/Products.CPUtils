@@ -7,6 +7,8 @@ Changelog
 
 - Migrate codebase to Python 3.
   [laulaz]
+- Plone 6.1/6.2 support, Plone 4 dropped: CKEditor, Archetypes and portal_quickinstaller code removed.
+  [laulaz, chris-adam]
 
 1.26.1 (2026-03-26)
 -------------------

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from io import StringIO
 from logging.handlers import BufferingHandler
 from Missing import Value
 from plone import api
@@ -9,6 +10,7 @@ from plone.app.testing import SITE_OWNER_NAME
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import TEST_USER_NAME
 from plone.app.testing import TEST_USER_PASSWORD
+from plone.base.utils import safe_text
 from Products.CPUtils.Extensions.utils import check_role
 from Products.CPUtils.Extensions.utils import check_zope_admin
 from Products.CPUtils.Extensions.utils import delete_users
@@ -21,13 +23,10 @@ from Products.CPUtils.Extensions.utils import reset_passwords
 from Products.CPUtils.Extensions.utils import search_users_by_name
 from Products.CPUtils.Extensions.utils import set_user_pwd_hash
 from Products.CPUtils.Extensions.utils import tobytes
-from Products.CPUtils.testing import plone6_bug
 from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
 from Products.PluggableAuthService.interfaces.plugins import IAuthenticationPlugin
-from six.moves import StringIO
 
 import logging
-import six
 import sys
 
 
@@ -242,19 +241,18 @@ class TestUsers(CPUtilsTestCase):
         login(self.portal, "member")
         self.assertEqual(self.portal.cputils_check_groups_users(), NOT_MANAGER)
 
-    @plone6_bug
     def test_get_user_pwd_hash(self):
         self.assertEqual(get_user_pwd_hash(self.portal, "member"), NOT_ZOPE_ADMIN)
         login(self.app, SITE_OWNER_NAME)
         self.assertEqual(get_user_pwd_hash(self.portal, "nobody"), "Cannot find password for userid 'nobody'")
         result = get_user_pwd_hash(self.portal, "member")
         self.assertTrue(result.startswith("'member' = '{SSHA}"), result)
-        pwd_hash = six.ensure_str(self.portal.acl_users.source_users._user_passwords["member"])
+        pwd_hash = safe_text(self.portal.acl_users.source_users._user_passwords["member"])
         self.assertEqual(result, "'member' = '%s'" % pwd_hash)
 
     def test_set_user_pwd_hash(self):
         # hash of the test user password, as copied from get_user_pwd_hash
-        pwd_hash = six.ensure_str(self.portal.acl_users.source_users._user_passwords[TEST_USER_ID])
+        pwd_hash = safe_text(self.portal.acl_users.source_users._user_passwords[TEST_USER_ID])
         self.assertEqual(set_user_pwd_hash(self.portal, "member", pwd_hash, "1"), NOT_ZOPE_ADMIN)
         login(self.app, SITE_OWNER_NAME)
         result = set_user_pwd_hash(self.portal, "nobody", pwd_hash, "1")

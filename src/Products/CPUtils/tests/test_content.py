@@ -15,8 +15,6 @@ from plone.portlets.interfaces import IPortletAssignmentMapping
 from plone.portlets.interfaces import IPortletManager
 from Products.CPUtils.Extensions import utils
 from Products.CPUtils.testing import FIXTURE
-from Products.CPUtils.testing import plone6_bug
-from Products.CPUtils.testing import PLONE_MAJOR
 from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
 from z3c.relationfield import RelationValue
 from z3c.relationfield.event import _setRelation
@@ -183,12 +181,9 @@ class TestContent(ContentTestCase):
         self.assertIn("doc", self.folder.objectIds())
         self.doc.cputils_del_object(doit="1")
         self.assertNotIn("doc", self.folder.objectIds())
-        # non-empty folder: Plone 4 bug (deletion inside the loop on the contained objects), fixed on Plone 6
+        # non-empty folder (Plone 4 bug: KeyError, nothing deleted)
         api.content.create(type="Document", id="doc2", title="Other doc", container=self.folder)
-        if PLONE_MAJOR < 5:
-            self.assertRaises(KeyError, self.folder.cputils_del_object, doit="1")
-        else:
-            self.assertIn("<span>/plone/folder/doc2</span>", self.folder.cputils_del_object(doit="1"))
+        self.assertIn("<span>/plone/folder/doc2</span>", self.folder.cputils_del_object(doit="1"))
         self.assertNotIn("folder", self.portal.objectIds())
         self.assert_denied(self.folder.cputils_del_object, ZOPE_ADMIN_ONLY, doit="1")
 
@@ -350,7 +345,6 @@ class TestContent(ContentTestCase):
         self.assertEqual(infos["to_o"], doc2)
         self.assertEqual(infos["to_p"], "/plone/folder/doc2")
 
-    @plone6_bug
     def test_check_relations(self):
         doc2 = api.content.create(type="Document", id="doc2", title="Other doc", container=self.folder)
         self.relate(self.doc, doc2)
@@ -447,25 +441,6 @@ class TestContent(ContentTestCase):
         self.assertIn("/plone/folder/doc, old='%s'" % new_uid, result)
         self.assert_denied(utils.change_uuid, MANAGER_ONLY, self.doc)
 
-    @plone6_bug
-    def test_mark_last_version(self):
-        self.assertTrue(utils.mark_last_version(self.portal).startswith("You must give the parameter product"))
-        result = utils.mark_last_version(self.portal, product="unknown")
-        self.assertTrue(result.startswith("Cannot get product 'unknown' from portal_quickinstaller: "))
-        pqi = self.portal.portal_quickinstaller
-        version = pqi.getProductVersion("plone.app.intid")
-        self.assertEqual(
-            utils.mark_last_version(self.portal, product="plone.app.intid"),
-            "Product version in pqi already at last: 'plone.app.intid' '%s'" % version,
-        )
-        pqi.get("plone.app.intid").installedversion = "0.1"
-        self.assertEqual(
-            utils.mark_last_version(self.portal, product="plone.app.intid"),
-            "Product version set in pqi: 'plone.app.intid' from '0.1' to '%s'" % version,
-        )
-        self.assertEqual(pqi.get("plone.app.intid").getInstalledVersion(), version)
-        self.assert_denied(utils.mark_last_version, ZOPE_ADMIN_ONLY, self.portal, product="unknown")
-
     def test_correct_intids(self):
         result = utils.correct_intids(self.portal)
         values = dict(part.split("=") for part in result.split(", "))
@@ -521,9 +496,9 @@ class TestContentCommit(ContentTestCase):
         self.assertNotIn("installCPUtils", after)
         setup = self.portal.portal_setup
         self.assertNotIn("installCPUtils", setup.getImportStepRegistry().listSteps())
-        # Plone 4 bug: portal_setup is not marked as changed, the deletion is lost when reloaded from the ZODB
+        # saved (Plone 4 bug: lost when reloaded from the ZODB)
         setup._p_invalidate()
-        self.assertIn("installCPUtils", setup.getImportStepRegistry().listSteps())
+        self.assertNotIn("installCPUtils", setup.getImportStepRegistry().listSteps())
         self.assertIn("after delete", self.portal.cputils_removeStep(step="unknown"))
         self.assert_denied(self.portal.cputils_removeStep, MANAGER_ONLY, step="portal-transforms-various")
 
@@ -534,9 +509,9 @@ class TestContentCommit(ContentTestCase):
         self.assertNotIn("portal_diff", after)
         setup = self.portal.portal_setup
         self.assertNotIn("portal_diff", setup.getToolsetRegistry().listRequiredTools())
-        # Plone 4 bug: portal_setup is not marked as changed, the deletion is lost when reloaded from the ZODB
+        # saved (Plone 4 bug: lost when reloaded from the ZODB)
         setup._p_invalidate()
-        self.assertIn("portal_diff", setup.getToolsetRegistry().listRequiredTools())
+        self.assertNotIn("portal_diff", setup.getToolsetRegistry().listRequiredTools())
         self.assert_denied(utils.removeRegisteredTool, MANAGER_ONLY, self.portal, tool="portal_url")
 
     def test_clean_provides_for(self):
@@ -567,10 +542,9 @@ class TestContentCommit(ContentTestCase):
         transaction.commit()
         self.assertEqual(clean(interface_name=name), "Corrected adapters\nCorrected subscribers")
         self.assertNotIn(ILeftover, sm.utilities._adapters[0])
-        # Plone 4 bug: the registry is not marked as changed, the utility is back when reloaded from the ZODB.
-        # Plone 6 registries hold persistent lists: the change is saved.
+        # saved (Plone 4 bug: lost when reloaded from the ZODB)
         sm.utilities._p_invalidate()
-        self.assertEqual(ILeftover in sm.utilities._adapters[0], PLONE_MAJOR < 5)
+        self.assertNotIn(ILeftover, sm.utilities._adapters[0])
 
     def test_remove_empty_related_items(self):
         doc2 = api.content.create(type="Document", id="doc2", title="Other doc", container=self.folder)

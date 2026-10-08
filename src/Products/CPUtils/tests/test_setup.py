@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from plone.app.testing import applyProfile
+from plone.testing.zope import Browser
 from Products.CPUtils.testing import CPUTILS_FUNCTIONAL_TESTING
 from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
 
@@ -7,12 +8,7 @@ import transaction
 import unittest
 
 
-try:
-    from plone.testing.zope import Browser
-except ImportError:  # Plone 4
-    from plone.testing.z2 import Browser
-
-# methods installed by cputils_install on Plone 4 and 6
+# methods installed by cputils_install
 INSTALLED_METHODS = (
     "add_subject",
     "audit_catalog",
