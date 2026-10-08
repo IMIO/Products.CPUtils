@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-1.26.2 (unreleased)
--------------------
+2.0.0 (unreleased)
+------------------
 
 - Migrate codebase to Python 3.
   [laulaz]
