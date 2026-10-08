@@ -198,7 +198,7 @@ def CreateAndCallExternalMethod(
     port, user_, pwd_, ext_method, ext_filename, function, param=""
 ):
     # creating and calling external method in zope
-    global instdir, tempdir, buildout_inst_type, user, pwd
+    global user, pwd
     host = "http://localhost:%s" % port
     user = user_
     pwd = pwd_

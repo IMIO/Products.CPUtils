@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import unittest
-
 from plone import api
-from plone.app.testing import (
-    PLONE_FIXTURE,
-    PloneSandboxLayer,
-    IntegrationTesting,
-    applyProfile,
-)
+from plone.app.testing import applyProfile
+from plone.app.testing import IntegrationTesting
+from plone.app.testing import PLONE_FIXTURE
+from plone.app.testing import PloneSandboxLayer
 from Products.CMFCore.utils import getToolByName
+
 import Products.CPUtils
+import unittest
 
 
 class CPUtilsLayer(PloneSandboxLayer):

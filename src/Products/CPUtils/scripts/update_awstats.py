@@ -4,7 +4,6 @@
     This script reads awstats conf files and updates stats with all apache log files (archived too).
 """
 
-import datetime
 import os
 import shutil
 import sys
@@ -59,7 +58,7 @@ def getFiles(dirpath, extensions, namestart, sort=False):
         filepath = os.path.join(dirpath, filename)
         files.append(filepath)
     if sort:
-        files.sort(compare_file_modiftime)
+        files.sort(key=lambda f: os.stat(f).st_mtime)
     return files
 
 
@@ -105,16 +104,6 @@ def runCommand(cmd):
     except IOError:
         error("Cannot open %s file" % "_cmd_pv.err")
     return (stdout, stderr)
-
-
-# ------------------------------------------------------------------------------
-
-
-def compare_file_modiftime(file1, file2):
-    """ compare file in function of modification time """
-    date1 = datetime.datetime.fromtimestamp(os.stat(file1).st_mtime)
-    date2 = datetime.datetime.fromtimestamp(os.stat(file2).st_mtime)
-    return cmp(date1, date2)
 
 
 # ------------------------------------------------------------------------------

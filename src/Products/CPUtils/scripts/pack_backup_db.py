@@ -5,11 +5,11 @@
     * packing each db
     * backuping with repozo each fs file
 """
+from .utils import error
+from .utils import read_zopeconffile
 from Products.CPUtils.scripts.utils import packdb
 from Products.CPUtils.scripts.utils import read_zopectlfile
 from Products.CPUtils.utils import verbose
-from .utils import error
-from .utils import read_zopeconffile
 
 import datetime
 import os

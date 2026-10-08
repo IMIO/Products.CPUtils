@@ -5,12 +5,12 @@
 # Stéphan Geulette <stephan.geulette@uvcw.be>, UVCW
 # From original script "recover.py" ()
 #
-from Products.CPUtils.scripts.utils import CreateAndCallExternalMethod
-from Products.CPUtils.scripts.utils import trace
-from Products.CPUtils.scripts.utils import treat_zopeconflines
 from .utils import datetime
 from .utils import error
 from .utils import verbose
+from Products.CPUtils.scripts.utils import CreateAndCallExternalMethod
+from Products.CPUtils.scripts.utils import trace
+from Products.CPUtils.scripts.utils import treat_zopeconflines
 
 import os
 import socket
@@ -25,7 +25,7 @@ temp_added = False
 
 
 def main():
-    global instdir, tempdir, buildout_inst_type, user, pwd
+    global instdir, tempdir, buildout_inst_type
 
     instdir = instdir.rstrip("/")
     verbose(

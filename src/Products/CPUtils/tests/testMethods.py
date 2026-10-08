@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from plone import api
-from plone.app.testing import login, logout, TEST_USER_ID, TEST_USER_NAME, setRoles
-from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
+from plone.app.testing import login
+from plone.app.testing import logout
+from plone.app.testing import setRoles
+from plone.app.testing import TEST_USER_ID
+from plone.app.testing import TEST_USER_NAME
 from Products.CPUtils.Extensions.utils import folder_position
+from Products.CPUtils.tests.CPUtilsTestCase import CPUtilsTestCase
 
 
 class testMethods(CPUtilsTestCase):
