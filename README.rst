@@ -1,3 +1,8 @@
+.. image:: https://github.com/IMIO/Products.CPUtils/actions/workflows/main.yml/badge.svg
+    :target: https://github.com/IMIO/Products.CPUtils/actions/workflows/main.yml
+.. image:: https://coveralls.io/repos/github/IMIO/Products.CPUtils/badge.svg
+    :target: https://coveralls.io/github/IMIO/Products.CPUtils
+
 ====================
 Products.CPUtils
 ====================
