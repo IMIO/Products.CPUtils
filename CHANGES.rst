@@ -2,11 +2,15 @@ Changelog
 =========
 
 
-1.26.2 (unreleased)
--------------------
+2.0.0 (unreleased)
+------------------
 
-- Nothing changed yet.
-
+- Migrated to Plone 6.2 / Python 3, based on the work started by @laulaz on `python3`.
+  [laulaz, chris-adam]
+- Migrate codebase to Python 3.
+  [laulaz]
+- Plone 6.1/6.2 support, Plone 4 dropped: CKEditor, Archetypes and portal_quickinstaller code removed.
+  [laulaz, chris-adam]
 
 1.26.1 (2026-03-26)
 -------------------

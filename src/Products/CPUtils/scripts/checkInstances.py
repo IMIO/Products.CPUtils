@@ -5,12 +5,12 @@
 # Stéphan Geulette <stephan.geulette@uvcw.be>, UVCW
 # From original script "recover.py" ()
 #
+from .utils import datetime
+from .utils import error
+from .utils import verbose
 from Products.CPUtils.scripts.utils import CreateAndCallExternalMethod
 from Products.CPUtils.scripts.utils import trace
 from Products.CPUtils.scripts.utils import treat_zopeconflines
-from utils import datetime
-from utils import error
-from utils import verbose
 
 import os
 import socket
@@ -19,13 +19,13 @@ import sys
 
 buildout_inst_type = None  # True for buildout, False for manual instance
 tempdir = ""
-now = datetime(1973, 02, 12).now()
+now = datetime(1973, 2, 12).now()
 pfolders = {}
 temp_added = False
 
 
 def main():
-    global instdir, tempdir, buildout_inst_type, user, pwd
+    global instdir, tempdir, buildout_inst_type
 
     instdir = instdir.rstrip("/")
     verbose(
