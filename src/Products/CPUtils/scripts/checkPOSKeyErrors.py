@@ -6,9 +6,9 @@
 # From original script "recover.py" ()
 #
 
-from .utils import datetime
 from OFS.Application import Application
 from Products.CPUtils.scripts.utils import CreateAndCallExternalMethod
+from Products.CPUtils.scripts.utils import datetime
 from Products.CPUtils.scripts.utils import error
 from Products.CPUtils.scripts.utils import trace
 from Products.CPUtils.scripts.utils import treat_zopeconflines

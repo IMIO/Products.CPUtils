@@ -8,6 +8,8 @@ from datetime import datetime
 
 import os
 import sys
+import urllib.error
+import urllib.parse
 import urllib.request
 
 
@@ -125,15 +127,20 @@ def treat_zopeconflines(zodbfilename, fspath):
     return port
 
 
-class MyUrlOpener(urllib.request.FancyURLopener):
-    """ redefinition of this class to give the user and password"""
-
-    def prompt_user_passwd(self, host, realm):
-        return (user, pwd)
-
-    def __init__(self, *args):
-        self.version = "Zope Packer"
-        urllib.request.FancyURLopener.__init__(self, *args)
+def urlread(url, data=None):
+    """Returns the decoded body of url (also on HTTP errors), authenticated with user/pwd."""
+    pwd_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+    pwd_mgr.add_password(None, url, user, pwd)
+    opener = urllib.request.build_opener(urllib.request.HTTPBasicAuthHandler(pwd_mgr))
+    opener.addheaders = [("User-agent", "Zope Packer")]
+    if data is not None:
+        data = urllib.parse.urlencode(data).encode("ascii")
+    try:
+        response = opener.open(url, data)
+    except urllib.error.HTTPError as err:
+        response = err
+    with response:
+        return response.read().decode("utf8", "replace")
 
 
 # ------------------------------------------------------------------------------
@@ -144,13 +151,12 @@ def packdb(port, db, days, method, module, function, user_, pwd_):
     user = user_
     pwd = pwd_
     host = "http://localhost:%s" % port
-    urllib.request._urlopener = MyUrlOpener()
     start = datetime.now()
     verbose("\tPacking db '%s' for instance %s (%s days)" % (db, host, days))
     url_spd = "%s/Control_Panel/Database/%s/%s?days:float=%s" % (host, db, method, days)
     # verbose("url='%s'"%url_spd)
     try:
-        ret_html = urllib.request.urlopen(url_spd).read()
+        ret_html = urlread(url_spd)
         if (
             "the requested resource does not exist" in ret_html
             or "error was encountered while publishing this resource" in ret_html
@@ -161,7 +167,7 @@ def packdb(port, db, days, method, module, function, user_, pwd_):
                 % (host, method, module, function)
             )
             try:
-                ret_html = urllib.request.urlopen(url_em).read()
+                ret_html = urlread(url_em)
                 if (
                     "the requested resource does not exist" in ret_html
                     or "error was encountered while publishing this resource"
@@ -175,7 +181,7 @@ def packdb(port, db, days, method, module, function, user_, pwd_):
                     )
                 else:
                     try:
-                        ret_html = urllib.request.urlopen(url_spd).read()
+                        ret_html = urlread(url_spd)
                         #                            if "/Control_Panel/Database/%s"%db not in ret_html:
                         #                                error("Problem during compression of %s"%db)
                         #                                log.debug(ret_html)
@@ -202,12 +208,11 @@ def CreateAndCallExternalMethod(
     host = "http://localhost:%s" % port
     user = user_
     pwd = pwd_
-    urllib.request._urlopener = MyUrlOpener()
     url_pv = "%s/%s%s" % (host, ext_method, param)
     current_url = url_pv
     try:
         # verbose("Running '%s'"%current_url)
-        ret_html = urllib.request.urlopen(current_url).read()
+        ret_html = urlread(current_url)
         if "the requested resource does not exist" in ret_html:
             verbose("external method %s not exist : we will create it" % ext_method)
             (module, extension) = os.path.splitext(ext_filename)
@@ -217,7 +222,7 @@ def CreateAndCallExternalMethod(
                 % (host, ext_method, module, function)
             )
             # verbose("Running now '%s'"%current_url)
-            ret_html = urllib.request.urlopen(current_url).read()
+            ret_html = urlread(current_url)
             if "the requested resource does not exist" in ret_html or (
                 "The specified module" in ret_html and "couldn't be found" in ret_html
             ):
@@ -226,7 +231,7 @@ def CreateAndCallExternalMethod(
             else:
                 current_url = "%s/%s/valid_roles" % (host, ext_method)
                 # verbose("Running now '%s'"%current_url)
-                ret_html = urllib.request.urlopen(current_url).read()
+                ret_html = urlread(current_url)
                 if not ret_html[0] == "(":
                     error("error with valid_roles return: '%s'" % ret_html)
                     sys.exit(1)
@@ -234,7 +239,7 @@ def CreateAndCallExternalMethod(
                 managerindex = valid_roles.index("Manager")
                 current_url = "%s/%s/permission_settings" % (host, ext_method)
                 # verbose("Running now '%s'"%current_url)
-                ret_html = urllib.request.urlopen(current_url).read()
+                ret_html = urlread(current_url)
                 if not ret_html[0] == "[":
                     error("error with permission_settings return: '%s'" % ret_html)
                     sys.exit(1)
@@ -251,17 +256,16 @@ def CreateAndCallExternalMethod(
                 # verbose("Running now '%s'"%current_url)
                 # params example                       params = {  'permission_to_manage':'View',
                 #                                    'roles':['Manager'], }
-                data = urllib.parse.urlencode(params)
-                ret_html = urllib.request.urlopen(current_url, data).read()
+                ret_html = urlread(current_url, params)
                 if "Your changes have been saved" not in ret_html:
                     error(
                         "Error changing permissions with URL '%s', data '%s'"
-                        % (current_url, str(data))
+                        % (current_url, params)
                     )
                     sys.exit(1)
                 current_url = url_pv
                 # verbose("Running again '%s'"%current_url)
-                ret_html = urllib.request.urlopen(current_url).read()
+                ret_html = urlread(current_url)
         # verbose("callAndCreateExternalMethod : \n%s"%ret_html)
         if ret_html:
             verbose("%s" % ret_html)

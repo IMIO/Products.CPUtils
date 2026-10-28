@@ -5,12 +5,12 @@
 # Stéphan Geulette <stephan.geulette@uvcw.be>, UVCW
 # From original script "recover.py" ()
 #
-from .utils import datetime
-from .utils import error
-from .utils import verbose
 from Products.CPUtils.scripts.utils import CreateAndCallExternalMethod
+from Products.CPUtils.scripts.utils import datetime
+from Products.CPUtils.scripts.utils import error
 from Products.CPUtils.scripts.utils import trace
 from Products.CPUtils.scripts.utils import treat_zopeconflines
+from Products.CPUtils.scripts.utils import verbose
 
 import os
 import socket
