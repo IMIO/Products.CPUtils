@@ -5,12 +5,12 @@ import os
 
 
 def verbose(*messages):
-    print ">>", " ".join(messages)
+    print(">>", " ".join(messages))
 
 
 def error(*messages):
     #    print >>sys.stderr, '!!', (' '.join(messages))
-    print "!!", (" ".join(messages))
+    print("!!", (" ".join(messages)))
 
 
 MAIL = "/usr/sbin/sendmail"
@@ -81,4 +81,4 @@ for logfilename in logfilenames:
     p.write("\n".join(bodylines))
     exitcode = p.close()
     if exitcode:
-        print "Exit code: %s" % exitcode
+        print("Exit code: %s" % exitcode)

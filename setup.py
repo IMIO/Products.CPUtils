@@ -14,7 +14,7 @@ long_description = (
 
 setup(
     name='Products.CPUtils',
-    version='1.26.2.dev0',
+    version='2.0.0.dev0',
     description="Some plone utilities as external methods, monkey patches, etc.",
     long_description=long_description,
     # Get more from http://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -22,10 +22,11 @@ setup(
         "Development Status :: 6 - Mature",
         "Environment :: Web Environment",
         "Framework :: Plone",
-        "Framework :: Plone :: 4.3",
+        "Framework :: Plone :: 6.1",
+        "Framework :: Plone :: 6.2",
         "License :: OSI Approved :: GNU General Public License (GPL)",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.13",
     ],
     keywords='plone imio utils',
     author='Stephan Geulette',
@@ -33,10 +34,10 @@ setup(
     url='http://pypi.python.org/pypi/Products.CPUtils',
     license='GPL',
     packages=find_packages('src', exclude=['ez_setup']),
-    namespace_packages=['Products'],
     package_dir={'': 'src'},
     include_package_data=True,
     zip_safe=False,
+    python_requires='>=3.10',
     install_requires=[
         'imio.helpers',
         'imio.pyutils>=1.0.0',
@@ -47,8 +48,6 @@ setup(
         'test': [
             'plone.app.testing',
             'plone.app.robotframework',
-            'Products.PloneGazette',
-            'Products.PloneTestCase',
         ],
     },
     entry_points="""
