@@ -6,6 +6,7 @@ from Products.CPUtils.scripts import utils
 import base64
 import threading
 import unittest
+import urllib.error
 
 
 class ZopeLikeHandler(BaseHTTPRequestHandler):
@@ -49,4 +50,5 @@ class TestUrlread(unittest.TestCase):
         self.assertEqual(utils.urlread(self.url + "/missing"), "/missing Stéphan ")
         self.assertEqual(utils.urlread(self.url + "/post", {"a0": "on"}), "/post Stéphan a0=on")
         utils.pwd = "wrong"
-        self.assertEqual(utils.urlread(self.url + "/ok"), "")
+        with self.assertRaises(urllib.error.HTTPError):
+            utils.urlread(self.url + "/ok")

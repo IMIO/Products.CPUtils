@@ -128,7 +128,7 @@ def treat_zopeconflines(zodbfilename, fspath):
 
 
 def urlread(url, data=None):
-    """Returns the decoded body of url (also on HTTP errors), authenticated with user/pwd."""
+    """Returns the decoded body of url (also on HTTP errors but 401), authenticated with user/pwd."""
     pwd_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
     pwd_mgr.add_password(None, url, user, pwd)
     opener = urllib.request.build_opener(urllib.request.HTTPBasicAuthHandler(pwd_mgr))
@@ -138,6 +138,8 @@ def urlread(url, data=None):
     try:
         response = opener.open(url, data)
     except urllib.error.HTTPError as err:
+        if err.code == 401:
+            raise
         response = err
     with response:
         return response.read().decode("utf8", "replace")
