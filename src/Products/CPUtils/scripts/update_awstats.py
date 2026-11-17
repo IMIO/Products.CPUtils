@@ -4,25 +4,24 @@
     This script reads awstats conf files and updates stats with all apache log files (archived too).
 """
 
-import datetime
 import os
 import shutil
 import sys
 
 
 def verbose(*messages):
-    print ">>", " ".join(messages)
+    print(">>", " ".join(messages))
 
 
 def error(*messages):
     #    print >>sys.stderr, '!!', (' '.join(messages))
-    print "!!", (" ".join(messages))
+    print("!!", (" ".join(messages)))
 
 
 def debug(*messages):
     if not TRACE:
         return
-    print "TRACE:", " ".join(messages)
+    print("TRACE:", " ".join(messages))
 
 
 # ------------------------------------------------------------------------------
@@ -59,7 +58,7 @@ def getFiles(dirpath, extensions, namestart, sort=False):
         filepath = os.path.join(dirpath, filename)
         files.append(filepath)
     if sort:
-        files.sort(compare_file_modiftime)
+        files.sort(key=lambda f: os.stat(f).st_mtime)
     return files
 
 
@@ -110,16 +109,6 @@ def runCommand(cmd):
 # ------------------------------------------------------------------------------
 
 
-def compare_file_modiftime(file1, file2):
-    """ compare file in function of modification time """
-    date1 = datetime.datetime.fromtimestamp(os.stat(file1).st_mtime)
-    date2 = datetime.datetime.fromtimestamp(os.stat(file2).st_mtime)
-    return cmp(date1, date2)
-
-
-# ------------------------------------------------------------------------------
-
-
 def main():
     verbose("Reading conf files")
     for conffilepath in getFiles(CONF_DIR, ("conf",), "", sort=True):
@@ -161,7 +150,7 @@ def main():
                             verbose(
                                 "\t'%s' copied to '%s'" % (logfilepath, destination)
                             )
-                        except Exception, errmsg:
+                        except Exception as errmsg:
                             error(
                                 "'%s' NOT COPIED to '%s'" % (logfilepath, destination)
                             )
